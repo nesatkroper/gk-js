@@ -1,0 +1,677 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Address {
+  addressId    String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  provinceId   Int
+  districtId   Int
+  communeId    Int
+  villageId    Int
+  latitude     Float?
+  longitude    Float?
+  customerId   String?        @unique @db.Uuid
+  employeeId   String?        @unique @db.Uuid
+  supplierId   String?        @unique @db.Uuid
+  eventId      String?        @unique @db.Uuid
+  status       Status         @default(active)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime
+  Commune      Commune        @relation(fields: [communeId], references: [communeId])
+  Customer     Customer?      @relation(fields: [customerId], references: [customerId])
+  District     District       @relation(fields: [districtId], references: [districtId])
+  Employee     Employee?      @relation(fields: [employeeId], references: [employeeId])
+  Event        Event?         @relation(fields: [eventId], references: [eventId])
+  Province     Province       @relation(fields: [provinceId], references: [provinceId])
+  Supplier     Supplier?      @relation(fields: [supplierId], references: [supplierId])
+  Village      Village        @relation(fields: [villageId], references: [villageId])
+  Imageaddress Imageaddress[]
+
+  @@index([customerId, employeeId, eventId])
+}
+
+model Attendance {
+  attendanceId String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employeeId   String    @db.Uuid
+  eventId      String    @db.Uuid
+  method       String?
+  datetime     DateTime  @default(now())
+  checkIn      DateTime  @default(now())
+  checkOut     DateTime?
+  note         String?
+  status       Status    @default(active)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime
+  Employee     Employee  @relation(fields: [employeeId], references: [employeeId])
+  Event        Event     @relation(fields: [eventId], references: [eventId])
+
+  @@index([employeeId, eventId])
+}
+
+model Auth {
+  authId       String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String         @unique @db.VarChar(255)
+  password     String         @db.VarChar(255)
+  roleId       String         @db.Uuid
+  employeeId   String?        @unique @db.Uuid
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime
+  lastLoginAt  DateTime?
+  status       Status         @default(active)
+  Employee     Employee?      @relation(fields: [employeeId], references: [employeeId])
+  Role         Role           @relation(fields: [roleId], references: [roleId])
+  AuthLog      AuthLog[]
+  Cart         Cart[]
+  Notification Notification[]
+  Token        Token[]
+
+  @@index([createdAt, email, status, employeeId, roleId])
+}
+
+model AuthLog {
+  id           Int      @id @default(autoincrement())
+  authId       String   @db.Uuid
+  method       String?
+  url          String?
+  status       Int?
+  responseTime Float?
+  ip           String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+  Auth         Auth     @relation(fields: [authId], references: [authId])
+
+  @@index([authId, status, ip])
+}
+
+model Branch {
+  branchId   String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  branchName String
+  branchCode String?
+  picture    String?
+  tel        String?
+  memo       String?
+  status     Status     @default(active)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime
+  Employee   Employee[]
+  Entry      Entry[]
+  Sale       Sale[]
+  Stock      Stock[]
+}
+
+model Brand {
+  brandId   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  brandName String
+  picture   String?
+  brandCode String?
+  memo      String?
+  status    Status    @default(active)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime
+  Product   Product[]
+}
+
+model Cart {
+  cartId    String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  authId    String?    @db.Uuid
+  productId String     @db.Uuid
+  quantity  Int
+  status    Status     @default(active)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime
+  Auth      Auth?      @relation(fields: [authId], references: [authId])
+  Product   Product    @relation(fields: [productId], references: [productId])
+  Cartnote  Cartnote[]
+
+  @@unique([authId, productId])
+  @@index([authId, status])
+}
+
+model Cartnote {
+  cartnoteId String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cartId     String   @db.Uuid
+  note       String
+  status     Status   @default(active)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime
+  Cart       Cart     @relation(fields: [cartId], references: [cartId])
+
+  @@index([cartId])
+}
+
+model Category {
+  categoryId   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  picture      String?
+  categoryName String
+  categoryCode String?
+  memo         String?
+  status       Status    @default(active)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime
+  Product      Product[]
+}
+
+model Commune {
+  communeId  Int       @id @default(autoincrement())
+  name       String
+  districtId Int
+  type       String?   @db.VarChar(50)
+  code       String?   @db.VarChar(50)
+  khName     String?   @db.VarChar(50)
+  provinceId Int?
+  createdAt  DateTime? @db.Timestamp(6)
+  updatedAt  DateTime? @db.Timestamp(6)
+  Address    Address[]
+  District   District  @relation(fields: [districtId], references: [districtId])
+  Village    Village[]
+}
+
+model Customer {
+  customerId   String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  firstName    String
+  lastName     String
+  gender       Gender        @default(male)
+  phone        String?
+  status       Status        @default(active)
+  employeeId   String?       @db.Uuid
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime
+  Address      Address?
+  Employee     Employee?     @relation(fields: [employeeId], references: [employeeId])
+  Customerinfo Customerinfo?
+  Sale         Sale[]
+
+  @@index([employeeId])
+}
+
+model Customerinfo {
+  customerId String    @unique @db.Uuid
+  picture    String?
+  region     String?
+  email      String?   @unique
+  note       String?
+  govId      String?
+  govPicture String?
+  govExpire  DateTime?
+  status     Status    @default(active)
+  Customer   Customer  @relation(fields: [customerId], references: [customerId])
+
+  @@index([customerId])
+}
+
+model Department {
+  departmentId   String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  departmentName String
+  departmentCode String?
+  memo           String?
+  status         Status     @default(active)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime
+  Employee       Employee[]
+  Position       Position[]
+}
+
+model District {
+  districtId Int       @id @default(autoincrement())
+  name       String
+  provinceId Int
+  type       String?   @db.VarChar(50)
+  code       String?   @db.VarChar(50)
+  khName     String?   @db.VarChar(50)
+  createdAt  DateTime? @db.Timestamp(6)
+  updatedAt  DateTime? @db.Timestamp(6)
+  Address    Address[]
+  Commune    Commune[]
+  Province   Province  @relation(fields: [provinceId], references: [provinceId])
+}
+
+model Employee {
+  employeeId                                       String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employeeCode                                     String?        @unique
+  firstName                                        String
+  lastName                                         String
+  gender                                           Gender         @default(male)
+  dob                                              DateTime?
+  phone                                            String?        @unique
+  positionId                                       String         @db.Uuid
+  branchId                                         String?        @db.Uuid
+  departmentId                                     String         @db.Uuid
+  salary                                           Decimal        @db.Decimal(10, 2)
+  hiredDate                                        DateTime?
+  status                                           Status         @default(active)
+  createdAt                                        DateTime       @default(now())
+  updatedAt                                        DateTime
+  Address                                          Address?
+  Attendance                                       Attendance[]
+  Auth                                             Auth?
+  Customer                                         Customer[]
+  Branch                                           Branch?        @relation(fields: [branchId], references: [branchId])
+  Department                                       Department     @relation(fields: [departmentId], references: [departmentId])
+  Position                                         Position       @relation(fields: [positionId], references: [positionId])
+  Employeeinfo                                     Employeeinfo?
+  LeaveRequest_LeaveRequest_approvedByIdToEmployee LeaveRequest[] @relation("LeaveRequest_approvedByIdToEmployee")
+  LeaveRequest_LeaveRequest_employeeIdToEmployee   LeaveRequest[] @relation("LeaveRequest_employeeIdToEmployee")
+  Payment                                          Payment[]
+  Sale                                             Sale[]
+
+  @@index([departmentId, employeeCode, positionId])
+}
+
+model Employeeinfo {
+  employeeId String    @unique @db.Uuid
+  picture    String?
+  region     String?
+  email      String?   @unique
+  note       String?
+  status     Status    @default(active)
+  govExpire  DateTime?
+  govId      String?
+  govPicture String?
+  Employee   Employee  @relation(fields: [employeeId], references: [employeeId])
+
+  @@index([employeeId])
+}
+
+model Entry {
+  entryId    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  quantity   Int       @default(0)
+  memo       String?
+  entryPrice Decimal   @default(0.00) @db.Decimal(12, 2)
+  entryDate  DateTime?
+  productId  String    @db.Uuid
+  supplierId String    @db.Uuid
+  branchId   String    @db.Uuid
+  invoice    String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime
+  status     Status    @default(active)
+  Branch     Branch    @relation(fields: [branchId], references: [branchId])
+  Product    Product   @relation(fields: [productId], references: [productId])
+  Supplier   Supplier  @relation(fields: [supplierId], references: [supplierId])
+
+  @@index([productId, supplierId, branchId, status, entryDate])
+}
+
+model Event {
+  eventId    String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventName  String
+  memo       String?
+  startDate  DateTime
+  endDate    DateTime
+  status     Status       @default(active)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime
+  Address    Address?
+  Attendance Attendance[]
+
+  @@index([status, startDate])
+}
+
+model Imageaddress {
+  imageId   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  imageUrl  String
+  imageType String?
+  addressId String   @db.Uuid
+  status    Status   @default(active)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  Address   Address  @relation(fields: [addressId], references: [addressId])
+
+  @@index([addressId])
+}
+
+model Khqr {
+  khqrId    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  account   String   @unique @default("suon_phanun@aclb")
+  name      String   @unique @default("PHANUN SUON")
+  city      String   @default("Siem Reap")
+  amount    Decimal? @default(0.00) @db.Decimal(12, 2)
+  currency  String?  @default("usd")
+  token     String   @unique @default("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoiNDdjMGY2MzY4ZTFmNGFjYSJ9LCJpYXQiOjE3NDgxNDA0MzgsImV4cCI6MTc1NTkxNjQzOH0.CSNbF2clfRi2f8ROhyOGF8Nxyz5lqet0Nb1iWEvwaDU")
+  status    Status   @default(active)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
+model LeaveRequest {
+  leaveId                                      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employeeId                                   String    @db.Uuid
+  leaveType                                    LeaveType
+  startDate                                    DateTime
+  endDate                                      DateTime
+  reason                                       String?
+  status                                       Status    @default(pending)
+  approvedById                                 String?   @db.Uuid
+  approvedAt                                   DateTime?
+  createdAt                                    DateTime  @default(now())
+  updatedAt                                    DateTime
+  Employee_LeaveRequest_approvedByIdToEmployee Employee? @relation("LeaveRequest_approvedByIdToEmployee", fields: [approvedById], references: [employeeId])
+  Employee_LeaveRequest_employeeIdToEmployee   Employee  @relation("LeaveRequest_employeeIdToEmployee", fields: [employeeId], references: [employeeId])
+
+  @@index([employeeId, status, startDate, endDate])
+}
+
+model Log {
+  id           Int      @id @default(autoincrement())
+  method       String?
+  url          String?
+  status       Int?
+  responseTime Float?
+  ip           String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+
+  @@index([status, ip])
+}
+
+model Notification {
+  notificationId String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  authId         String?  @db.Uuid
+  title          String
+  content        String
+  status         Status   @default(active)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime
+  Auth           Auth?    @relation(fields: [authId], references: [authId])
+
+  @@index([authId, status])
+}
+
+model Payment {
+  paymentId     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employeeId    String   @db.Uuid
+  saleId        String   @db.Uuid
+  invoice       String?
+  hash          String?
+  fromAccountId String
+  toAccountId   String
+  currency      String
+  amount        Decimal  @db.Decimal(12, 2)
+  externalRef   String
+  status        Status   @default(active)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime
+  Employee      Employee @relation(fields: [employeeId], references: [employeeId])
+  Sale          Sale     @relation(fields: [saleId], references: [saleId])
+
+  @@index([employeeId, fromAccountId, saleId, toAccountId])
+}
+
+model Position {
+  positionId   String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  departmentId String     @db.Uuid
+  positionName String?
+  positionCode String?
+  memo         String?
+  status       Status     @default(active)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime
+  Employee     Employee[]
+  Department   Department @relation(fields: [departmentId], references: [departmentId])
+
+  @@index([departmentId, positionCode])
+}
+
+model Product {
+  productId    String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productName  String
+  productCode  String?
+  categoryId   String       @db.Uuid
+  brandId      String?      @db.Uuid
+  picture      String?
+  unit         String?
+  capacity     Decimal?     @default(0.00) @db.Decimal(10, 2)
+  sellPrice    Decimal      @default(0.00) @db.Decimal(10, 2)
+  costPrice    Decimal      @default(0.00) @db.Decimal(10, 2)
+  discountRate Int          @default(0)
+  status       Status       @default(active)
+  desc         String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime
+  Cart         Cart[]
+  Entry        Entry[]
+  Brand        Brand?       @relation(fields: [brandId], references: [brandId])
+  Category     Category     @relation(fields: [categoryId], references: [categoryId])
+  Saledetail   Saledetail[]
+  Stock        Stock[]
+
+  @@index([categoryId, sellPrice, costPrice, discountRate])
+}
+
+model Province {
+  provinceId Int        @id(map: "Provine_pkey") @default(autoincrement())
+  name       String
+  type       String?    @db.VarChar(50)
+  khName     String?    @db.VarChar(50)
+  createdAt  DateTime?  @db.Timestamp(6)
+  updatedAt  DateTime?  @db.Timestamp(6)
+  code       String?    @db.VarChar(50)
+  Address    Address[]
+  District   District[]
+}
+
+model Role {
+  roleId       String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String   @unique
+  description  String?
+  status       Status   @default(active)
+  isSystemRole Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+  Auth         Auth[]
+
+  @@index([name])
+}
+
+model Sale {
+  saleId     String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employeeId String       @db.Uuid
+  customerId String       @db.Uuid
+  branchId   String       @db.Uuid
+  saleDate   DateTime     @default(now())
+  amount     Decimal      @db.Decimal(12, 2)
+  status     Status       @default(active)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime
+  memo       String?
+  invoice    String?
+  Payment    Payment[]
+  Branch     Branch       @relation(fields: [branchId], references: [branchId])
+  Customer   Customer     @relation(fields: [customerId], references: [customerId])
+  Employee   Employee     @relation(fields: [employeeId], references: [employeeId])
+  Saledetail Saledetail[]
+
+  @@index([customerId, employeeId, saleDate, status, branchId])
+}
+
+model Saledetail {
+  saledetailId String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  saleId       String   @db.Uuid
+  productId    String   @db.Uuid
+  quantity     Int
+  amount       Decimal  @db.Decimal(12, 2)
+  status       Status   @default(active)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+  memo         String?
+  Product      Product  @relation(fields: [productId], references: [productId])
+  Sale         Sale     @relation(fields: [saleId], references: [saleId])
+
+  @@index([productId, saledetailId, saleId, quantity, amount])
+}
+
+model Stock {
+  stockId   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productId String   @db.Uuid
+  branchId  String   @db.Uuid
+  quantity  Int      @default(0)
+  unit      String
+  memo      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  Branch    Branch   @relation(fields: [branchId], references: [branchId])
+  Product   Product  @relation(fields: [productId], references: [productId])
+}
+
+model Supplier {
+  supplierId   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplierName String
+  companyName  String?
+  phone        String?
+  email        String?
+  status       Status   @default(active)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+  Address      Address?
+  Entry        Entry[]
+
+  @@index([status])
+}
+
+model System {
+  systemId    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  systemName  String   @unique @default("Nun System") @db.VarChar(50)
+  systemType  String   @default("default") @db.VarChar(20)
+  ownerName   String?  @db.VarChar(100)
+  ownerEmail  String?  @db.VarChar(100)
+  ownerPhone  String?  @db.VarChar(20)
+  apiKey      String   @unique @db.VarChar(255)
+  apiSecret   String   @unique @db.VarChar(255)
+  apiUrl      String   @unique @db.VarChar(255)
+  apiVersion  String   @default("v1") @db.VarChar(10)
+  description String?
+  status      Status   @default(active)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+}
+
+model Token {
+  tokenId    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  authId     String?  @db.Uuid
+  token      String   @unique
+  deviceInfo String   @default("")
+  ipAddress  String   @default("")
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  Auth       Auth?    @relation(fields: [authId], references: [authId])
+
+  @@index([expiresAt])
+  @@index([token])
+}
+
+model Village {
+  villageId  Int       @id @default(autoincrement())
+  name       String
+  communeId  Int
+  type       String?   @db.VarChar(50)
+  code       String?   @db.VarChar(50)
+  khName     String?   @db.VarChar(50)
+  provinceId Int?
+  districtId Int?
+  createdAt  DateTime? @db.Timestamp(6)
+  updatedAt  DateTime? @db.Timestamp(6)
+  Address    Address[]
+  Commune    Commune   @relation(fields: [communeId], references: [communeId])
+}
+
+model communes {
+  communeId  BigInt    @id @default(autoincrement())
+  type       String    @db.VarChar(255)
+  code       String    @db.VarChar(255)
+  khName     String    @db.VarChar(255)
+  name       String    @db.VarChar(255)
+  provinceId Int
+  districtId Int
+  createdAt  DateTime? @db.Timestamp(6)
+  updatedAt  DateTime? @db.Timestamp(6)
+}
+
+model district {
+  districtId BigInt    @id @default(autoincrement())
+  type       String    @db.VarChar(255)
+  code       String    @db.VarChar(255)
+  khName     String    @db.VarChar(255)
+  name       String    @db.VarChar(255)
+  provinceId Int
+  createdAt  DateTime? @db.Timestamp(6)
+  updatedAt  DateTime? @db.Timestamp(6)
+}
+
+model province {
+  provinceId BigInt    @id @default(autoincrement())
+  type       String    @db.VarChar(255)
+  code       String    @db.VarChar(255)
+  khName     String    @db.VarChar(255)
+  name       String    @db.VarChar(255)
+  createdAt  DateTime? @db.Timestamp(6)
+  updatedAt  DateTime? @db.Timestamp(6)
+}
+
+model villages {
+  villageId  BigInt    @id @default(autoincrement())
+  type       String    @db.VarChar(255)
+  code       String    @db.VarChar(255)
+  khName     String    @db.VarChar(255)
+  name       String    @db.VarChar(255)
+  provinceId Int
+  districtId Int
+  communeId  Int
+  createdAt  DateTime? @db.Timestamp(6)
+  updatedAt  DateTime? @db.Timestamp(6)
+}
+
+enum CheckStatus {
+  checkin
+  checkout
+  absent
+}
+
+enum Gender {
+  male
+  female
+  others
+}
+
+enum LeaveType {
+  annual
+  sick
+  maternity
+  paternity
+  unpaid
+  other
+}
+
+enum PaymentMethod {
+  cash
+  creditCard
+  khqr
+  leave
+}
+
+enum Status {
+  active
+  inactive
+  pending
+  approved
+  rejected
+  cancelled
+  paid
+}
+
+enum StockType {
+  in
+  out
+}
+
+enum SystemType {
+  default
+  pos
+  reserve
+}
