@@ -18,7 +18,7 @@ export function DatePicker({
   yearRange = { from: 1950, to: new Date().getFullYear() + 10 },
 }) {
   const [isOpen, setIsOpen] = React.useState(false)
-  const [currentMonth, setCurrentMonth] = React.useState<Date>(date || new Date())
+  const [currentMonth, setCurrentMonth] = React.useState(date || new Date())
 
   const years = Array.from({ length: yearRange.to - yearRange.from + 1 }, (_, i) => yearRange.from + i).reverse()
 

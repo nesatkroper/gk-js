@@ -355,45 +355,47 @@ export default function AuthPage() {
                     disabled={isSaving}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="roleId">{t("Role")} *</Label>
-                  <Select
-                    name="roleId"
-                    required
-                    defaultValue={editingAuth?.roleId ? String(editingAuth.roleId) : (roles.length > 0 ? String(roles[0].roleId) : "")}
-                    disabled={isSaving || roles.length === 0}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={roles.length === 0 ? "No roles available" : "Select role"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {roles.map((r) => (
-                        <SelectItem key={r.roleId} value={String(r.roleId)}>
-                          {r.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="employeeId">{t("Employee")}</Label>
-                  <Select
-                    name="employeeId"
-                    defaultValue={editingAuth?.employeeId ? String(editingAuth.employeeId) : "none"}
-                    disabled={isSaving || employees.length === 0}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={employees.length === 0 ? "No employees available" : "Select employee"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">{t("No Employee")}</SelectItem>
-                      {employees.map((e) => (
-                        <SelectItem key={e.employeeId} value={String(e.employeeId)}>
-                          {e.employeeCode}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="roleId">{t("Role")} *</Label>
+                    <Select
+                      name="roleId"
+                      required
+                      defaultValue={editingAuth?.roleId ? String(editingAuth.roleId) : (roles.length > 0 ? String(roles[0].roleId) : "")}
+                      disabled={isSaving || roles.length === 0}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={roles.length === 0 ? "No roles available" : "Select role"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {roles.map((r) => (
+                          <SelectItem key={r.roleId} value={String(r.roleId)}>
+                            {r.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="employeeId">{t("Employee")}</Label>
+                    <Select
+                      name="employeeId"
+                      defaultValue={editingAuth?.employeeId ? String(editingAuth.employeeId) : "none"}
+                      disabled={isSaving || employees.length === 0}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={employees.length === 0 ? "No employees available" : "Select employee"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">{t("No Employee")}</SelectItem>
+                        {employees.map((e) => (
+                          <SelectItem key={e.employeeId} value={String(e.employeeId)}>
+                            {e.employeeCode}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button

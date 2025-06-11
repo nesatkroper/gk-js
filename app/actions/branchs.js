@@ -51,6 +51,8 @@ export async function createBranch(data) {
         tel: data.tel || null,
         memo: data.memo || null,
         status: "active",
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
     });
     return { data: serializeData(branch) };

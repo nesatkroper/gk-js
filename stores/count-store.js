@@ -8,7 +8,7 @@ export const useCountStore = create((set) => ({
   fetch: async () => {
     set({ isLoading: true, error: null })
     try {
-      const response = await fetch("/api/table-counts")
+      const response = await getTableCount()
       if (!response.ok) throw new Error("Failed to fetch brands")
       const data = await response.json()
       set({ items: Array.isArray(data) ? data : data?.count || [], isLoading: false })

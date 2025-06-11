@@ -6,7 +6,10 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "mig": "npx prisma migrate dev --name mod-emp",
+    "gen": "npx prisma generate",
+    "db": "npm run mig && npm run gen && npm run dev"
   },
   "dependencies": {
     "@prisma/client": "^6.9.0",

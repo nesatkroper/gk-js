@@ -233,15 +233,16 @@ model District {
 
 model Employee {
   employeeId                                       String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  positionId                                       String         @db.Uuid
+  branchId                                         String?        @db.Uuid
+  departmentId                                     String         @db.Uuid
   employeeCode                                     String?        @unique
   firstName                                        String
   lastName                                         String
   gender                                           Gender         @default(male)
   dob                                              DateTime?
   phone                                            String?        @unique
-  positionId                                       String         @db.Uuid
-  branchId                                         String?        @db.Uuid
-  departmentId                                     String         @db.Uuid
+  email                                            String?        @unique
   salary                                           Decimal        @db.Decimal(10, 2)
   hiredDate                                        DateTime?
   status                                           Status         @default(active)
@@ -264,16 +265,23 @@ model Employee {
 }
 
 model Employeeinfo {
-  employeeId String    @unique @db.Uuid
-  picture    String?
-  region     String?
-  email      String?   @unique
-  note       String?
-  status     Status    @default(active)
-  govExpire  DateTime?
-  govId      String?
-  govPicture String?
-  Employee   Employee  @relation(fields: [employeeId], references: [employeeId])
+  employeeId       String    @unique @db.Uuid
+  managerId        String?   @db.Uuid
+  picture          String?
+  region           String?
+  nationality      String?
+  note             String?
+  maritalStatus    MaritalStatus  @default(single)
+  emergencyContact String?
+  bloodType        String?
+  bankAccount      String?
+  govExpire        DateTime?
+  govId            String?
+  govPicture       String?
+  terminationDate  DateTime?
+  contractType     ContractType
+  status           Status    @default(active)
+  Employee         Employee  @relation(fields: [employeeId], references: [employeeId])
 
   @@index([employeeId])
 }
@@ -674,4 +682,18 @@ enum SystemType {
   default
   pos
   reserve
+}
+
+enum ContractType {
+  permanent
+  contract
+  intern
+  temporary
+}
+
+enum MaritalStatus {
+  single
+  married
+  divorced
+  widowed
 }

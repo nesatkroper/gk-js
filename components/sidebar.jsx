@@ -40,7 +40,10 @@ export function AppSidebar({ ...props }) {
 
   React.useEffect(() => {
     fetch()
-  }, [])
+  }, [fetch])
+
+  console.log(items)
+
 
 
   const result = items.reduce((acc, item) => {
@@ -77,7 +80,7 @@ export function AppSidebar({ ...props }) {
       icon: Users,
       children: [
         { name: "Employees", href: "/dashboard/employees", badge: result.Employee },
-        // { name: "Customers", href: "/dashboard/customers", badge: result.Customer },
+        { name: "Customers", href: "/dashboard/customers", badge: result.Customer },
         { name: "Suppliers", href: "/dashboard/suppliers", badge: result.Supplier },
 
       ],
@@ -89,7 +92,7 @@ export function AppSidebar({ ...props }) {
         { name: "Branch", href: "/dashboard/branches", badge: result.Branch },
         { name: "Departments", href: "/dashboard/departments", badge: result.Department },
         { name: "Positions", href: "/dashboard/positions", badge: result.Position },
-        // { name: "Addresses", href: "/dashboard/addresses", badge: result.Address },
+        { name: "Addresses", href: "/dashboard/addresses", badge: result.Address },
         { name: "Event", href: "/dashboard/events", badge: result.Event },
         { name: "Attendance", href: "/dashboard/attendance", badge: result.Attendance },
       ],
