@@ -198,6 +198,8 @@ CREATE TABLE "Customerinfo" (
     "region" TEXT,
     "email" TEXT,
     "note" TEXT,
+    "loyaltyPoints" INTEGER DEFAULT 0,
+    "lastPurchaseDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "govId" TEXT,
     "govPicture" TEXT,
     "govExpire" TIMESTAMP(3),
@@ -566,64 +568,6 @@ CREATE TABLE "Village" (
     "updatedAt" TIMESTAMP(6),
 
     CONSTRAINT "Village_pkey" PRIMARY KEY ("villageId")
-);
-
--- CreateTable
-CREATE TABLE "communes" (
-    "communeId" BIGSERIAL NOT NULL,
-    "type" VARCHAR(255) NOT NULL,
-    "code" VARCHAR(255) NOT NULL,
-    "khName" VARCHAR(255) NOT NULL,
-    "name" VARCHAR(255) NOT NULL,
-    "provinceId" INTEGER NOT NULL,
-    "districtId" INTEGER NOT NULL,
-    "createdAt" TIMESTAMP(6),
-    "updatedAt" TIMESTAMP(6),
-
-    CONSTRAINT "communes_pkey" PRIMARY KEY ("communeId")
-);
-
--- CreateTable
-CREATE TABLE "district" (
-    "districtId" BIGSERIAL NOT NULL,
-    "type" VARCHAR(255) NOT NULL,
-    "code" VARCHAR(255) NOT NULL,
-    "khName" VARCHAR(255) NOT NULL,
-    "name" VARCHAR(255) NOT NULL,
-    "provinceId" INTEGER NOT NULL,
-    "createdAt" TIMESTAMP(6),
-    "updatedAt" TIMESTAMP(6),
-
-    CONSTRAINT "district_pkey" PRIMARY KEY ("districtId")
-);
-
--- CreateTable
-CREATE TABLE "province" (
-    "provinceId" BIGSERIAL NOT NULL,
-    "type" VARCHAR(255) NOT NULL,
-    "code" VARCHAR(255) NOT NULL,
-    "khName" VARCHAR(255) NOT NULL,
-    "name" VARCHAR(255) NOT NULL,
-    "createdAt" TIMESTAMP(6),
-    "updatedAt" TIMESTAMP(6),
-
-    CONSTRAINT "province_pkey" PRIMARY KEY ("provinceId")
-);
-
--- CreateTable
-CREATE TABLE "villages" (
-    "villageId" BIGSERIAL NOT NULL,
-    "type" VARCHAR(255) NOT NULL,
-    "code" VARCHAR(255) NOT NULL,
-    "khName" VARCHAR(255) NOT NULL,
-    "name" VARCHAR(255) NOT NULL,
-    "provinceId" INTEGER NOT NULL,
-    "districtId" INTEGER NOT NULL,
-    "communeId" INTEGER NOT NULL,
-    "createdAt" TIMESTAMP(6),
-    "updatedAt" TIMESTAMP(6),
-
-    CONSTRAINT "villages_pkey" PRIMARY KEY ("villageId")
 );
 
 -- CreateIndex

@@ -191,16 +191,18 @@ model Customer {
 }
 
 model Customerinfo {
-  customerId String    @unique @db.Uuid
-  picture    String?
-  region     String?
-  email      String?   @unique
-  note       String?
-  govId      String?
-  govPicture String?
-  govExpire  DateTime?
-  status     Status    @default(active)
-  Customer   Customer  @relation(fields: [customerId], references: [customerId])
+  customerId            String    @unique @db.Uuid
+  picture               String?
+  region                String?
+  email                 String?   @unique
+  note                  String?
+  loyaltyPoints         Int?      @default(0)
+  lastPurchaseDate      DateTime  @default(now())
+  govId                 String?
+  govPicture            String?
+  govExpire             DateTime?
+  status                Status    @default(active)
+  Customer              Customer  @relation(fields: [customerId], references: [customerId])
 
   @@index([customerId])
 }
@@ -265,13 +267,13 @@ model Employee {
 }
 
 model Employeeinfo {
-  employeeId       String    @unique @db.Uuid
-  managerId        String?   @db.Uuid
+  employeeId       String        @unique @db.Uuid
+  managerId        String?       @db.Uuid
   picture          String?
   region           String?
   nationality      String?
   note             String?
-  maritalStatus    MaritalStatus  @default(single)
+  maritalStatus    MaritalStatus @default(single)
   emergencyContact String?
   bloodType        String?
   bankAccount      String?
@@ -280,8 +282,8 @@ model Employeeinfo {
   govPicture       String?
   terminationDate  DateTime?
   contractType     ContractType
-  status           Status    @default(active)
-  Employee         Employee  @relation(fields: [employeeId], references: [employeeId])
+  status           Status        @default(active)
+  Employee         Employee      @relation(fields: [employeeId], references: [employeeId])
 
   @@index([employeeId])
 }
@@ -587,52 +589,6 @@ model Village {
   updatedAt  DateTime? @db.Timestamp(6)
   Address    Address[]
   Commune    Commune   @relation(fields: [communeId], references: [communeId])
-}
-
-model communes {
-  communeId  BigInt    @id @default(autoincrement())
-  type       String    @db.VarChar(255)
-  code       String    @db.VarChar(255)
-  khName     String    @db.VarChar(255)
-  name       String    @db.VarChar(255)
-  provinceId Int
-  districtId Int
-  createdAt  DateTime? @db.Timestamp(6)
-  updatedAt  DateTime? @db.Timestamp(6)
-}
-
-model district {
-  districtId BigInt    @id @default(autoincrement())
-  type       String    @db.VarChar(255)
-  code       String    @db.VarChar(255)
-  khName     String    @db.VarChar(255)
-  name       String    @db.VarChar(255)
-  provinceId Int
-  createdAt  DateTime? @db.Timestamp(6)
-  updatedAt  DateTime? @db.Timestamp(6)
-}
-
-model province {
-  provinceId BigInt    @id @default(autoincrement())
-  type       String    @db.VarChar(255)
-  code       String    @db.VarChar(255)
-  khName     String    @db.VarChar(255)
-  name       String    @db.VarChar(255)
-  createdAt  DateTime? @db.Timestamp(6)
-  updatedAt  DateTime? @db.Timestamp(6)
-}
-
-model villages {
-  villageId  BigInt    @id @default(autoincrement())
-  type       String    @db.VarChar(255)
-  code       String    @db.VarChar(255)
-  khName     String    @db.VarChar(255)
-  name       String    @db.VarChar(255)
-  provinceId Int
-  districtId Int
-  communeId  Int
-  createdAt  DateTime? @db.Timestamp(6)
-  updatedAt  DateTime? @db.Timestamp(6)
 }
 
 enum CheckStatus {

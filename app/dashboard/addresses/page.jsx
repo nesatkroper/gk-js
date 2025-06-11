@@ -1,13 +1,12 @@
-
-"use client"
+"use client";
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -15,22 +14,30 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ViewToggle } from "@/components/ui/view-toggle"
-import { DataTable } from "@/components/ui/data-table"
-import { DataCards } from "@/components/ui/data-cards"
-import { Plus, Search, MapPin, Loader2, RefreshCw } from "lucide-react"
-import { useAddressStore } from "@/stores/address-store"
-import { useCustomerStore } from "@/stores/customer-store"
-import { useEmployeeStore } from "@/stores/employee-store"
-import { useSupplierStore } from "@/stores/supplier-store"
-import { useEventStore } from "@/stores/event-store"
-import { useTranslation } from "react-i18next"
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Combobox } from "@/components/ui/combobox";
+import { ViewToggle } from "@/components/ui/view-toggle";
+import { DataTable } from "@/components/ui/data-table";
+import { DataCards } from "@/components/ui/data-cards";
+import { Plus, Search, MapPin, Loader2, RefreshCw } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { useAddressStore } from "@/stores/address-store";
+import { useCustomerStore } from "@/stores/customer-store";
+import { useEmployeeStore } from "@/stores/employee-store";
+import { useSupplierStore } from "@/stores/supplier-store";
+import { useEventStore } from "@/stores/event-store";
+import { useTranslation } from "react-i18next";
+import {
+  getAllProvinces,
+  getDistrictsByProvinceId,
+  getCommunesByDistrictId,
+  getVillagesByCommuneId,
+} from "@/lib/address.actions";
 
 export default function AddressPage() {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation('common');
+  const { toast } = useToast();
   const {
     items: addresses,
     isLoading: addrLoading,
@@ -39,204 +46,292 @@ export default function AddressPage() {
     create,
     update,
     delete: deleteAddress,
-  } = useAddressStore()
-
+  } = useAddressStore();
   const {
     items: customers,
     isLoading: custLoading,
     error: custError,
     fetch: fetchCustomers,
-  } = useCustomerStore()
-
+  } = useCustomerStore();
   const {
     items: employees,
     isLoading: empLoading,
     error: empError,
     fetch: fetchEmployees,
-  } = useEmployeeStore()
-
+  } = useEmployeeStore();
   const {
     items: suppliers,
     isLoading: supLoading,
     error: supError,
     fetch: fetchSuppliers,
-  } = useSupplierStore()
-
+  } = useSupplierStore();
   const {
     items: events,
     isLoading: eventLoading,
     error: eventError,
     fetch: fetchEvents,
-  } = useEventStore()
+  } = useEventStore();
 
-  const [isSaving, setIsSaving] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [view, setView] = useState("table")
-  const [editingAddress, setEditingAddress] = useState(null)
+  const [isSaving, setIsSaving] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [view, setView] = useState("table");
+  const [editingAddress, setEditingAddress] = useState(null);
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [communes, setCommunes] = useState([]);
+  const [villages, setVillages] = useState([]);
+  const [selectedProvinceId, setSelectedProvinceId] = useState(null);
+  const [selectedDistrictId, setSelectedDistrictId] = useState(null);
+  const [selectedCommuneId, setSelectedCommuneId] = useState(null);
 
   useEffect(() => {
-    fetchAddresses()
-    fetchCustomers()
-    fetchEmployees()
-    fetchSuppliers()
-    fetchEvents()
-  }, [fetchAddresses, fetchCustomers, fetchEmployees, fetchSuppliers, fetchEvents])
+    const loadInitialData = async () => {
+      fetchAddresses();
+      fetchCustomers();
+      fetchEmployees();
+      fetchSuppliers();
+      fetchEvents();
+      const provincesRes = await getAllProvinces();
+      if (!provincesRes.error) {
+        setProvinces(provincesRes.data);
+      }
+    };
+    loadInitialData();
+  }, [fetchAddresses, fetchCustomers, fetchEmployees, fetchSuppliers, fetchEvents]);
 
-  console.log("Addresses:", addresses)
-  console.log("Customers:", customers)
-  console.log("Employees:", employees)
-  console.log("Suppliers:", suppliers)
-  console.log("Events:", events)
+  useEffect(() => {
+    if (selectedProvinceId) {
+      const loadDistricts = async () => {
+        const districtsRes = await getDistrictsByProvinceId(selectedProvinceId);
+        if (!districtsRes.error) {
+          setDistricts(districtsRes.data);
+        }
+      };
+      loadDistricts();
+      setDistricts([]);
+      setCommunes([]);
+      setVillages([]);
+      setSelectedDistrictId(null);
+      setSelectedCommuneId(null);
+    }
+  }, [selectedProvinceId]);
 
-  const activeAddresses = addresses.filter((addr) => addr.status === "active")
+  useEffect(() => {
+    if (selectedDistrictId) {
+      const loadCommunes = async () => {
+        const communesRes = await getCommunesByDistrictId(selectedDistrictId);
+        if (!communesRes.error) {
+          setCommunes(communesRes.data);
+        }
+      };
+      loadCommunes();
+      setCommunes([]);
+      setVillages([]);
+      setSelectedCommuneId(null);
+    }
+  }, [selectedDistrictId]);
+
+  useEffect(() => {
+    if (selectedCommuneId) {
+      const loadVillages = async () => {
+        const villagesRes = await getVillagesByCommuneId(selectedCommuneId);
+        if (!villagesRes.error) {
+          setVillages(villagesRes.data);
+        }
+      };
+      loadVillages();
+      setVillages([]);
+    }
+  }, [selectedCommuneId]);
+
+  const activeAddresses = addresses.filter((addr) => addr.status === "active");
 
   const filteredAddresses = activeAddresses.filter(
     (address) =>
       address.Customer?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       address.Employee?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      address.supplier?.supplierName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      address.Event?.eventName?.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      address.Supplier?.supplierName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      address.Event?.eventName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      address.Province?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      address.District?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      address.Commune?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      address.Village?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  // Table columns configuration
   const tableColumns = [
     {
+      key: "location",
+      label: t("Location"),
+      render: (_value, row) =>
+        `${row.Village?.name || "-"}, ${row.Commune?.name || "-"}, ${row.District?.name || "-"}, ${row.Province?.name || "-"}`,
+    },
+    {
       key: "coordinates",
-      label: "Coordinates",
+      label: t("Coordinates"),
       render: (_value, row) =>
         row.latitude && row.longitude ? `${row.latitude}, ${row.longitude}` : "-",
     },
     {
       key: "relatedEntity",
-      label: "Related Entity",
+      label: t("Related Entity"),
       render: (_value, row) =>
         row.Customer
           ? `${row.Customer.firstName} ${row.Customer.lastName} (Customer)`
           : row.Employee
-            ? `${row.Employee.firstName} ${row.Employee.lastName} (Employee)`
-            : row.supplier
-              ? `${row.supplier.supplierName} (Supplier)`
-              : row.Event
-                ? `${row.Event.eventName} (Event)`
-                : "-",
+          ? `${row.Employee.firstName} ${row.Employee.lastName} (Employee)`
+          : row.Supplier
+          ? `${row.Supplier.supplierName} (Supplier)`
+          : row.Event
+          ? `${row.Event.eventName} (Event)`
+          : "-",
     },
     {
       key: "Imageaddress",
-      label: "Images",
+      label: t("Images"),
       type: "badge",
       render: (_value, row) => row.Imageaddress?.length || 0,
     },
     {
       key: "status",
-      label: "Status",
+      label: t("Status"),
       type: "badge",
     },
     {
       key: "createdAt",
-      label: "Created",
+      label: t("Created"),
       type: "date",
     },
-  ]
+  ];
 
   const cardFields = [
     {
+      key: "location",
+      label: t("Location"),
+      primary: true,
+      render: (_value, row) =>
+        `${row.Village?.name || "-"}, ${row.Commune?.name || "-"}, ${row.District?.name || "-"}, ${row.Province?.name || "-"}`,
+    },
+    {
       key: "coordinates",
-      label: "Coordinates",
+      label: t("Coordinates"),
       secondary: true,
       render: (_value, row) =>
         row.latitude && row.longitude ? `${row.latitude}, ${row.longitude}` : "-",
     },
     {
       key: "relatedEntity",
-      label: "Related Entity",
+      label: t("Related Entity"),
       render: (_value, row) =>
         row.Customer
           ? `${row.Customer.firstName} ${row.Customer.lastName} (Customer)`
           : row.Employee
-            ? `${row.Employee.firstName} ${row.Employee.lastName} (Employee)`
-            : row.supplier
-              ? `${row.supplier.supplierName} (Supplier)`
-              : row.Event
-                ? `${row.Event.eventName} (Event)`
-                : "-",
+          ? `${row.Employee.firstName} ${row.Employee.lastName} (Employee)`
+          : row.Supplier
+          ? `${row.Supplier.supplierName} (Supplier)`
+          : row.Event
+          ? `${row.Event.eventName} (Event)`
+          : "-",
     },
     {
       key: "Imageaddress",
-      label: "Images",
+      label: t("Images"),
       type: "badge",
       render: (_value, row) => row.Imageaddress?.length || 0,
     },
     {
       key: "status",
-      label: "Status",
+      label: t("Status"),
       type: "badge",
     },
     {
       key: "createdAt",
-      label: "Created",
+      label: t("Created"),
       type: "date",
     },
-  ]
+  ];
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
     const addressData = {
-      cityId: formData.get("cityId") ? Number(formData.get("cityId")) : null,
-      stateId: formData.get("stateId") ? Number(formData.get("stateId")) : null,
+      provinceId: formData.get("provinceId") ? Number(formData.get("provinceId")) : null,
+      districtId: formData.get("districtId") ? Number(formData.get("districtId")) : null,
+      communeId: formData.get("communeId") ? Number(formData.get("communeId")) : null,
+      villageId: formData.get("villageId") ? Number(formData.get("villageId")) : null,
       latitude: formData.get("latitude") ? Number(formData.get("latitude")) : null,
       longitude: formData.get("longitude") ? Number(formData.get("longitude")) : null,
       customerId: formData.get("customerId") || null,
       employeeId: formData.get("employeeId") || null,
       supplierId: formData.get("supplierId") || null,
       eventId: formData.get("eventId") || null,
-    }
+    };
 
-    setIsSaving(true)
+    setIsSaving(true);
     try {
       const success = editingAddress
         ? await update(editingAddress.addressId, addressData)
-        : await create(addressData)
-      setIsSaving(false)
+        : await create(addressData);
+      setIsSaving(false);
 
       if (success) {
-
-        setIsDialogOpen(false)
-        setEditingAddress(null)
-          ; (e.target).reset()
+        toast({
+          title: t("Success"),
+          description: t(editingAddress ? "Address updated successfully" : "Address created successfully"),
+        });
+        setIsDialogOpen(false);
+        setEditingAddress(null);
+        e.target.reset();
       } else {
-        throw new Error("Address operation failed")
+        throw new Error(t("Address operation failed"));
       }
     } catch (error) {
-      setIsSaving(false)
-
+      setIsSaving(false);
+      toast({
+        title: t("Error"),
+        description: error.message || t(editingAddress ? "Failed to update address" : "Failed to create address"),
+        variant: "destructive",
+      });
     }
-  }
+  };
 
   const handleEdit = (address) => {
-    setEditingAddress(address)
-    setIsDialogOpen(true)
-  }
+    setEditingAddress(address);
+    setSelectedProvinceId(address.provinceId);
+    setSelectedDistrictId(address.districtId);
+    setSelectedCommuneId(address.communeId);
+    setIsDialogOpen(true);
+  };
 
   const handleDelete = async (addressId) => {
-    if (!confirm("Are you sure you want to delete this address?")) return
+    if (!confirm(t("Are you sure you want to delete this address?"))) return;
 
-    const success = await deleteAddress(addressId)
-    if (success) {
-
-    } else {
-
+    try {
+      const success = await deleteAddress(addressId);
+      if (success) {
+        toast({
+          title: t("Success"),
+          description: t("Address deleted successfully"),
+        });
+      } else {
+        throw new Error(t("Failed to delete address"));
+      }
+    } catch (error) {
+      toast({
+        title: t("Error"),
+        description: error.message || t("Failed to delete address"),
+        variant: "destructive",
+      });
     }
-  }
+  };
 
   const handleRetry = () => {
-    fetchAddresses()
-    fetchCustomers()
-    fetchEmployees()
-    fetchSuppliers()
-    fetchEvents()
-  }
+    fetchAddresses();
+    fetchCustomers();
+    fetchEmployees();
+    fetchSuppliers();
+    fetchEvents();
+  };
 
   return (
     <div className="space-y-6">
@@ -249,7 +344,6 @@ export default function AddressPage() {
           <h1 className="text-3xl font-bold tracking-tight">{t('Addresses')}</h1>
           <p className="text-muted-foreground">{t('Manage location data for your organization')}</p>
         </div>
-
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -261,12 +355,16 @@ export default function AddressPage() {
             />
             {t('Refresh')}
           </Button>
-
           <Dialog
             open={isDialogOpen}
             onOpenChange={(open) => {
-              setIsDialogOpen(open)
-              if (!open) setEditingAddress(null)
+              setIsDialogOpen(open);
+              if (!open) {
+                setEditingAddress(null);
+                setSelectedProvinceId(null);
+                setSelectedDistrictId(null);
+                setSelectedCommuneId(null);
+              }
             }}
           >
             <DialogTrigger asChild>
@@ -277,15 +375,69 @@ export default function AddressPage() {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
               <DialogHeader>
-                <DialogTitle>{editingAddress ? "Edit Address" : "Add New Address"}</DialogTitle>
+                <DialogTitle>{editingAddress ? t("Edit Address") : t("Add New Address")}</DialogTitle>
                 <DialogDescription>
-                  {editingAddress ? "Update address details" : "Create a new address record"}
+                  {editingAddress ? t("Update address details") : t("Create a new address record")}
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="latitude">{t('Latitude')}</Label>
+                    <Label htmlFor="provinceId">{t("Province")} *</Label>
+                    <Combobox
+                      id="provinceId"
+                      name="provinceId"
+                      options={provinces.map((p) => ({ value: p.provinceId.toString(), label: p.name }))}
+                      placeholder={t("Select province...")}
+                      value={editingAddress?.provinceId?.toString() || ""}
+                      onChange={(value) => setSelectedProvinceId(Number(value))}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="districtId">{t("District")} *</Label>
+                    <Combobox
+                      id="districtId"
+                      name="districtId"
+                      options={districts.map((d) => ({ value: d.districtId.toString(), label: d.name }))}
+                      placeholder={t("Select district...")}
+                      value={editingAddress?.districtId?.toString() || ""}
+                      onChange={(value) => setSelectedDistrictId(Number(value))}
+                      disabled={!selectedProvinceId}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="communeId">{t("Commune")} *</Label>
+                    <Combobox
+                      id="communeId"
+                      name="communeId"
+                      options={communes.map((c) => ({ value: c.communeId.toString(), label: c.name }))}
+                      placeholder={t("Select commune...")}
+                      value={editingAddress?.communeId?.toString() || ""}
+                      onChange={(value) => setSelectedCommuneId(Number(value))}
+                      disabled={!selectedDistrictId}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="villageId">{t("Village")} *</Label>
+                    <Combobox
+                      id="villageId"
+                      name="villageId"
+                      options={villages.map((v) => ({ value: v.villageId.toString(), label: v.name }))}
+                      placeholder={t("Select village...")}
+                      value={editingAddress?.villageId?.toString() || ""}
+                      disabled={!selectedCommuneId}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="latitude">{t("Latitude")}</Label>
                     <Input
                       id="latitude"
                       name="latitude"
@@ -305,76 +457,70 @@ export default function AddressPage() {
                     />
                   </div>
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="customerId">{t("Customer")}</Label>
-                  <Select name="customerId" defaultValue={editingAddress?.customerId ?? ''}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select customer" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="null">{t('None')}</SelectItem>
-                      {customers.map((customer) => (
-                        <SelectItem key={customer.customerId} value={customer.customerId}>
-                          {customer.firstName} {customer.lastName}
-                        </SelectItem>
-                      ))}
-
-                    </SelectContent>
-                  </Select>
+                  <Combobox
+                    id="customerId"
+                    name="customerId"
+                    options={[
+                      { value: "", label: t("None") },
+                      ...customers.map((c) => ({
+                        value: c.customerId,
+                        label: `${c.firstName} ${c.lastName}`,
+                      })),
+                    ]}
+                    placeholder={t("Select customer...")}
+                    value={editingAddress?.customerId || ""}
+                  />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="employeeId">{t("Employee")}</Label>
-                  <Select name="employeeId" defaultValue={editingAddress?.employeeId ?? ""}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select employee" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="null">{t('None')}</SelectItem>
-                      {employees.map((employee) => (
-                        <SelectItem key={employee.employeeId} value={employee.employeeId}>
-                          {employee.firstName} {employee.lastName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Combobox
+                    id="employeeId"
+                    name="employeeId"
+                    options={[
+                      { value: "", label: t("None") },
+                      ...employees.map((e) => ({
+                        value: e.employeeId,
+                        label: `${e.firstName} ${e.lastName}`,
+                      })),
+                    ]}
+                    placeholder={t("Select employee...")}
+                    value={editingAddress?.employeeId || ""}
+                  />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="supplierId">{t("Supplier")}</Label>
-                  <Select name="supplierId" defaultValue={editingAddress?.supplierId ?? ""}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select supplier" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="null">{t('None')}</SelectItem>
-                      {suppliers.map((supplier) => (
-                        <SelectItem key={supplier.supplierId} value={supplier.supplierId}>
-                          {supplier.supplierName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Combobox
+                    id="supplierId"
+                    name="supplierId"
+                    options={[
+                      { value: "", label: t("None") },
+                      ...suppliers.map((s) => ({
+                        value: s.supplierId,
+                        label: s.supplierName,
+                      })),
+                    ]}
+                    placeholder={t("Select supplier...")}
+                    value={editingAddress?.supplierId || ""}
+                  />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="eventId">{t("Event")}</Label>
-                  <Select name="eventId" defaultValue={editingAddress?.eventId ?? ""}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select event" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">{t('None')}</SelectItem>
-                      {events.map((event) => (
-                        <SelectItem key={event.eventId} value={event.eventId}>
-                          {event.eventName}
-                        </SelectItem>
-                      )) ?? null}
-                    </SelectContent>
-                  </Select>
+                  <Combobox
+                    id="eventId"
+                    name="eventId"
+                    options={[
+                      { value: "", label: t("None") },
+                      ...events.map((e) => ({
+                        value: e.eventId,
+                        label: e.eventName,
+                      })),
+                    ]}
+                    placeholder={t("Select event...")}
+                    value={editingAddress?.eventId || ""}
+                  />
                 </div>
-
                 <div className="flex justify-end gap-2">
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                     {t("Cancel")}
@@ -383,12 +529,12 @@ export default function AddressPage() {
                     {isSaving ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {editingAddress ? "Updating..." : "Creating..."}
+                        {editingAddress ? t("Updating...") : t("Creating...")}
                       </>
                     ) : editingAddress ? (
-                      "Update Address"
+                      t("Update Address")
                     ) : (
-                      "Create Address"
+                      t("Create Address")
                     )}
                   </Button>
                 </div>
@@ -397,38 +543,37 @@ export default function AddressPage() {
           </Dialog>
         </div>
       </motion.div>
-
-      {/* Error Display */}
       {(addrError || custError || empError || supError || eventError) && (
         <Card className="border-destructive">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-destructive font-medium">Error loading data</p>
+                <p className="text-destructive font-medium">{t("Error loading data")}</p>
                 <p className="text-sm text-muted-foreground">
                   {addrError || custError || empError || supError || eventError}
                 </p>
               </div>
               <Button variant="outline" onClick={handleRetry}>
-                {t("  Try Again")}
+                {t("Try Again")}
               </Button>
             </div>
           </CardContent>
         </Card>
       )}
-
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
                 <MapPin className="h-5 w-5" />
-                Address Directory
+                {t("Address Directory")}
                 {(addrLoading || custLoading || empLoading || supLoading || eventLoading) && (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 )}
               </CardTitle>
-              <CardDescription>{filteredAddresses.length} addresses in your database</CardDescription>
+              <CardDescription>
+                {t("{count} addresses in your database", { count: filteredAddresses.length })}
+              </CardDescription>
             </div>
             <ViewToggle view={view} onViewChange={setView} />
           </div>
@@ -438,14 +583,13 @@ export default function AddressPage() {
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search addresses..."
+                placeholder={t("Search addresses...")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
               />
             </div>
           </div>
-
           {view === "card" ? (
             <DataCards
               data={filteredAddresses}
@@ -454,7 +598,7 @@ export default function AddressPage() {
               onEdit={handleEdit}
               onDelete={handleDelete}
               idField="addressId"
-              nameField="City.name"
+              nameField="location"
               columns={3}
             />
           ) : (
@@ -465,11 +609,489 @@ export default function AddressPage() {
               onEdit={handleEdit}
               onDelete={handleDelete}
               idField="addressId"
-              nameField="City.name"
+              nameField="location"
             />
           )}
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
+
+
+
+
+// "use client"
+
+// export const dynamic = 'force-dynamic';
+
+// import { useState, useEffect } from "react"
+// import { motion } from "framer-motion"
+// import { Button } from "@/components/ui/button"
+// import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+// import { Input } from "@/components/ui/input"
+// import {
+//   Dialog,
+//   DialogContent,
+//   DialogDescription,
+//   DialogHeader,
+//   DialogTitle,
+//   DialogTrigger,
+// } from "@/components/ui/dialog"
+// import { Label } from "@/components/ui/label"
+// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+// import { ViewToggle } from "@/components/ui/view-toggle"
+// import { DataTable } from "@/components/ui/data-table"
+// import { DataCards } from "@/components/ui/data-cards"
+// import { Plus, Search, MapPin, Loader2, RefreshCw } from "lucide-react"
+// import { useAddressStore } from "@/stores/address-store"
+// import { useCustomerStore } from "@/stores/customer-store"
+// import { useEmployeeStore } from "@/stores/employee-store"
+// import { useSupplierStore } from "@/stores/supplier-store"
+// import { useEventStore } from "@/stores/event-store"
+// import { useTranslation } from "react-i18next"
+
+// export default function AddressPage() {
+//   const { t } = useTranslation('common')
+//   const {
+//     items: addresses,
+//     isLoading: addrLoading,
+//     error: addrError,
+//     fetch: fetchAddresses,
+//     create,
+//     update,
+//     delete: deleteAddress,
+//   } = useAddressStore()
+
+//   const {
+//     items: customers,
+//     isLoading: custLoading,
+//     error: custError,
+//     fetch: fetchCustomers,
+//   } = useCustomerStore()
+
+//   const {
+//     items: employees,
+//     isLoading: empLoading,
+//     error: empError,
+//     fetch: fetchEmployees,
+//   } = useEmployeeStore()
+
+//   const {
+//     items: suppliers,
+//     isLoading: supLoading,
+//     error: supError,
+//     fetch: fetchSuppliers,
+//   } = useSupplierStore()
+
+//   const {
+//     items: events,
+//     isLoading: eventLoading,
+//     error: eventError,
+//     fetch: fetchEvents,
+//   } = useEventStore()
+
+//   const [isSaving, setIsSaving] = useState(false)
+//   const [searchTerm, setSearchTerm] = useState("")
+//   const [isDialogOpen, setIsDialogOpen] = useState(false)
+//   const [view, setView] = useState("table")
+//   const [editingAddress, setEditingAddress] = useState(null)
+
+//   useEffect(() => {
+//     fetchAddresses()
+//     fetchCustomers()
+//     fetchEmployees()
+//     fetchSuppliers()
+//     fetchEvents()
+//   }, [fetchAddresses, fetchCustomers, fetchEmployees, fetchSuppliers, fetchEvents])
+
+//   console.log("Addresses:", addresses)
+//   console.log("Customers:", customers)
+//   console.log("Employees:", employees)
+//   console.log("Suppliers:", suppliers)
+//   console.log("Events:", events)
+
+//   const activeAddresses = addresses.filter((addr) => addr.status === "active")
+
+//   const filteredAddresses = activeAddresses.filter(
+//     (address) =>
+//       address.Customer?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//       address.Employee?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//       address.supplier?.supplierName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//       address.Event?.eventName?.toLowerCase().includes(searchTerm.toLowerCase()),
+//   )
+
+//   // Table columns configuration
+//   const tableColumns = [
+//     {
+//       key: "coordinates",
+//       label: "Coordinates",
+//       render: (_value, row) =>
+//         row.latitude && row.longitude ? `${row.latitude}, ${row.longitude}` : "-",
+//     },
+//     {
+//       key: "relatedEntity",
+//       label: "Related Entity",
+//       render: (_value, row) =>
+//         row.Customer
+//           ? `${row.Customer.firstName} ${row.Customer.lastName} (Customer)`
+//           : row.Employee
+//             ? `${row.Employee.firstName} ${row.Employee.lastName} (Employee)`
+//             : row.supplier
+//               ? `${row.supplier.supplierName} (Supplier)`
+//               : row.Event
+//                 ? `${row.Event.eventName} (Event)`
+//                 : "-",
+//     },
+//     {
+//       key: "Imageaddress",
+//       label: "Images",
+//       type: "badge",
+//       render: (_value, row) => row.Imageaddress?.length || 0,
+//     },
+//     {
+//       key: "status",
+//       label: "Status",
+//       type: "badge",
+//     },
+//     {
+//       key: "createdAt",
+//       label: "Created",
+//       type: "date",
+//     },
+//   ]
+
+//   const cardFields = [
+//     {
+//       key: "coordinates",
+//       label: "Coordinates",
+//       secondary: true,
+//       render: (_value, row) =>
+//         row.latitude && row.longitude ? `${row.latitude}, ${row.longitude}` : "-",
+//     },
+//     {
+//       key: "relatedEntity",
+//       label: "Related Entity",
+//       render: (_value, row) =>
+//         row.Customer
+//           ? `${row.Customer.firstName} ${row.Customer.lastName} (Customer)`
+//           : row.Employee
+//             ? `${row.Employee.firstName} ${row.Employee.lastName} (Employee)`
+//             : row.supplier
+//               ? `${row.supplier.supplierName} (Supplier)`
+//               : row.Event
+//                 ? `${row.Event.eventName} (Event)`
+//                 : "-",
+//     },
+//     {
+//       key: "Imageaddress",
+//       label: "Images",
+//       type: "badge",
+//       render: (_value, row) => row.Imageaddress?.length || 0,
+//     },
+//     {
+//       key: "status",
+//       label: "Status",
+//       type: "badge",
+//     },
+//     {
+//       key: "createdAt",
+//       label: "Created",
+//       type: "date",
+//     },
+//   ]
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault()
+//     const formData = new FormData(e.currentTarget)
+//     const addressData = {
+//       cityId: formData.get("cityId") ? Number(formData.get("cityId")) : null,
+//       stateId: formData.get("stateId") ? Number(formData.get("stateId")) : null,
+//       latitude: formData.get("latitude") ? Number(formData.get("latitude")) : null,
+//       longitude: formData.get("longitude") ? Number(formData.get("longitude")) : null,
+//       customerId: formData.get("customerId") || null,
+//       employeeId: formData.get("employeeId") || null,
+//       supplierId: formData.get("supplierId") || null,
+//       eventId: formData.get("eventId") || null,
+//     }
+
+//     setIsSaving(true)
+//     try {
+//       const success = editingAddress
+//         ? await update(editingAddress.addressId, addressData)
+//         : await create(addressData)
+//       setIsSaving(false)
+
+//       if (success) {
+
+//         setIsDialogOpen(false)
+//         setEditingAddress(null)
+//           ; (e.target).reset()
+//       } else {
+//         throw new Error("Address operation failed")
+//       }
+//     } catch (error) {
+//       setIsSaving(false)
+
+//     }
+//   }
+
+//   const handleEdit = (address) => {
+//     setEditingAddress(address)
+//     setIsDialogOpen(true)
+//   }
+
+//   const handleDelete = async (addressId) => {
+//     if (!confirm("Are you sure you want to delete this address?")) return
+
+//     const success = await deleteAddress(addressId)
+//     if (success) {
+
+//     } else {
+
+//     }
+//   }
+
+//   const handleRetry = () => {
+//     fetchAddresses()
+//     fetchCustomers()
+//     fetchEmployees()
+//     fetchSuppliers()
+//     fetchEvents()
+//   }
+
+//   return (
+//     <div className="space-y-6">
+//       <motion.div
+//         initial={{ opacity: 0, y: 20 }}
+//         animate={{ opacity: 1, y: 0 }}
+//         className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+//       >
+//         <div>
+//           <h1 className="text-3xl font-bold tracking-tight">{t('Addresses')}</h1>
+//           <p className="text-muted-foreground">{t('Manage location data for your organization')}</p>
+//         </div>
+
+//         <div className="flex gap-2">
+//           <Button
+//             variant="outline"
+//             onClick={handleRetry}
+//             disabled={addrLoading || custLoading || empLoading || supLoading || eventLoading}
+//           >
+//             <RefreshCw
+//               className={`mr-2 h-4 w-4 ${addrLoading || custLoading || empLoading || supLoading || eventLoading ? "animate-spin" : ""}`}
+//             />
+//             {t('Refresh')}
+//           </Button>
+
+//           <Dialog
+//             open={isDialogOpen}
+//             onOpenChange={(open) => {
+//               setIsDialogOpen(open)
+//               if (!open) setEditingAddress(null)
+//             }}
+//           >
+//             <DialogTrigger asChild>
+//               <Button>
+//                 <Plus className="mr-2 h-4 w-4" />
+//                 {t('Add Address')}
+//               </Button>
+//             </DialogTrigger>
+//             <DialogContent className="sm:max-w-[600px]">
+//               <DialogHeader>
+//                 <DialogTitle>{editingAddress ? "Edit Address" : "Add New Address"}</DialogTitle>
+//                 <DialogDescription>
+//                   {editingAddress ? "Update address details" : "Create a new address record"}
+//                 </DialogDescription>
+//               </DialogHeader>
+//               <form onSubmit={handleSubmit} className="space-y-4">
+//                 <div className="grid grid-cols-2 gap-4">
+//                   <div className="space-y-2">
+//                     <Label htmlFor="latitude">{t('Latitude')}</Label>
+//                     <Input
+//                       id="latitude"
+//                       name="latitude"
+//                       type="number"
+//                       step="0.000001"
+//                       defaultValue={editingAddress?.latitude || ""}
+//                     />
+//                   </div>
+//                   <div className="space-y-2">
+//                     <Label htmlFor="longitude">{t("Longitude")}</Label>
+//                     <Input
+//                       id="longitude"
+//                       name="longitude"
+//                       type="number"
+//                       step="0.000001"
+//                       defaultValue={editingAddress?.longitude || ""}
+//                     />
+//                   </div>
+//                 </div>
+
+//                 <div className="space-y-2">
+//                   <Label htmlFor="customerId">{t("Customer")}</Label>
+//                   <Select name="customerId" defaultValue={editingAddress?.customerId ?? ''}>
+//                     <SelectTrigger>
+//                       <SelectValue placeholder="Select customer" />
+//                     </SelectTrigger>
+//                     <SelectContent>
+//                       <SelectItem value="null">{t('None')}</SelectItem>
+//                       {customers.map((customer) => (
+//                         <SelectItem key={customer.customerId} value={customer.customerId}>
+//                           {customer.firstName} {customer.lastName}
+//                         </SelectItem>
+//                       ))}
+
+//                     </SelectContent>
+//                   </Select>
+//                 </div>
+
+//                 <div className="space-y-2">
+//                   <Label htmlFor="employeeId">{t("Employee")}</Label>
+//                   <Select name="employeeId" defaultValue={editingAddress?.employeeId ?? ""}>
+//                     <SelectTrigger>
+//                       <SelectValue placeholder="Select employee" />
+//                     </SelectTrigger>
+//                     <SelectContent>
+//                       <SelectItem value="null">{t('None')}</SelectItem>
+//                       {employees.map((employee) => (
+//                         <SelectItem key={employee.employeeId} value={employee.employeeId}>
+//                           {employee.firstName} {employee.lastName}
+//                         </SelectItem>
+//                       ))}
+//                     </SelectContent>
+//                   </Select>
+//                 </div>
+
+//                 <div className="space-y-2">
+//                   <Label htmlFor="supplierId">{t("Supplier")}</Label>
+//                   <Select name="supplierId" defaultValue={editingAddress?.supplierId ?? ""}>
+//                     <SelectTrigger>
+//                       <SelectValue placeholder="Select supplier" />
+//                     </SelectTrigger>
+//                     <SelectContent>
+//                       <SelectItem value="null">{t('None')}</SelectItem>
+//                       {suppliers.map((supplier) => (
+//                         <SelectItem key={supplier.supplierId} value={supplier.supplierId}>
+//                           {supplier.supplierName}
+//                         </SelectItem>
+//                       ))}
+//                     </SelectContent>
+//                   </Select>
+//                 </div>
+
+//                 <div className="space-y-2">
+//                   <Label htmlFor="eventId">{t("Event")}</Label>
+//                   <Select name="eventId" defaultValue={editingAddress?.eventId ?? ""}>
+//                     <SelectTrigger>
+//                       <SelectValue placeholder="Select event" />
+//                     </SelectTrigger>
+//                     <SelectContent>
+//                       <SelectItem value="">{t('None')}</SelectItem>
+//                       {events.map((event) => (
+//                         <SelectItem key={event.eventId} value={event.eventId}>
+//                           {event.eventName}
+//                         </SelectItem>
+//                       )) ?? null}
+//                     </SelectContent>
+//                   </Select>
+//                 </div>
+
+//                 <div className="flex justify-end gap-2">
+//                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+//                     {t("Cancel")}
+//                   </Button>
+//                   <Button type="submit" disabled={isSaving}>
+//                     {isSaving ? (
+//                       <>
+//                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+//                         {editingAddress ? "Updating..." : "Creating..."}
+//                       </>
+//                     ) : editingAddress ? (
+//                       "Update Address"
+//                     ) : (
+//                       "Create Address"
+//                     )}
+//                   </Button>
+//                 </div>
+//               </form>
+//             </DialogContent>
+//           </Dialog>
+//         </div>
+//       </motion.div>
+
+//       {/* Error Display */}
+//       {(addrError || custError || empError || supError || eventError) && (
+//         <Card className="border-destructive">
+//           <CardContent className="pt-6">
+//             <div className="flex items-center justify-between">
+//               <div>
+//                 <p className="text-destructive font-medium">Error loading data</p>
+//                 <p className="text-sm text-muted-foreground">
+//                   {addrError || custError || empError || supError || eventError}
+//                 </p>
+//               </div>
+//               <Button variant="outline" onClick={handleRetry}>
+//                 {t("  Try Again")}
+//               </Button>
+//             </div>
+//           </CardContent>
+//         </Card>
+//       )}
+
+//       <Card>
+//         <CardHeader>
+//           <div className="flex items-center justify-between">
+//             <div>
+//               <CardTitle className="flex items-center gap-2">
+//                 <MapPin className="h-5 w-5" />
+//                 Address Directory
+//                 {(addrLoading || custLoading || empLoading || supLoading || eventLoading) && (
+//                   <Loader2 className="h-4 w-4 animate-spin" />
+//                 )}
+//               </CardTitle>
+//               <CardDescription>{filteredAddresses.length} addresses in your database</CardDescription>
+//             </div>
+//             <ViewToggle view={view} onViewChange={setView} />
+//           </div>
+//         </CardHeader>
+//         <CardContent>
+//           <div className="flex items-center gap-4 mb-6">
+//             <div className="relative flex-1 max-w-sm">
+//               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+//               <Input
+//                 placeholder="Search addresses..."
+//                 value={searchTerm}
+//                 onChange={(e) => setSearchTerm(e.target.value)}
+//                 className="pl-10"
+//               />
+//             </div>
+//           </div>
+
+//           {view === "card" ? (
+//             <DataCards
+//               data={filteredAddresses}
+//               fields={cardFields}
+//               loading={addrLoading || custLoading || empLoading || supLoading || eventLoading}
+//               onEdit={handleEdit}
+//               onDelete={handleDelete}
+//               idField="addressId"
+//               nameField="City.name"
+//               columns={3}
+//             />
+//           ) : (
+//             <DataTable
+//               data={filteredAddresses}
+//               columns={tableColumns}
+//               loading={addrLoading || custLoading || empLoading || supLoading || eventLoading}
+//               onEdit={handleEdit}
+//               onDelete={handleDelete}
+//               idField="addressId"
+//               nameField="City.name"
+//             />
+//           )}
+//         </CardContent>
+//       </Card>
+//     </div>
+//   )
+// }

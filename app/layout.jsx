@@ -70,20 +70,22 @@ export default function RootLayout({
     <html lang={lng} className={notoKhmer.className} suppressHydrationWarning>
       <body className={inter.className}>
         <NextTopLoader
-          color="#2299DD"
+          color="#22c55e"
           initialPosition={0.08}
           crawlSpeed={200}
-          height={3}
+          height={5}
           crawl={true}
           showSpinner={true}
           easing="ease"
           speed={200}
-          shadow="0 0 10px #2299DD,0 0 5px #2299DD"
+          shadow="0 0 10px #22c55e, 0 0 5px #22c55e"
           template='<div class="bar" role="bar"><div class="peg"></div></div> 
-  <div class="spinner" role="spinner"><div class="spinner-icon"></div></div>'
+<div class="spinner" role="spinner"><div class="spinner-icon" style="border-top-color: #22c55e; border-left-color: #22c55e;"></div></div>'
           zIndex={1600}
           showAtBottom={false}
         />
+
+
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <I18nProvider>
             <div className="flex h-screen bg-background">
