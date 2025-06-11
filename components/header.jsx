@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { LogOut, Moon, Sun, User, Settings, Clock } from "lucide-react"
+import { LogOut, Moon, Sun, User, Settings } from "lucide-react"
 import { useTheme } from "next-themes"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
@@ -110,9 +110,11 @@ export function EnhancedHeader() {
                   <Avatar className="h-8 w-8">
                     <AvatarImage src="/images/profile.webp" alt="User" />
                     <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                      {me?.Employee
-                        ? `${me.Employee.firstName[0]}${me.Employee.lastName[0]}`
-                        : 'AD'}
+                      {!mounted
+                        ? 'AD' // Server-side fallback
+                        : me?.Employee
+                          ? `${me.Employee.firstName[0]}${me.Employee.lastName[0]}`
+                          : 'AD'}
                     </AvatarFallback>
 
                   </Avatar>

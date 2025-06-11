@@ -200,7 +200,7 @@ export default function LoginPage() {
         </div>
       ) : (
         <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
-          <div className="container px-4 py-8">
+          <div className=" px-4 py-8">
             {/* Header */}
             <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
               <div className="flex items-center justify-center gap-2 mb-4">

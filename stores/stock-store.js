@@ -1,7 +1,7 @@
 // stores/stock-store.ts
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { fetchStockEntries, createStockEntry, updateStockEntry, deleteStockEntry, CreateStockData } from "@/actions/stock";
+import { fetchStockEntries, createStockEntry, updateStockEntry, deleteStockEntry, CreateStockData } from "@/app/actions/stock";
 
 export const useStockStore = create()(
   devtools(
