@@ -3,27 +3,16 @@
 import { useState, useCallback } from "react"
 import { uploadFile } from "@/utils/file-upload"
 
-interface FileUploadState {
-  isUploading: boolean
-  error: string | null
-  progress: number
-}
 
-interface UseMultiFileUploadOptions {
-  onUploadStart?: () => void
-  onUploadComplete?: (urls: Record<string, string>) => void
-  onUploadError?: (error: string) => void
-}
-
-export function useMultiFileUpload(options?: UseMultiFileUploadOptions) {
-  const [state, setState] = useState<FileUploadState>({
+export function useMultiFileUpload(options) {
+  const [state, setState] = useState({
     isUploading: false,
     error: null,
     progress: 0,
   })
 
   const uploadFiles = useCallback(
-    async (files: Record<string, File | undefined>): Promise<Record<string, string>> => {
+    async (files) => {
       if (!files || Object.keys(files).filter((key) => files[key]).length === 0) {
         return {}
       }
@@ -35,7 +24,7 @@ export function useMultiFileUpload(options?: UseMultiFileUploadOptions) {
         const fileEntries = Object.entries(files).filter(([_, file]) => file !== undefined)
         const totalFiles = fileEntries.length
         let completedFiles = 0
-        const urls: Record<string, string> = {}
+        const urls = {}
 
         for (const [fieldName, file] of fileEntries) {
           if (file) {
@@ -57,7 +46,7 @@ export function useMultiFileUpload(options?: UseMultiFileUploadOptions) {
         setState({ isUploading: false, error: null, progress: 100 })
         options?.onUploadComplete?.(urls)
         return urls
-      } catch (error: unknown) {
+      } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "An unknown error occurred during upload"
         setState({ isUploading: false, error: errorMessage, progress: 0 })
         options?.onUploadError?.(errorMessage)

@@ -2,7 +2,7 @@ import { create } from "zustand"
 
 
 
-export const useReportStore = create < ReportStore > ((set) => ({
+export const useReportStore = create  ((set) => ({
   salesReport: null,
   inventoryReport: null,
   isLoading: false,

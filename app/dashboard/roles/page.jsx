@@ -29,7 +29,7 @@ import { useRoleStore } from "@/stores/role-store"
 export const dynamic = 'force-dynamic';
 export default function RolePage() {
   const {
-    itemss,
+    items: roles,
     isLoading,
     error,
     fetch,

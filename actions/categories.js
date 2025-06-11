@@ -4,8 +4,6 @@
 import prisma from "@/lib/prisma";
 import { generateCategoryCode } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
-import { CreateCategoryData } from "@/stores/category-store";
-
 
 export async function fetchCategories() {
   try {

@@ -2,7 +2,7 @@
 
 
 import { NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import  prisma  from "@/lib/prisma"
 import { softDeleteWhere } from "@/lib/soft-delete"
 import { generateEmployeeCode } from "@/lib/utils"
 

@@ -1,8 +1,8 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import {  NextResponse } from "next/server"
+import  prisma  from "@/lib/prisma"
 import { verifyToken } from "@/lib/auth"
 
-export async function GET(request: NextRequest) {
+export async function GET(request) {
   try {
     // Verify admin access
     const token = request.cookies.get("auth-token")?.value
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get("endDate")
 
     // Build where clause
-    const where: any = {}
+    const where = {}
 
     if (status) {
       where.status = Number.parseInt(status)

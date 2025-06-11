@@ -2,5 +2,7 @@
   "i18n-ally.localesPaths": [
     "app/i18n",
     "public/locales"
-  ]
+  ],
+  "IDX.aI.enableInlineCompletion": true,
+  "IDX.aI.enableCodebaseIndexing": true
 }

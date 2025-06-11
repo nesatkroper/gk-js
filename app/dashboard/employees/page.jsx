@@ -58,7 +58,7 @@ export default function EmployeesPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [view, setView] = useSyncExternalStore("table")
+  const [view, setView] = useState("table")
   const [editingEmployee, setEditingEmployee] = useState(null)
   const [selectedDepartment, setSelectedDepartment] = useState("")
   const [dobDate, setDobDate] = useState()

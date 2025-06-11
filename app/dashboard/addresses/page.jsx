@@ -42,20 +42,6 @@ export default function AddressPage() {
   } = useAddressStore()
 
   const {
-    items: cities,
-    isLoading: cityLoading,
-    error: cityError,
-    fetch: fetchCities,
-  } = useCityStore()
-
-  const {
-    items: states,
-    isLoading: stateLoading,
-    error: stateError,
-    fetch: fetchStates,
-  } = useStateStore()
-
-  const {
     items: customers,
     isLoading: custLoading,
     error: custError,
@@ -98,8 +84,6 @@ export default function AddressPage() {
   }, [fetchAddresses, fetchCustomers, fetchEmployees, fetchSuppliers, fetchEvents])
 
   console.log("Addresses:", addresses)
-  console.log("Cities:", cities)
-  console.log("States:", states)
   console.log("Customers:", customers)
   console.log("Employees:", employees)
   console.log("Suppliers:", suppliers)
@@ -109,8 +93,6 @@ export default function AddressPage() {
 
   const filteredAddresses = activeAddresses.filter(
     (address) =>
-      address.City?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      address.State?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       address.Customer?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       address.Employee?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       address.supplier?.supplierName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -119,16 +101,6 @@ export default function AddressPage() {
 
   // Table columns configuration
   const tableColumns = [
-    {
-      key: "City.name",
-      label: "City",
-      render: (_value, row) => row.City?.name || "-",
-    },
-    {
-      key: "State.name",
-      label: "State",
-      render: (_value, row) => row.State?.name || "-",
-    },
     {
       key: "coordinates",
       label: "Coordinates",
@@ -168,12 +140,6 @@ export default function AddressPage() {
   ]
 
   const cardFields = [
-    {
-      key: "location",
-      primary: true,
-      render: (_value, row) =>
-        `${row.City?.name || "-"}` + (row.State?.name ? `, ${row.State.name}` : ""),
-    },
     {
       key: "coordinates",
       label: "Coordinates",
@@ -288,10 +254,10 @@ export default function AddressPage() {
           <Button
             variant="outline"
             onClick={handleRetry}
-            disabled={addrLoading || cityLoading || stateLoading || custLoading || empLoading || supLoading || eventLoading}
+            disabled={addrLoading || custLoading || empLoading || supLoading || eventLoading}
           >
             <RefreshCw
-              className={`mr-2 h-4 w-4 ${addrLoading || cityLoading || stateLoading || custLoading || empLoading || supLoading || eventLoading ? "animate-spin" : ""}`}
+              className={`mr-2 h-4 w-4 ${addrLoading || custLoading || empLoading || supLoading || eventLoading ? "animate-spin" : ""}`}
             />
             {t('Refresh')}
           </Button>
@@ -317,41 +283,6 @@ export default function AddressPage() {
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="cityId">{t('City')}</Label>
-                    <Select name="cityId" defaultValue={editingAddress?.cityId?.toString() ?? ""}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select city" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="null">{t('None')}</SelectItem>
-                        {cities.map((city) => (
-                          <SelectItem key={city.cityId} value={city.cityId.toString()}>
-                            {city.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="stateId">{t("State")}</Label>
-                    <Select name="stateId" defaultValue={editingAddress?.stateId ?? ""}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select state" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="null">{t('None')}</SelectItem>
-                        {states.map((state) => (
-                          <SelectItem key={state.stateId} value={state.stateId.toString()}>
-                            {state.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="latitude">{t('Latitude')}</Label>
@@ -468,14 +399,14 @@ export default function AddressPage() {
       </motion.div>
 
       {/* Error Display */}
-      {(addrError || cityError || stateError || custError || empError || supError || eventError) && (
+      {(addrError || custError || empError || supError || eventError) && (
         <Card className="border-destructive">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-destructive font-medium">Error loading data</p>
                 <p className="text-sm text-muted-foreground">
-                  {addrError || cityError || stateError || custError || empError || supError || eventError}
+                  {addrError || custError || empError || supError || eventError}
                 </p>
               </div>
               <Button variant="outline" onClick={handleRetry}>
@@ -493,7 +424,7 @@ export default function AddressPage() {
               <CardTitle className="flex items-center gap-2">
                 <MapPin className="h-5 w-5" />
                 Address Directory
-                {(addrLoading || cityLoading || stateLoading || custLoading || empLoading || supLoading || eventLoading) && (
+                {(addrLoading || custLoading || empLoading || supLoading || eventLoading) && (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 )}
               </CardTitle>
@@ -519,7 +450,7 @@ export default function AddressPage() {
             <DataCards
               data={filteredAddresses}
               fields={cardFields}
-              loading={addrLoading || cityLoading || stateLoading || custLoading || empLoading || supLoading || eventLoading}
+              loading={addrLoading || custLoading || empLoading || supLoading || eventLoading}
               onEdit={handleEdit}
               onDelete={handleDelete}
               idField="addressId"
@@ -530,7 +461,7 @@ export default function AddressPage() {
             <DataTable
               data={filteredAddresses}
               columns={tableColumns}
-              loading={addrLoading || cityLoading || stateLoading || custLoading || empLoading || supLoading || eventLoading}
+              loading={addrLoading || custLoading || empLoading || supLoading || eventLoading}
               onEdit={handleEdit}
               onDelete={handleDelete}
               idField="addressId"

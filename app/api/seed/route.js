@@ -1,8 +1,8 @@
 
 // app/api/seed/route.ts
 import { NextResponse } from 'next/server'
-import { PrismaClient, Status } from '@/lib/generated/prisma'
 import bcrypt from 'bcryptjs'
+import { PrismaClient } from '@prisma/client'
 
 
 const prisma = new PrismaClient()
@@ -24,7 +24,7 @@ export async function GET() {
         name: 'admin',
         description: 'Administrator',
         isSystemRole: true,
-        status: Status.active
+        status: 'active'
       }
     })
 
@@ -35,7 +35,7 @@ export async function GET() {
         name: 'user',
         description: 'Regular User',
         isSystemRole: false,
-        status: Status.active
+        status: 'active'
       }
     })
 
@@ -49,7 +49,7 @@ export async function GET() {
         email: 'superadmin@gkna.com',
         password: adminPassword,
         roleId: adminRole.roleId,
-        status: Status.active
+        status: 'active'
       }
     })
 
@@ -60,7 +60,7 @@ export async function GET() {
         email: 'agent@gkna.com',
         password: userPassword,
         roleId: userRole.roleId,
-        status: Status.active
+        status: 'active'
       }
     })
 
@@ -72,7 +72,7 @@ export async function GET() {
   } catch (error) {
     console.error('Seeding error:', error)
     return NextResponse.json(
-      { error: 'Seeding failed', details: error instanceof Error ? error.message : String(error) },
+      { error: 'Seeding failed', details: error },
       { status: 500 }
     )
   } finally {

@@ -1,9 +1,8 @@
 // app/api/auth/session/route.ts
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
 import { verifyToken } from '@/lib/auth';
 
-export async function GET(request: NextRequest) {
+export async function GET(request) {
   const token = request.cookies.get('token')?.value;
 
   if (!token) {

@@ -1,5 +1,5 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import {  NextResponse } from "next/server"
+import  prisma  from "@/lib/prisma"
 import { generateCategoryCode } from "@/lib/utils"
 
 export async function GET() {
@@ -21,7 +21,7 @@ export async function GET() {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request) {
   try {
     const data = await request.json()
 
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(category, { status: 201 })
-  } catch (error: any) {
+  } catch (error) {
     console.error("Category creation error:", error.message)
     return NextResponse.json({ error: "Failed to create category" }, { status: 500 })
   }

@@ -178,7 +178,7 @@
     "app/api/stockentries/route.js",
     "app/api/seed/route.js",
     "app/api/seed/data.js"
-  ],
+, "app/api/auth/me/route.js", "app/api/auth/security-logs/route.js", "app/api/auth/session/route.js", "app/api/categories/route.js", "app/api/departments/route.js", "hooks/use-toast.js", "hooks/use-store-actions.js", "hooks/use-permissions.js", "hooks/use-multi-file-upload.js"  ],
   "exclude": [
     "node_modules"
   ]

@@ -3,7 +3,7 @@ import { create } from "zustand"
 
 
 
-export const useAuthenticationStore = create < AuthenticationStore > ((set) => ({
+export const useAuthenticationStore = create ((set) => ({
   items: [],
   isLoading: false,
   error: null,

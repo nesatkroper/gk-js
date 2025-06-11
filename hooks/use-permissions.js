@@ -2,15 +2,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation"; // ✅ FIXED: use `next/navigation`
 
-type Permissions = {
-  canCreate?: boolean;
-  canUpdate?: boolean;
-  canDelete?: boolean;
-};
 
 export const usePermissions = () => {
   const router = useRouter();
-  const [permissions, setPermissions] = useState<Permissions>({});
+  const [permissions, setPermissions] = useState({});
 
   useEffect(() => {
     const cookie = document.cookie

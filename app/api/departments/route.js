@@ -1,9 +1,9 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { NextResponse } from "next/server"
+import  prisma  from "@/lib/prisma"
 import { softDeleteWhere } from "@/lib/soft-delete"
 import { generateDepartmentCode } from "@/lib/utils"
 
-export async function GET(request: NextRequest) {
+export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const includeInactive = searchParams.get("includeInactive") === "true"
@@ -22,13 +22,13 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json(departments)
-  } catch (error: any) {
+  } catch (error) {
     console.error("Departments fetch error:", error.message)
     return NextResponse.json({ error: "Failed to fetch departments" }, { status: 500 })
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request) {
   try {
     const data = await request.json()
     const departmentCode = generateDepartmentCode()
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(department, { status: 201 })
-  } catch (error: any) {
+  } catch (error) {
     console.error("Department creation error:", error.message)
     return NextResponse.json({ error: "Failed to create department" }, { status: 500 })
   }

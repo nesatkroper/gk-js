@@ -49,8 +49,8 @@ export default function PositionsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterDepartment, setFilterDepartment] = useState("all")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [view, setView] = useState < "table" | "card" > ("table")
-  const [editingPosition, setEditingPosition] = useState < any > (null)
+  const [view, setView] = useState ("table")
+  const [editingPosition, setEditingPosition] = useState (null)
 
   useEffect(() => {
     fetchPositions()

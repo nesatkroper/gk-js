@@ -33,7 +33,7 @@ import { unit } from "@/constant";
 export default function ProductsPage() {
   const { t } = useTranslation("common");
   const {
-    items,
+    items: products,
     isLoading: prodLoading,
     error: prodError,
     fetch: prodFetch,
@@ -54,7 +54,7 @@ export default function ProductsPage() {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [view, setView] = useState < "table" | "card" > ("table");
+  const [view, setView] = useState("table");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [editingProduct, setEditingProduct] = useState(null);

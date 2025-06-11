@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { verifyToken } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
+import  prisma  from "@/lib/prisma"
 
 export const runtime = 'nodejs';
-export async function GET(request: NextRequest) {
+export async function GET(request) {
   try {
     const token = request.cookies.get("auth-token")?.value
 
