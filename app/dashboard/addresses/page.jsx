@@ -33,7 +33,7 @@ import {
   getDistrictsByProvinceId,
   getCommunesByDistrictId,
   getVillagesByCommuneId,
-} from "@/lib/address.actions";
+} from "@/app/actions/addresses";
 
 export default function AddressPage() {
   const { t } = useTranslation('common');
@@ -179,12 +179,12 @@ export default function AddressPage() {
         row.Customer
           ? `${row.Customer.firstName} ${row.Customer.lastName} (Customer)`
           : row.Employee
-          ? `${row.Employee.firstName} ${row.Employee.lastName} (Employee)`
-          : row.Supplier
-          ? `${row.Supplier.supplierName} (Supplier)`
-          : row.Event
-          ? `${row.Event.eventName} (Event)`
-          : "-",
+            ? `${row.Employee.firstName} ${row.Employee.lastName} (Employee)`
+            : row.Supplier
+              ? `${row.Supplier.supplierName} (Supplier)`
+              : row.Event
+                ? `${row.Event.eventName} (Event)`
+                : "-",
     },
     {
       key: "Imageaddress",
@@ -226,12 +226,12 @@ export default function AddressPage() {
         row.Customer
           ? `${row.Customer.firstName} ${row.Customer.lastName} (Customer)`
           : row.Employee
-          ? `${row.Employee.firstName} ${row.Employee.lastName} (Employee)`
-          : row.Supplier
-          ? `${row.Supplier.supplierName} (Supplier)`
-          : row.Event
-          ? `${row.Event.eventName} (Event)`
-          : "-",
+            ? `${row.Employee.firstName} ${row.Employee.lastName} (Employee)`
+            : row.Supplier
+              ? `${row.Supplier.supplierName} (Supplier)`
+              : row.Event
+                ? `${row.Event.eventName} (Event)`
+                : "-",
     },
     {
       key: "Imageaddress",

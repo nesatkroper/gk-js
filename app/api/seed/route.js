@@ -24,7 +24,9 @@ export async function GET() {
         name: 'admin',
         description: 'Administrator',
         isSystemRole: true,
-        status: 'active'
+        status: 'active',
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     })
 
@@ -35,7 +37,9 @@ export async function GET() {
         name: 'user',
         description: 'Regular User',
         isSystemRole: false,
-        status: 'active'
+        status: 'active',
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     })
 
@@ -49,7 +53,9 @@ export async function GET() {
         email: 'superadmin@gkna.com',
         password: adminPassword,
         roleId: adminRole.roleId,
-        status: 'active'
+        status: 'active',
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     })
 
@@ -60,7 +66,9 @@ export async function GET() {
         email: 'agent@gkna.com',
         password: userPassword,
         roleId: userRole.roleId,
-        status: 'active'
+        status: 'active',
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     })
 
