@@ -27,7 +27,7 @@ export function FileUpload({
   const [dragActive, setDragActive] = useState(false)
   const [error, setError] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
-  const [aspectRatio, setAspectRatio] = useState < "original" | "1:1" | "3:4" > ("original")
+  const [aspectRatio, setAspectRatio] = useState  ("original")
   const inputRef = useRef(null)
 
   React.useEffect(() => {

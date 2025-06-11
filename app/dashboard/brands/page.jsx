@@ -71,7 +71,7 @@ export default function BrandsPage() {
 
   async function handleSubmit(formData) {
     setIsSaving(true);
-
+  
     try {
       const brandData = {
         brandName: formData.get("brandName"),
@@ -79,27 +79,26 @@ export default function BrandsPage() {
         memo: formData.get("memo") || null,
         picture: editingBrand?.picture || null,
       };
-
+  
       if (!brandData.brandName) {
         throw new Error("Brand name is required");
       }
-
+  
       const { create, update } = useBrandStore.getState();
       const success = editingBrand
         ? await update(editingBrand.brandId, brandData, selectedFile)
         : await create(brandData, selectedFile);
-
-      if (success) {
-
-        setIsDialogOpen(false);
-        setSelectedFile(null);
-        setEditingBrand(null);
-        router.refresh();
-      } else {
+  
+      if (!success) {
         throw new Error("Brand operation failed");
       }
+  
+      setIsDialogOpen(false);
+      setSelectedFile(null);
+      setEditingBrand(null);
+      router.refresh();
     } catch (error) {
-
+      console.error("Brand operation error:", error);
     } finally {
       setIsSaving(false);
     }

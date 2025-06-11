@@ -50,6 +50,7 @@ export default function ProductsPage() {
     isLoading: brandLoading,
     fetch: brandFetch,
   } = useBrandStore();
+  
   const { canCreate, canUpdate, canDelete } = usePermissions();
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);

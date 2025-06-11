@@ -1,7 +1,7 @@
 // actions/brands.ts
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { uploadFileServerAction } from "@/actions/files";
 
@@ -13,7 +13,7 @@ export async function fetchBrands() {
       where: { status: "active" },
       include: {
         _count: {
-          select: { product: true },
+          select: { Product: true },
         },
       },
       orderBy: { brandName: "asc" },
