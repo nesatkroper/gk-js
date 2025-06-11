@@ -6,7 +6,7 @@ import {
   createCategory,
   updateCategory,
   deleteCategory,
-} from "@/actions/categories";
+} from "@/app/actions/categories";
 
 
 export const useCategoryStore = create()(

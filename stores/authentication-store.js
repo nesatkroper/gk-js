@@ -1,7 +1,7 @@
 
 
 import { create } from "zustand";
-import { getAuthRecords, createAuthRecord, updateAuthRecord, deleteAuthRecord } from "@/actions/auth";
+import { getAuthRecords, createAuthRecord, updateAuthRecord, deleteAuthRecord } from "@/app/actions/auth";
 
 
 export const useAuthenticationStore = create((set) => ({

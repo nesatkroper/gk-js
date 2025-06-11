@@ -1,7 +1,7 @@
 // // stores/product-store.ts
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { fetchProducts, createProduct, updateProduct, deleteProduct, CreateProductData } from "@/actions/products";
+import { fetchProducts, createProduct, updateProduct, deleteProduct } from "@/app/actions/products";
 
 
 

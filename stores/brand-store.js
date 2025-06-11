@@ -1,7 +1,7 @@
 
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { fetchBrands, createBrand, updateBrand, deleteBrand } from "@/actions/brands";
+import { fetchBrands, createBrand, updateBrand, deleteBrand } from "@/app/actions/brands";
 
 
 export const useBrandStore = create()(

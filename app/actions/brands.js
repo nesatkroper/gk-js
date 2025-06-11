@@ -3,7 +3,7 @@
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { uploadFileServerAction } from "@/actions/files";
+import { uploadFileServerAction } from "@/app/actions/files";
 
 
 
