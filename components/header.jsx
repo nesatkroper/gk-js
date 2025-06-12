@@ -28,6 +28,7 @@ import {
 import LanguageSwitcher from "./lang-switch"
 import { useTranslation } from "react-i18next"
 import { useAuthStore } from "@/stores"
+import { logout } from "@/app/actions/auth"
 
 
 export function EnhancedHeader() {
@@ -149,6 +150,8 @@ export function EnhancedHeader() {
                 <DropdownMenuItem
                   onClick={() => {
                     console.log("Logging out...")
+                    logout()
+                    window.location.href = "/login"
                   }}
                   className="text-red-600 focus:text-red-600"
                 >

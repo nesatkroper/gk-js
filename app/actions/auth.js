@@ -4,6 +4,9 @@ import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
+import { generateToken, verifyPassword } from "@/lib/auth";
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
 
 function convertDecimalsToNumbers(obj) {
   if (!obj) return obj;
@@ -166,3 +169,163 @@ export async function deleteAuthRecord(id) {
   }
 }
 
+
+export async function login(formData) {
+  try {
+    const email = formData.get("email") 
+    const password = formData.get("password") 
+    const deviceInfo = (formData.get("deviceInfo") ) || ""
+    const ipAddress = (formData.get("ipAddress") ) || ""
+
+    console.log("Login attempt for:", email)
+
+    if (!email || !password) {
+      return { success: false, error: "Email and password are required" }
+    }
+
+    const sanitizedEmail = email.toLowerCase().trim()
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(sanitizedEmail)) {
+      return { success: false, error: "Invalid email format" }
+    }
+
+    const auth = await prisma.auth.findUnique({
+      where: { email: sanitizedEmail },
+      include: {
+        Role: true,
+        Employee: {
+          include: {
+            Department: true,
+            Position: true,
+            Employeeinfo: true,
+          },
+        },
+      },
+    })
+
+    if (!auth) {
+      console.log("User not found:", sanitizedEmail)
+      return { success: false, error: "Invalid credentials" }
+    }
+
+    if (auth.status !== "active") {
+      console.log("Account not active:", sanitizedEmail)
+      return { success: false, error: "Account is not active" }
+    }
+
+    const isValidPassword = await verifyPassword(password, auth.password)
+    if (!isValidPassword) {
+      console.log("Invalid password for:", sanitizedEmail)
+      return { success: false, error: "Invalid credentials" }
+    }
+
+    const tokenPayload = {
+      authId: auth.authId,
+      role: auth.Role?.name || "user",
+      status: auth.status,
+      email: auth.email,
+    }
+
+    const jwtToken = await generateToken(tokenPayload)
+    const expiresAt = new Date()
+    expiresAt.setHours(expiresAt.getHours() + 8)
+
+    const tokenRecord = await prisma.token.create({
+      data: {
+        token: jwtToken,
+        authId: auth.authId,
+        deviceInfo,
+        ipAddress,
+        expiresAt,
+      },
+    })
+
+    console.log("Generated and stored token for:", sanitizedEmail)
+
+    await prisma.auth.update({
+      where: { authId: auth.authId },
+      data: { lastLoginAt: new Date() },
+    })
+
+    console.log("Login successful for:", sanitizedEmail)
+    cookies().set("auth-token", jwtToken, {
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 8 * 60 * 60, 
+      path: "/",
+    })
+
+    return {
+      success: true,
+      user: {
+        authId: auth.authId,
+        email: auth.email,
+        state: auth.status,
+        role: auth.Role?.name,
+        employee: auth.Employee,
+      },
+    }
+  } catch (error) {
+    console.error("Login error:", error)
+    return { success: false, error: "Internal server error" }
+  }
+}
+
+export async function logout() {
+  try {
+    const authToken = cookies().get("auth-token")?.value
+
+    if (authToken) {
+      await prisma.token.deleteMany({
+        where: { token: authToken },
+      })
+
+      cookies().delete("auth-token")
+    }
+
+    redirect("/login")
+  } catch (error) {
+    console.error("Logout error:", error)
+    cookies().delete("auth-token")
+    redirect("/login")
+  }
+}
+
+export async function validateToken(token) {
+  try {
+    const tokenRecord = await prisma.token.findUnique({
+      where: { token },
+      include: { Auth: true },
+    })
+
+    if (!tokenRecord || new Date() > tokenRecord.expiresAt) {
+      return { valid: false }
+    }
+
+    return {
+      valid: true,
+      user: tokenRecord.Auth,
+    }
+  } catch (error) {
+    console.error("Token validation error:", error)
+    return { valid: false }
+  }
+}
+
+export async function getAuthUser() {
+  const cookieStore = cookies()
+  const token = cookieStore.get("auth-token")?.value
+
+  if (!token) {
+    redirect("/login")
+  }
+
+  const { valid, user } = await validateToken(token)
+
+  if (!valid) {
+    cookies().delete("auth-token")
+    redirect("/login")
+  }
+
+  return user
+}

@@ -22,7 +22,7 @@ import { DataCards } from "@/components/ui/data-cards";
 import { Plus, Search, FolderOpen, Loader2, RefreshCw } from "lucide-react";
 import { useCategoryStore } from "@/stores/category-store";
 import { t } from "i18next";
-import { createCategory, updateCategory } from "@/actions/categories"; // Import Server Actions
+import { createCategory, updateCategory } from "@/app/actions/categories"; // Import Server Actions
 import { useRouter } from "next/navigation";
 
 export default function CategoriesPage() {

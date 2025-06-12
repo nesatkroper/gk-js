@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 import { verifyToken } from "@/lib/auth"
 
-// Define protected routes and their required roles
 const protectedRoutes= {
   "/admin": ["admin"],
   "/auth": ["admin", "manager"],
@@ -81,7 +80,7 @@ export async function middleware(request) {
       canUpdate: ["admin", "manager"].includes(decoded.role),
       canDelete: ["admin"].includes(decoded.role),
     }), {
-      httpOnly: false, // Must be false to access via client-side JS
+      httpOnly: false, 
       sameSite: "lax",
       path: "/"
     });
