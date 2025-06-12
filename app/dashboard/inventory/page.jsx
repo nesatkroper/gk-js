@@ -1,4 +1,3 @@
-// app/inventory/page.tsx
 "use client";
 export const dynamic = "force-dynamic";
 
@@ -236,36 +235,39 @@ export default function InventoryPage() {
                 <DialogDescription>{t("Record new inventory received from supplier")}</DialogDescription>
               </DialogHeader>
               <form action={handleAddStock} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="productId">{t("Product")} *</Label>
-                  <Select name="productId" required disabled={isSubmitting}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t("Select product")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {products.map((product) => (
-                        <SelectItem key={product.productId} value={product.productId}>
-                          {product.productName} {product.productCode && `(${product.productCode})`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="supplierId">{t("Supplier")} *</Label>
-                  <Select name="supplierId" required disabled={isSubmitting}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t("Select supplier")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {suppliers.map((supplier) => (
-                        <SelectItem key={supplier.supplierId} value={supplier.supplierId}>
-                          {supplier.supplierName} {supplier.companyName && `(${supplier.companyName})`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="productId">{t("Product")} *</Label>
+                    <Select name="productId" required disabled={isSubmitting}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t("Select product")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {products.map((product) => (
+                          <SelectItem key={product.productId} value={product.productId}>
+                            {product.productName} {product.productCode && `(${product.productCode})`}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="supplierId">{t("Supplier")} *</Label>
+                    <Select name="supplierId" required disabled={isSubmitting}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t("Select supplier")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {suppliers.map((supplier) => (
+                          <SelectItem key={supplier.supplierId} value={supplier.supplierId}>
+                            {supplier.supplierName} {supplier.companyName && `(${supplier.companyName})`}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
