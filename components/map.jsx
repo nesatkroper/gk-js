@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import { GoogleMap, LoadScript, Marker, InfoWindow } from "@react-google-maps/api"
 import { MapPin, Navigation, Search, Layers } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -128,16 +128,15 @@ const locations = [
     type: "Landmark",
     description: "Famous commercial intersection",
   },
-  {
-    id: 3,
-    name: "Brooklyn Bridge",
-    position: { lat: 40.7061, lng: -73.9969 },
-    type: "Bridge",
-    description: "Historic suspension bridge",
-  },
 ]
 
 export default function MapComponent() {
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
   const [map, setMap] = useState(null)
   const [selectedMarker, setSelectedMarker] = useState(null)
   const [searchValue, setSearchValue] = useState("")
@@ -153,7 +152,7 @@ export default function MapComponent() {
   }, [])
 
   const handleSearch = () => {
-    if (!map || !searchValue || !window.google) return
+    if (!map || !searchValue || !isClient || !window.google) return
 
     const geocoder = new window.google.maps.Geocoder()
     geocoder.geocode({ address: searchValue }, (results, status) => {
@@ -190,7 +189,7 @@ export default function MapComponent() {
   }
 
   const createCustomMarkerIcon = () => {
-    if (!window.google) return undefined
+    if (!isClient || !window.google) return undefined
 
     return {
       url:
@@ -246,46 +245,55 @@ export default function MapComponent() {
       {/* Map Container */}
       <Card className="shadow-2xl border-0 overflow-hidden">
         <CardContent className="p-0">
-          <LoadScript googleMapsApiKey="YOUR_GOOGLE_MAPS_API_KEY">
-            <GoogleMap
-              ref={mapRef}
-              mapContainerStyle={mapContainerStyle}
-              center={center}
-              zoom={12}
-              onLoad={onLoad}
-              onUnmount={onUnmount}
-              options={{
-                styles: mapStyles,
-                mapTypeId: mapType,
-                disableDefaultUI: false,
-                zoomControl: true,
-                streetViewControl: true,
-                fullscreenControl: true,
-                mapTypeControl: false,
-              }}
-            >
-              {locations.map((location) => (
-                <Marker
-                  key={location.id}
-                  position={location.position}
-                  onClick={() => setSelectedMarker(location)}
-                  icon={createCustomMarkerIcon()}
-                />
-              ))}
+          {!isClient ? (
+            <div className="w-full h-[600px] flex items-center justify-center bg-gray-100 rounded-lg">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading map...</p>
+              </div>
+            </div>
+          ) : (
+            <LoadScript googleMapsApiKey="AIzaSyCPvqufzr4XJBYjtsMKiKdK6kgC2dCwnmI">
+              <GoogleMap
+                ref={mapRef}
+                mapContainerStyle={mapContainerStyle}
+                center={center}
+                zoom={12}
+                onLoad={onLoad}
+                onUnmount={onUnmount}
+                options={{
+                  styles: mapStyles,
+                  mapTypeId: mapType,
+                  disableDefaultUI: false,
+                  zoomControl: true,
+                  streetViewControl: true,
+                  fullscreenControl: true,
+                  mapTypeControl: false,
+                }}
+              >
+                {locations.map((location) => (
+                  <Marker
+                    key={location.id}
+                    position={location.position}
+                    onClick={() => setSelectedMarker(location)}
+                    icon={createCustomMarkerIcon()}
+                  />
+                ))}
 
-              {selectedMarker && (
-                <InfoWindow position={selectedMarker.position} onCloseClick={() => setSelectedMarker(null)}>
-                  <div className="p-2 max-w-xs">
-                    <h3 className="font-semibold text-lg mb-1">{selectedMarker.name}</h3>
-                    <Badge variant="secondary" className="mb-2">
-                      {selectedMarker.type}
-                    </Badge>
-                    <p className="text-sm text-gray-600">{selectedMarker.description}</p>
-                  </div>
-                </InfoWindow>
-              )}
-            </GoogleMap>
-          </LoadScript>
+                {selectedMarker && (
+                  <InfoWindow position={selectedMarker.position} onCloseClick={() => setSelectedMarker(null)}>
+                    <div className="p-2 max-w-xs">
+                      <h3 className="font-semibold text-lg mb-1">{selectedMarker.name}</h3>
+                      <Badge variant="secondary" className="mb-2">
+                        {selectedMarker.type}
+                      </Badge>
+                      <p className="text-sm text-gray-600">{selectedMarker.description}</p>
+                    </div>
+                  </InfoWindow>
+                )}
+              </GoogleMap>
+            </LoadScript>
+          )}
         </CardContent>
       </Card>
 
@@ -323,3 +331,4 @@ export default function MapComponent() {
     </div>
   )
 }
+
