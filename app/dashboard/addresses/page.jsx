@@ -84,6 +84,7 @@ export default function AddressPage() {
   const [selectedProvinceId, setSelectedProvinceId] = useState(null);
   const [selectedDistrictId, setSelectedDistrictId] = useState(null);
   const [selectedCommuneId, setSelectedCommuneId] = useState(null);
+  const [selectedVillageId, setSelectedVillageId] = useState(null);
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -142,6 +143,20 @@ export default function AddressPage() {
       };
       loadVillages();
       setVillages([]);
+    }
+  }, [selectedCommuneId]);
+
+  useEffect(() => {
+    if (selectedCommuneId) {
+      const loadVillages = async () => {
+        const villagesRes = await getVillagesByCommuneId(selectedCommuneId);
+        if (!villagesRes.error) {
+          setVillages(villagesRes.data);
+        }
+      };
+      loadVillages();
+      setVillages([]);
+      setSelectedVillageId(null); // Reset village selection
     }
   }, [selectedCommuneId]);
 
@@ -300,6 +315,7 @@ export default function AddressPage() {
     setSelectedProvinceId(address.provinceId);
     setSelectedDistrictId(address.districtId);
     setSelectedCommuneId(address.communeId);
+    setSelectedVillageId(address.villageId);
     setIsDialogOpen(true);
   };
 
@@ -389,8 +405,8 @@ export default function AddressPage() {
                       name="provinceId"
                       options={provinces.map((p) => ({ value: p.provinceId.toString(), label: p.name }))}
                       placeholder={t("Select province...")}
-                      value={editingAddress?.provinceId?.toString() || ""}
-                      onChange={(value) => setSelectedProvinceId(Number(value))}
+                      value={selectedProvinceId ? selectedProvinceId.toString() : ""}
+                      onChange={(value) => setSelectedProvinceId(value ? Number(value) : null)}
                       required
                     />
                   </div>
@@ -401,8 +417,8 @@ export default function AddressPage() {
                       name="districtId"
                       options={districts.map((d) => ({ value: d.districtId.toString(), label: d.name }))}
                       placeholder={t("Select district...")}
-                      value={editingAddress?.districtId?.toString() || ""}
-                      onChange={(value) => setSelectedDistrictId(Number(value))}
+                      value={selectedDistrictId ? selectedDistrictId.toString() : ""}
+                      onChange={(value) => setSelectedDistrictId(value ? Number(value) : null)}
                       disabled={!selectedProvinceId}
                       required
                     />
@@ -416,8 +432,8 @@ export default function AddressPage() {
                       name="communeId"
                       options={communes.map((c) => ({ value: c.communeId.toString(), label: c.name }))}
                       placeholder={t("Select commune...")}
-                      value={editingAddress?.communeId?.toString() || ""}
-                      onChange={(value) => setSelectedCommuneId(Number(value))}
+                      value={selectedCommuneId ? selectedCommuneId.toString() : ""}
+                      onChange={(value) => setSelectedCommuneId(value ? Number(value) : null)}
                       disabled={!selectedDistrictId}
                       required
                     />
@@ -429,7 +445,8 @@ export default function AddressPage() {
                       name="villageId"
                       options={villages.map((v) => ({ value: v.villageId.toString(), label: v.name }))}
                       placeholder={t("Select village...")}
-                      value={editingAddress?.villageId?.toString() || ""}
+                      value={selectedVillageId ? selectedVillageId.toString() : ""}
+                      onChange={(value) => setSelectedVillageId(value ? Number(value) : null)} 
                       disabled={!selectedCommuneId}
                       required
                     />
@@ -572,7 +589,7 @@ export default function AddressPage() {
                 )}
               </CardTitle>
               <CardDescription>
-                {t("{count} addresses in your database", { count: filteredAddresses.length })}
+                {t(`{count}addresses in your database`, { count: filteredAddresses.length })}
               </CardDescription>
             </div>
             <ViewToggle view={view} onViewChange={setView} />

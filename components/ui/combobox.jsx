@@ -42,7 +42,7 @@ export function Combobox({
             disabled={disabled}
           >
             {value
-              ? options.find((option) => option.value === value)?.label
+              ? options.find((option) => option.value === value)?.label || placeholder
               : placeholder}
             <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
@@ -50,16 +50,15 @@ export function Combobox({
         <PopoverContent className="w-full p-0">
           <Command>
             <CommandInput placeholder={placeholder} />
-            <CommandList>
+            <CommandList className="max-h-[200px] overflow-y-auto">
               <CommandEmpty>No option found.</CommandEmpty>
               <CommandGroup>
                 {options.map((option) => (
                   <CommandItem
                     key={option.value}
-                    value={option.value}
-                    onSelect={(currentValue) => {
-                      const newValue = currentValue === value ? "" : currentValue;
-                      onChange(newValue);
+                    value={option.label}
+                    onSelect={() => {
+                      onChange(option.value);
                       setOpen(false);
                     }}
                   >
