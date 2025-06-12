@@ -25,7 +25,7 @@ export const metadata = {
   description: "A comprehensive fertilizer management system",
   authors: { name: "Suon Phanun", url: "https://me.konkmeng.site" },
   icons: {
-    icon: '/images/icon.ico',
+    icon: '/images/logo.ico',
   },
   keywords: [
     "Fertilizer Management System",
@@ -73,7 +73,7 @@ export default function RootLayout({
           color="#22c55e"
           initialPosition={0.08}
           crawlSpeed={200}
-          height={5}
+          height={4}
           crawl={true}
           showSpinner={true}
           easing="ease"

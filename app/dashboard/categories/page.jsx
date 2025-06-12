@@ -24,11 +24,13 @@ import { useCategoryStore } from "@/stores/category-store";
 import { t } from "i18next";
 import { createCategory, updateCategory } from "@/app/actions/categories"; // Import Server Actions
 import { useRouter } from "next/navigation";
+import { FileUpload } from "@/components/ui/file-upload";
 
 export default function CategoriesPage() {
   const { items: categories, isLoading, error, fetch, delete: deleteCategory } = useCategoryStore();
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [view, setView] = useState("table");
@@ -49,12 +51,13 @@ export default function CategoriesPage() {
   const tableColumns = [
     { key: "categoryName", label: "Category Name" },
     { key: "categoryCode", label: "Category Code" },
-    { key: "memo", label: "Description" }, // Changed from 'desc' to 'memo' to match schema
+    { key: "memo", label: "Description" },
     { key: "status", label: "Status", type: "badge" },
     { key: "createdAt", label: "Created", type: "date" },
   ];
 
   const cardFields = [
+    { key: "picture", type: "image" },
     { key: "categoryName", primary: true },
     { key: "categoryCode", secondary: true },
     { key: "memo", label: "Description" },
@@ -70,6 +73,7 @@ export default function CategoriesPage() {
       categoryName: formData.get("categoryName"),
       categoryCode: formData.get("categoryCode"),
       memo: formData.get("memo"),
+      picture: editingCategory?.picture || null,
     };
 
     const result = editingCategory
@@ -82,7 +86,7 @@ export default function CategoriesPage() {
 
       setIsDialogOpen(false);
       setEditingCategory(null);
-      router.refresh(); // Refresh the page to reflect changes
+      router.refresh(); 
     } else {
       console.log(error)
     }
@@ -153,21 +157,24 @@ export default function CategoriesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="categoryCode">{t("Category Code")}</Label>
-                  <Input
-                    id="categoryCode"
-                    name="categoryCode"
-                    defaultValue={editingCategory?.categoryCode || ""}
-                  />
-                </div>
-
-                <div className="space-y-2">
                   <Label htmlFor="memo">{t("Description")}</Label>
                   <Textarea
                     id="memo"
                     name="memo"
                     rows={3}
                     defaultValue={editingCategory?.memo || ""}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>{t("Brand Image")}</Label>
+                  <FileUpload
+                    onFileSelect={(file) => setSelectedFile(file)}
+                    accept="image/*"
+                    maxSize={5}
+                    preview={true}
+                    value={selectedFile}
+                    placeholder="Upload category image"
+                    disabled={isSaving}
                   />
                 </div>
 

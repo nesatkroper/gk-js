@@ -4,6 +4,7 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { uploadFileServerAction } from "@/app/actions/files";
+import { generateBrandCode } from "@/lib/utils";
 
 
 
@@ -28,6 +29,7 @@ export async function fetchBrands() {
 export async function createBrand(data, file) {
   try {
     let pictureUrl = data.picture || null;
+    const brandCode = generateBrandCode();
     if (file) {
       const formData = new FormData();
       formData.append("file", file);
@@ -42,7 +44,7 @@ export async function createBrand(data, file) {
     const brand = await prisma.brand.create({
       data: {
         brandName: data.brandName,
-        brandCode: data.brandCode,
+        brandCode,
         picture: pictureUrl,
         memo: data.memo,
         updatedAt: new Date(),

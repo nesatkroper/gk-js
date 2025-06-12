@@ -1,13 +1,13 @@
-"use client";
-export const dynamic = "force-dynamic";
+"use client"
+export const dynamic = "force-dynamic"
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   Dialog,
   DialogContent,
@@ -15,40 +15,42 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DatePicker } from "@/components/ui/date-picker";
-import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, Warehouse, AlertTriangle, TrendingUp, Package, Edit, Trash2, Loader2 } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
-import { useTranslation } from "react-i18next";
-import { useRouter } from "next/navigation";
-import { formatDate } from "@/lib/utils";
-import { useStockStore, useProductStore, useSupplierStore } from "@/stores";
-import { usePermissions } from "@/hooks/use-permissions";
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { DatePicker } from "@/components/ui/date-picker"
+import { Textarea } from "@/components/ui/textarea"
+import { Plus, Search, Warehouse, AlertTriangle, TrendingUp, Package, Edit, Trash2, Loader2 } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
+import { useTranslation } from "react-i18next"
+import { useRouter } from "next/navigation"
+import { formatDate } from "@/lib/utils"
+import { useStockStore, useProductStore, useSupplierStore } from "@/stores"
+import { usePermissions } from "@/hooks/use-permissions"
+import { Combobox } from "@/components/ui/combobox"
 
 export default function InventoryPage() {
-  const { t } = useTranslation("ui");
-  const { items: stockEntries, isLoading, error, fetch, create, update, delete: deleteEntry } = useStockStore();
-  const { items: products, isLoading: prodLoading, fetch: proFetch } = useProductStore();
-  const { items: suppliers, isLoading: supLoading, fetch: supFetch } = useSupplierStore();
-  const { canCreate, canUpdate, canDelete } = usePermissions();
+  const { t } = useTranslation("ui")
+  const { items: stockEntries, isLoading, error, fetch, create, update, delete: deleteEntry } = useStockStore()
+  const { items: products, isLoading: prodLoading, fetch: proFetch } = useProductStore()
+  const { items: suppliers, isLoading: supLoading, fetch: supFetch } = useSupplierStore()
+  const { canCreate, canUpdate, canDelete } = usePermissions()
 
-  const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showLowStock, setShowLowStock] = useState(false);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedEntry, setSelectedEntry] = useState(null);
-  const [entryDate, setEntryDate] = useState(new Date());
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter()
+  const [searchTerm, setSearchTerm] = useState("")
+  const [showLowStock, setShowLowStock] = useState(false)
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [selectedEntry, setSelectedEntry] = useState(null)
+  const [entryDate, setEntryDate] = useState(new Date())
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [selectedproductId, setSelectedproductId] = useState(null)
 
   useEffect(() => {
-    fetch({ search: searchTerm, lowStock: showLowStock });
-    proFetch();
-    supFetch();
-  }, [fetch, proFetch, supFetch, searchTerm, showLowStock]);
+    fetch({ search: searchTerm, lowStock: showLowStock })
+    proFetch()
+    supFetch()
+  }, [fetch, proFetch, supFetch, searchTerm, showLowStock])
 
   const filteredStocks = stockEntries.filter(
     (stock) =>
@@ -56,7 +58,7 @@ export default function InventoryPage() {
       stock.Product?.productCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       stock.invoice?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       stock.memo?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  )
 
   async function handleAddStock(formData) {
     if (!canCreate) {
@@ -64,11 +66,11 @@ export default function InventoryPage() {
       //   title: t("Permission Denied"),
       //   description: t("You do not have permission to create stock entries"),
       //   variant: "destructive",
-      // });
-      return;
+      // })
+      return
     }
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
 
     try {
       const stockData = {
@@ -80,33 +82,33 @@ export default function InventoryPage() {
         invoice: formData.get("invoice") || null,
         memo: formData.get("memo") || null,
         status: (formData.get("status")),
-      };
+      }
 
-      if (!stockData.productId) throw new Error(t("Product is required"));
-      if (!stockData.supplierId) throw new Error(t("Supplier is required"));
-      if (stockData.quantity <= 0) throw new Error(t("Quantity must be positive"));
-      if (parseFloat(stockData.entryPrice) < 0) throw new Error(t("Entry price must be non-negative"));
+      if (!stockData.productId) throw new Error(t("Product is required"))
+      if (!stockData.supplierId) throw new Error(t("Supplier is required"))
+      if (stockData.quantity <= 0) throw new Error(t("Quantity must be positive"))
+      if (parseFloat(stockData.entryPrice) < 0) throw new Error(t("Entry price must be non-negative"))
 
-      const success = await create(stockData);
+      const success = await create(stockData)
       if (success) {
         // toast({
         //   title: t("Success"),
         //   description: t("Stock entry created successfully"),
-        // });
-        setIsAddDialogOpen(false);
-        setEntryDate(new Date());
-        router.refresh();
+        // })
+        setIsAddDialogOpen(false)
+        setEntryDate(new Date())
+        router.refresh()
       } else {
-        throw new Error(t("Failed to create stock entry"));
+        throw new Error(t("Failed to create stock entry"))
       }
     } catch (error) {
       toast({
         title: t("Error"),
         description: error.message || t("Failed to create stock entry"),
         variant: "destructive",
-      });
+      })
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
   }
 
@@ -116,13 +118,13 @@ export default function InventoryPage() {
       //   title: t("Permission Denied"),
       //   description: t("You do not have permission to update stock entries"),
       //   variant: "destructive",
-      // });
-      return;
+      // })
+      return
     }
 
-    if (!selectedEntry) return;
+    if (!selectedEntry) return
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
 
     try {
       const stockData = {
@@ -134,34 +136,34 @@ export default function InventoryPage() {
         invoice: formData.get("invoice") || null,
         memo: formData.get("memo") || null,
         status: formData.get("status"),
-      };
+      }
 
-      if (!stockData.productId) throw new Error(t("Product is required"));
-      if (!stockData.supplierId) throw new Error(t("Supplier is required"));
-      if (stockData.quantity <= 0) throw new Error(t("Quantity must be positive"));
-      if (parseFloat(stockData.entryPrice) < 0) throw new Error(t("Entry price must be non-negative"));
+      if (!stockData.productId) throw new Error(t("Product is required"))
+      if (!stockData.supplierId) throw new Error(t("Supplier is required"))
+      if (stockData.quantity <= 0) throw new Error(t("Quantity must be positive"))
+      if (parseFloat(stockData.entryPrice) < 0) throw new Error(t("Entry price must be non-negative"))
 
-      const success = await update(selectedEntry.entryId, stockData);
+      const success = await update(selectedEntry.entryId, stockData)
       if (success) {
         // toast({
         //   title: t("Success"),
         //   description: t("Stock entry updated successfully"),
-        // });
-        setIsEditDialogOpen(false);
-        setSelectedEntry(null);
-        setEntryDate(new Date());
-        router.refresh();
+        // })
+        setIsEditDialogOpen(false)
+        setSelectedEntry(null)
+        setEntryDate(new Date())
+        router.refresh()
       } else {
-        throw new Error(t("Failed to update stock entry"));
+        throw new Error(t("Failed to update stock entry"))
       }
     } catch (error) {
       // toast({
       //   title: t("Error"),
       //   description: error.message || t("Failed to update stock entry"),
       //   variant: "destructive",
-      // });
+      // })
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
   }
 
@@ -171,43 +173,43 @@ export default function InventoryPage() {
       //   title: t("Permission Denied"),
       //   description: t("You do not have permission to delete stock entries"),
       //   variant: "destructive",
-      // });
-      return;
+      // })
+      return
     }
 
-    if (!confirm(t("Are you sure you want to delete this stock entry?"))) return;
+    if (!confirm(t("Are you sure you want to delete this stock entry?"))) return
 
     // try {
-    //   const success = await deleteEntry(entryId);
+    //   const success = await deleteEntry(entryId)
     //   // if (success) {
     //   //   toast({
     //   //     title: t("Success"),
     //   //     description: t("Stock entry deleted successfully"),
-    //   //   });
+    //   //   })
     //   // } else {
-    //   //   throw new Error(t("Failed to delete stock entry"));
+    //   //   throw new Error(t("Failed to delete stock entry"))
     //   // }
     // } catch (error) {
     //   toast({
     //     title: t("Error"),
     //     description: error.message || t("Failed to delete stock entry"),
     //     variant: "destructive",
-    //   });
+    //   })
     // }
-  };
+  }
 
   const getStockStatus = (quantity) => {
-    if (quantity === 0) return { variant: "destructive", label: t("Out of Stock") };
-    if (quantity < 5) return { variant: "destructive", label: t("Critical") };
-    if (quantity < 50) return { variant: "secondary", label: t("Low Stock") };
-    return { variant: "default", label: t("In Stock") };
-  };
+    if (quantity === 0) return { variant: "destructive", label: t("Out of Stock") }
+    if (quantity < 5) return { variant: "destructive", label: t("Critical") }
+    if (quantity < 50) return { variant: "secondary", label: t("Low Stock") }
+    return { variant: "default", label: t("In Stock") }
+  }
 
-  const lowStockCount = stockEntries.filter((stock) => stock.quantity < 50).length;
-  const outOfStockCount = stockEntries.filter((stock) => stock.quantity === 0).length;
+  const lowStockCount = stockEntries.filter((stock) => stock.quantity < 50).length
+  const outOfStockCount = stockEntries.filter((stock) => stock.quantity === 0).length
   const totalValue = stockEntries
     .reduce((sum, stock) => sum + stock.quantity * stock.entryPrice, 0)
-    .toFixed(2);
+    .toFixed(2)
 
   return (
     <div className="space-y-6">
@@ -239,7 +241,16 @@ export default function InventoryPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="productId">{t("Product")} *</Label>
-                    <Select name="productId" required disabled={isSubmitting}>
+                    <Combobox
+                      id="productId"
+                      name="productId"
+                      options={products.map((p) => ({ value: p.productId.toString(), label: p.productName }))}
+                      placeholder={t("Select product...")}
+                      value={selectedproductId ? selectedproductId.toString() : ""}
+                      onChange={(value) => setSelectedproductId(value ? Number(value) : null)}
+                      required
+                    />
+                    {/* <Select name="productId" required disabled={isSubmitting}>
                       <SelectTrigger>
                         <SelectValue placeholder={t("Select product")} />
                       </SelectTrigger>
@@ -250,7 +261,7 @@ export default function InventoryPage() {
                           </SelectItem>
                         ))}
                       </SelectContent>
-                    </Select>
+                    </Select> */}
                   </div>
 
                   <div className="space-y-2">
@@ -353,9 +364,9 @@ export default function InventoryPage() {
               <Button
                 variant="outline"
                 onClick={() => {
-                  fetch({ search: searchTerm, lowStock: showLowStock });
-                  proFetch();
-                  supFetch();
+                  fetch({ search: searchTerm, lowStock: showLowStock })
+                  proFetch()
+                  supFetch()
                 }}
                 disabled={isLoading || prodLoading || supLoading}
               >
@@ -471,7 +482,7 @@ export default function InventoryPage() {
               </TableHeader>
               <TableBody>
                 {filteredStocks.map((stock) => {
-                  const status = getStockStatus(stock.quantity);
+                  const status = getStockStatus(stock.quantity)
                   return (
                     <motion.tr
                       key={stock.entryId}
@@ -507,9 +518,9 @@ export default function InventoryPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => {
-                              setSelectedEntry(stock);
-                              setEntryDate(stock.entryDate ? new Date(stock.entryDate) : new Date());
-                              setIsEditDialogOpen(true);
+                              setSelectedEntry(stock)
+                              setEntryDate(stock.entryDate ? new Date(stock.entryDate) : new Date())
+                              setIsEditDialogOpen(true)
                             }}
                             disabled={!canUpdate}
                           >
@@ -526,7 +537,7 @@ export default function InventoryPage() {
                         </div>
                       </TableCell>
                     </motion.tr>
-                  );
+                  )
                 })}
               </TableBody>
             </Table>
@@ -537,10 +548,10 @@ export default function InventoryPage() {
       <Dialog
         open={isEditDialogOpen}
         onOpenChange={(open) => {
-          setIsEditDialogOpen(open);
+          setIsEditDialogOpen(open)
           if (!open) {
-            setSelectedEntry(null);
-            setEntryDate(new Date());
+            setSelectedEntry(null)
+            setEntryDate(new Date())
           }
         }}
       >
@@ -671,9 +682,9 @@ export default function InventoryPage() {
                   type="button"
                   variant="outline"
                   onClick={() => {
-                    setIsEditDialogOpen(false);
-                    setSelectedEntry(null);
-                    setEntryDate(new Date());
+                    setIsEditDialogOpen(false)
+                    setSelectedEntry(null)
+                    setEntryDate(new Date())
                   }}
                   disabled={isSubmitting}
                 >
@@ -695,21 +706,21 @@ export default function InventoryPage() {
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 }
 
 
 
-// "use client";
+// "use client"
 
-// import type React from "react";
-// import { useState, useEffect } from "react";
-// import { motion } from "framer-motion";
-// import { Button } from "@/components/ui/button";
-// import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-// import { Input } from "@/components/ui/input";
-// import { Badge } from "@/components/ui/badge";
-// import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+// import type React from "react"
+// import { useState, useEffect } from "react"
+// import { motion } from "framer-motion"
+// import { Button } from "@/components/ui/button"
+// import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+// import { Input } from "@/components/ui/input"
+// import { Badge } from "@/components/ui/badge"
+// import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 // import {
 //   Dialog,
 //   DialogContent,
@@ -717,36 +728,36 @@ export default function InventoryPage() {
 //   DialogHeader,
 //   DialogTitle,
 //   DialogTrigger,
-// } from "@/components/ui/dialog";
-// import { Plus, Search, Warehouse, AlertTriangle, TrendingUp, Package, Edit, Trash2 } from "lucide-react";
-// import { formatDate } from "@/lib/utils";
-// import { useStockStore } from "@/stores/stock-store";
-// import { useProductStore, useSupplierStore } from "@/stores";
-// import { Entry } from "@/lib/generated/prisma";
-// import { Label } from "@/components/ui/label";
-// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+// } from "@/components/ui/dialog"
+// import { Plus, Search, Warehouse, AlertTriangle, TrendingUp, Package, Edit, Trash2 } from "lucide-react"
+// import { formatDate } from "@/lib/utils"
+// import { useStockStore } from "@/stores/stock-store"
+// import { useProductStore, useSupplierStore } from "@/stores"
+// import { Entry } from "@/lib/generated/prisma"
+// import { Label } from "@/components/ui/label"
+// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 // import { DatePicker } from "@/components/ui/date-picker"
-// import { Textarea } from "@/components/ui/textarea";
+// import { Textarea } from "@/components/ui/textarea"
 
 
 
 // export default function InventoryPage() {
-//   const { items: stockEntries, isLoading, error, fetch, create, update, delete: deleteEntry } = useStockStore();
-//   const [searchTerm, setSearchTerm] = useState("");
-//   const [showLowStock, setShowLowStock] = useState(false);
-//   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-//   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-//   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
-//   const [entryDate, setEntryDate] = useState<Date | undefined>(new Date());
-//   const [isSubmitting, setIsSubmitting] = useState(false);
+//   const { items: stockEntries, isLoading, error, fetch, create, update, delete: deleteEntry } = useStockStore()
+//   const [searchTerm, setSearchTerm] = useState("")
+//   const [showLowStock, setShowLowStock] = useState(false)
+//   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+//   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+//   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null)
+//   const [entryDate, setEntryDate] = useState<Date | undefined>(new Date())
+//   const [isSubmitting, setIsSubmitting] = useState(false)
 //   const { items: products, fetch: proFetch } = useProductStore()
 //   const { items: suppliers, fetch: supFetch } = useSupplierStore()
 
 //   useEffect(() => {
-//     fetch({ search: searchTerm, lowStock: showLowStock });
+//     fetch({ search: searchTerm, lowStock: showLowStock })
 //     proFetch()
 //     supFetch()
-//   }, [fetch, proFetch, supFetch, searchTerm, showLowStock]);
+//   }, [fetch, proFetch, supFetch, searchTerm, showLowStock])
 
 
 
@@ -756,13 +767,13 @@ export default function InventoryPage() {
 //       stock.Product?.productCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
 //       stock.invoice?.toLowerCase().includes(searchTerm.toLowerCase()) ||
 //       stock.memo?.toLowerCase().includes(searchTerm.toLowerCase()),
-//   );
+//   )
 
 //   const handleAddStock = async (e: React.FormEvent<HTMLFormElement>) => {
-//     e.preventDefault();
-//     const formData = new FormData(e.currentTarget);
+//     e.preventDefault()
+//     const formData = new FormData(e.currentTarget)
 
-//     setIsSubmitting(true);
+//     setIsSubmitting(true)
 
 //     const stockData: Partial<Entry> = {
 //       productId: formData.get("productId") as string,
@@ -773,24 +784,24 @@ export default function InventoryPage() {
 //       invoice: formData.get("invoice") as string,
 //       memo: formData.get("memo") as string,
 //       status: (formData.get("status") as "active" | "inactive") || "active",
-//     };
+//     }
 
 //     try {
-//       await create(stockData);
-//       setIsAddDialogOpen(false);
-//       (e.target as HTMLFormElement).reset();
+//       await create(stockData)
+//       setIsAddDialogOpen(false)
+//       (e.target as HTMLFormElement).reset()
 //     } catch (error) {
-//       console.error("Error adding stock:", error);
+//       console.error("Error adding stock:", error)
 //     } finally {
-//       setIsSubmitting(false);
+//       setIsSubmitting(false)
 //     }
-//   };
+//   }
 
 //   const handleEditStock = async (e: React.FormEvent<HTMLFormElement>) => {
-//     e.preventDefault();
-//     if (!selectedEntry) return;
+//     e.preventDefault()
+//     if (!selectedEntry) return
 
-//     const formData = new FormData(e.currentTarget);
+//     const formData = new FormData(e.currentTarget)
 //     const stockData: Partial<Entry> = {
 //       productId: formData.get("productId") as string,
 //       supplierId: formData.get("supplierId") as string,
@@ -800,43 +811,43 @@ export default function InventoryPage() {
 //       invoice: formData.get("invoice") as string,
 //       memo: formData.get("memo") as string,
 //       status: formData.get("status") as "active" | "inactive",
-//     };
+//     }
 
 //     try {
-//       await update(selectedEntry.entryId, stockData);
-//       setIsEditDialogOpen(false);
-//       setSelectedEntry(null);
+//       await update(selectedEntry.entryId, stockData)
+//       setIsEditDialogOpen(false)
+//       setSelectedEntry(null)
 //     } catch (error) {
-//       console.error("Error updating stock:", error);
+//       console.error("Error updating stock:", error)
 //     }
-//   };
+//   }
 
 //   const handleDeleteStock = async (entryId: string) => {
-//     if (!window.confirm("Are you sure you want to delete this stock entry?")) return;
+//     if (!window.confirm("Are you sure you want to delete this stock entry?")) return
 //     try {
-//       await deleteEntry(entryId);
+//       await deleteEntry(entryId)
 //     } catch (error) {
-//       console.error("Error deleting stock:", error);
+//       console.error("Error deleting stock:", error)
 //     }
-//   };
+//   }
 
 //   const getStockStatus = (quantity: number) => {
-//     if (quantity === 0) return { variant: "destructive" as const, label: "Out of Stock" };
-//     if (quantity < 10) return { variant: "destructive" as const, label: "Critical" };
-//     if (quantity < 50) return { variant: "secondary" as const, label: "Low Stock" };
-//     return { variant: "default" as const, label: "In Stock" };
-//   };
+//     if (quantity === 0) return { variant: "destructive" as const, label: "Out of Stock" }
+//     if (quantity < 10) return { variant: "destructive" as const, label: "Critical" }
+//     if (quantity < 50) return { variant: "secondary" as const, label: "Low Stock" }
+//     return { variant: "default" as const, label: "In Stock" }
+//   }
 
-//   const lowStockCount = stockEntries.filter((stock) => stock.quantity < 50).length;
-//   const outOfStockCount = stockEntries.filter((stock) => stock.quantity === 0).length;
-//   const totalValue = stockEntries.reduce((sum, stock) => sum + stock.quantity * stock.entryPrice, 0).toFixed(2);
+//   const lowStockCount = stockEntries.filter((stock) => stock.quantity < 50).length
+//   const outOfStockCount = stockEntries.filter((stock) => stock.quantity === 0).length
+//   const totalValue = stockEntries.reduce((sum, stock) => sum + stock.quantity * stock.entryPrice, 0).toFixed(2)
 
 //   if (isLoading) {
 //     return (
 //       <div className="flex items-center justify-center h-64">
 //         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
 //       </div>
-//     );
+//     )
 //   }
 
 //   return (
@@ -943,8 +954,8 @@ export default function InventoryPage() {
 //       <Dialog
 //         open={isEditDialogOpen}
 //         onOpenChange={() => {
-//           setIsEditDialogOpen(false);
-//           setSelectedEntry(null);
+//           setIsEditDialogOpen(false)
+//           setSelectedEntry(null)
 //         }}
 //       >
 //         <DialogContent className="sm:max-w-[600px]">
@@ -1042,8 +1053,8 @@ export default function InventoryPage() {
 
 //               <div className="flex justify-end gap-2">
 //                 <Button type="button" variant="outline" onClick={() => {
-//                   setIsEditDialogOpen(false);
-//                   setSelectedEntry(null);
+//                   setIsEditDialogOpen(false)
+//                   setSelectedEntry(null)
 //                 }}>
 //                   Cancel
 //                 </Button>
@@ -1168,7 +1179,7 @@ export default function InventoryPage() {
 //               </TableHeader>
 //               <TableBody>
 //                 {filteredStocks.map((stock) => {
-//                   const status = getStockStatus(stock.quantity);
+//                   const status = getStockStatus(stock.quantity)
 //                   return (
 //                     <motion.tr
 //                       key={stock.entryId}
@@ -1204,8 +1215,8 @@ export default function InventoryPage() {
 //                             variant="ghost"
 //                             size="sm"
 //                             onClick={() => {
-//                               setSelectedEntry(stock);
-//                               setIsEditDialogOpen(true);
+//                               setSelectedEntry(stock)
+//                               setIsEditDialogOpen(true)
 //                             }}
 //                           >
 //                             <Edit className="h-4 w-4" />
@@ -1220,7 +1231,7 @@ export default function InventoryPage() {
 //                         </div>
 //                       </TableCell>
 //                     </motion.tr>
-//                   );
+//                   )
 //                 })}
 //               </TableBody>
 //             </Table>
@@ -1228,6 +1239,6 @@ export default function InventoryPage() {
 //         </CardContent>
 //       </Card>
 //     </div>
-//   );
+//   )
 // }
 

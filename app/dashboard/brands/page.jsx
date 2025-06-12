@@ -180,15 +180,7 @@ export default function BrandsPage() {
                     disabled={isSaving}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="brandCode">{t("Brand Code")}</Label>
-                  <Input
-                    id="brandCode"
-                    name="brandCode"
-                    defaultValue={editingBrand?.brandCode ?? ""}
-                    disabled={isSaving}
-                  />
-                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="memo">{t("Memo")}</Label>
                   <Textarea

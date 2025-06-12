@@ -4,6 +4,7 @@
 import prisma from "@/lib/prisma";
 import { generateCategoryCode } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
+import { uploadFileServerAction } from "./files";
 
 export async function fetchCategories() {
   try {
@@ -24,13 +25,25 @@ export async function fetchCategories() {
 }
 
 // Create a new category
-export async function createCategory(data) {
+export async function createCategory(data, file) {
+  let pictureUrl = data.picture || null;
   try {
-    const categoryCode = data.categoryCode || generateCategoryCode();
+    const categoryCode = generateCategoryCode();
+    if (file) {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("aspectRatio", "original");
+      const uploadResult = await uploadFileServerAction(formData, { maxSizeMB: 5 });
+      if (!uploadResult.success || !uploadResult.url) {
+        throw new Error(uploadResult.error || "File upload failed");
+      }
+      pictureUrl = uploadResult.url;
+    }
     const category = await prisma.category.create({
       data: {
         categoryName: data.categoryName,
         categoryCode,
+        picture: pictureUrl,
         picture: data.picture,
         memo: data.memo,
         updatedAt: new Date(),

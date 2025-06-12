@@ -26,9 +26,9 @@ export const useCategoryStore = create()(
         }
       },
 
-      create: async (data) => {
+      create: async (data, file) => {
         set({ isLoading: true, error: null });
-        const result = await createCategory(data);
+        const result = await createCategory(data, file);
         if (result.success) {
           set((state) => ({
             items: [...state.items, result.data],

@@ -70,7 +70,7 @@ export default function LoginPage() {
       <motion.header initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="container mx-auto py-6">
         <div className="flex items-center justify-center md:justify-start gap-2">
           <div className="bg-emDEDerald-100 dark:bg-emerald-900/30 p-2 rounded-lg">
-            <Image src={"/logo.jpg"} width={100} height={100} alt="User avatar" className="rounded-md" />
+            <Image src={"/images/logo.jpg"} width={100} height={100} alt="User avatar" className="rounded-md" />
           </div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
             <span className="text-emerald-600 dark:text-emerald-400">GK </span>
