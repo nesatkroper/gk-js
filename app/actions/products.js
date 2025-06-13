@@ -4,6 +4,7 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { uploadFileServerAction } from "@/app/actions/files";
+import { generateProductCode } from "@/lib/utils";
 
 
 
@@ -36,6 +37,7 @@ export async function fetchProducts() {
 export async function createProduct(data, file) {
   try {
     let pictureUrl = data.picture || null;
+    const productCode = data.productCode || generateProductCode() ;
     if (file) {
       const formData = new FormData();
       formData.append("file", file);
@@ -50,7 +52,7 @@ export async function createProduct(data, file) {
     const product = await prisma.product.create({
       data: {
         productName: data.productName,
-        productCode: data.productCode,
+        productCode,
         picture: pictureUrl,
         unit: data.unit,
         capacity: data.capacity ? parseFloat(data.capacity) : null,
