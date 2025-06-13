@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import Layout from "@/components/layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -223,183 +224,184 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
-      >
-        {error && (
-          <div className="text-destructive p-2 rounded bg-destructive/10">
-            {error.message || String(error)}
+    <Layout pageTitle="Products">
+      <div className="space-y-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+        >
+          {error && (
+            <div className="text-destructive p-2 rounded bg-destructive/10">
+              {error.message || String(error)}
+            </div>
+          )}
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">{t("Products")}</h1>
+            <p className="text-muted-foreground">{t("Manage your fertilizer inventory and product catalog")}</p>
           </div>
-        )}
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t("Products")}</h1>
-          <p className="text-muted-foreground">{t("Manage your fertilizer inventory and product catalog")}</p>
-        </div>
 
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleRetry} disabled={prodLoading || cateLoading || brandLoading}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${prodLoading || cateLoading || brandLoading ? "animate-spin" : ""}`} />
-            {t("Refresh")}
-          </Button>
-          <Dialog
-            open={isDialogOpen}
-            onOpenChange={(open) => {
-              setIsDialogOpen(open);
-              if (!open) {
-                setSelectedFile(null);
-                setEditingProduct(null);
-              }
-            }}
-          >
-            <DialogTrigger asChild>
-              {canCreate && (
-                <Button disabled={activeCategories.length === 0}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  {t("Add Product")}
-                </Button>
-              )}
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>{editingProduct ? t("Edit Product") : t("Add New Product")}</DialogTitle>
-                <DialogDescription>
-                  {editingProduct ? t("Update product information") : t("Create a new product in your inventory")}
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target);
-                handleSubmit(formData);
-              }} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleRetry} disabled={prodLoading || cateLoading || brandLoading}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${prodLoading || cateLoading || brandLoading ? "animate-spin" : ""}`} />
+              {t("Refresh")}
+            </Button>
+            <Dialog
+              open={isDialogOpen}
+              onOpenChange={(open) => {
+                setIsDialogOpen(open);
+                if (!open) {
+                  setSelectedFile(null);
+                  setEditingProduct(null);
+                }
+              }}
+            >
+              <DialogTrigger asChild>
+                {canCreate && (
+                  <Button disabled={activeCategories.length === 0}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    {t("Add Product")}
+                  </Button>
+                )}
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>{editingProduct ? t("Edit Product") : t("Add New Product")}</DialogTitle>
+                  <DialogDescription>
+                    {editingProduct ? t("Update product information") : t("Create a new product in your inventory")}
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.target);
+                  handleSubmit(formData);
+                }} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="productName">{t("Product Name")} *</Label>
+                      <Input
+                        id="productName"
+                        name="productName"
+                        required
+                        defaultValue={editingProduct?.productName ?? ""}
+                        disabled={isSaving}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="categoryId">{t("Category")} *</Label>
+                      <Combobox
+                        id="categoryId"
+                        name="categoryId"
+                        options={activeCategories.map(category => ({ value: category.categoryId.toString(), label: category.categoryName }))}
+                        placeholder={t("Select category...")}
+                        value={selectedCategoryId}
+                        onChange={setSelectedCategoryId}
+                        disabled={isSaving}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="brandId">{t("Brand")}</Label>
+                      <Combobox
+                        id="brandId"
+                        name="brandId"
+                        options={[{ value: "", label: t("No brand") }, ...activeBrands.map(brand => ({ value: brand.brandId.toString(), label: brand.brandName }))]}
+                        placeholder={t("Select brand...")}
+                        value={selectedBrandId}
+                        onChange={setSelectedBrandId}
+                        disabled={isSaving}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="productCode">{t("Product Code")}</Label>
+                      <Input
+                        id="productCode"
+                        name="productCode"
+                        placeholder="You can leave this blank."
+                        defaultValue={editingProduct?.productCode ?? ""}
+                        disabled={isSaving}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="capacity">{t("Capacity")}</Label>
+                      <Input
+                        id="capacity"
+                        name="capacity"
+                        type="number"
+                        step="0.01"
+                        defaultValue={editingProduct?.capacity ?? ""}
+                        disabled={isSaving}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="unit">{t("Unit")}</Label>
+                      <Combobox
+                        id="unit"
+                        name="unit"
+                        options={unit.map(u => ({ value: u.value, label: u.label }))}
+                        placeholder={t("Select unit...")}
+                        value={selectedUnit}
+                        onChange={setSelectedUnit}
+                        disabled={isSaving}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="costPrice">{t("Cost Price")} *</Label>
+                      <Input
+                        id="costPrice"
+                        name="costPrice"
+                        type="number"
+                        step="0.01"
+                        required
+                        defaultValue={editingProduct?.costPrice ?? ""}
+                        disabled={isSaving}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="sellPrice">{t("Sell Price")} *</Label>
+                      <Input
+                        id="sellPrice"
+                        name="sellPrice"
+                        type="number"
+                        step="0.01"
+                        required
+                        defaultValue={editingProduct?.sellPrice ?? ""}
+                        disabled={isSaving}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="discountRate">{t("Discount %")}</Label>
+                      <Input
+                        id="discountRate"
+                        name="discountRate"
+                        type="number"
+                        min="0"
+                        max="100"
+                        defaultValue={editingProduct?.discountRate ?? 0}
+                        disabled={isSaving}
+                      />
+                    </div>
+                  </div>
                   <div className="space-y-2">
-                    <Label htmlFor="productName">{t("Product Name")} *</Label>
-                    <Input
-                      id="productName"
-                      name="productName"
-                      required
-                      defaultValue={editingProduct?.productName ?? ""}
+                    <Label>{t("Product Image")}</Label>
+                    <FileUpload
+                      onFileSelect={(file) => setSelectedFile(file)}
+                      accept="image/*"
+                      maxSize={5}
+                      preview={true}
+                      value={selectedFile}
+                      placeholder={t("Upload product image")}
                       disabled={isSaving}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="categoryId">{t("Category")} *</Label>
-                    <Combobox
-                      id="categoryId"
-                      name="categoryId"
-                      options={activeCategories.map(category => ({ value: category.categoryId.toString(), label: category.categoryName }))}
-                      placeholder={t("Select category...")}
-                      value={selectedCategoryId}
-                      onChange={setSelectedCategoryId}
-                      disabled={isSaving}
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="brandId">{t("Brand")}</Label>
-                    <Combobox
-                      id="brandId"
-                      name="brandId"
-                      options={[{ value: "", label: t("No brand") }, ...activeBrands.map(brand => ({ value: brand.brandId.toString(), label: brand.brandName }))]}
-                      placeholder={t("Select brand...")}
-                      value={selectedBrandId}
-                      onChange={setSelectedBrandId}
-                      disabled={isSaving}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="productCode">{t("Product Code")}</Label>
-                    <Input
-                      id="productCode"
-                      name="productCode"
-                      placeholder="You can leave this blank."
-                      defaultValue={editingProduct?.productCode ?? ""}
-                      disabled={isSaving}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="capacity">{t("Capacity")}</Label>
-                    <Input
-                      id="capacity"
-                      name="capacity"
-                      type="number"
-                      step="0.01"
-                      defaultValue={editingProduct?.capacity ?? ""}
-                      disabled={isSaving}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="unit">{t("Unit")}</Label>
-                    <Combobox
-                      id="unit"
-                      name="unit"
-                      options={unit.map(u => ({ value: u.value, label: u.label }))}
-                      placeholder={t("Select unit...")}
-                      value={selectedUnit}
-                      onChange={setSelectedUnit}
-                      disabled={isSaving}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="costPrice">{t("Cost Price")} *</Label>
-                    <Input
-                      id="costPrice"
-                      name="costPrice"
-                      type="number"
-                      step="0.01"
-                      required
-                      defaultValue={editingProduct?.costPrice ?? ""}
-                      disabled={isSaving}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="sellPrice">{t("Sell Price")} *</Label>
-                    <Input
-                      id="sellPrice"
-                      name="sellPrice"
-                      type="number"
-                      step="0.01"
-                      required
-                      defaultValue={editingProduct?.sellPrice ?? ""}
-                      disabled={isSaving}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="discountRate">{t("Discount %")}</Label>
-                    <Input
-                      id="discountRate"
-                      name="discountRate"
-                      type="number"
-                      min="0"
-                      max="100"
-                      defaultValue={editingProduct?.discountRate ?? 0}
-                      disabled={isSaving}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>{t("Product Image")}</Label>
-                  <FileUpload
-                    onFileSelect={(file) => setSelectedFile(file)}
-                    accept="image/*"
-                    maxSize={5}
-                    preview={true}
-                    value={selectedFile}
-                    placeholder={t("Upload product image")}
-                    disabled={isSaving}
-                  />
-                </div>
-                {/* <div className="grid grid-cols-2 gap-4"> */}
-                {/* <div className="space-y-2">
+                  {/* <div className="grid grid-cols-2 gap-4"> */}
+                  {/* <div className="space-y-2">
                     <Label htmlFor="desc">{t("Description")}</Label>
                     <Textarea
                       id="desc"
@@ -409,120 +411,122 @@ export default function ProductsPage() {
                       disabled={isSaving}
                     />
                   </div> */}
-                {/* </div> */}
-                <div className="flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsDialogOpen(false)}
-                    disabled={isSaving}
-                  >
-                    {t("Cancel")}
-                  </Button>
-                  {(canCreate || canUpdate) && (
-                    <Button type="submit" disabled={isSaving}>
-                      {isSaving ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          {editingProduct ? t("Updating...") : t("Creating...")}
-                        </>
-                      ) : editingProduct ? (
-                        t("Update Product")
-                      ) : (
-                        t("Create Product")
-                      )}
+                  {/* </div> */}
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsDialogOpen(false)}
+                      disabled={isSaving}
+                    >
+                      {t("Cancel")}
                     </Button>
-                  )}
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </motion.div>
+                    {(canCreate || canUpdate) && (
+                      <Button type="submit" disabled={isSaving}>
+                        {isSaving ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            {editingProduct ? t("Updating...") : t("Creating...")}
+                          </>
+                        ) : editingProduct ? (
+                          t("Update Product")
+                        ) : (
+                          t("Create Product")
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </motion.div>
 
-      {(error || prodLoading) && (
-        <Card className="border-destructive">
-          <CardContent className="pt-6">
+        {(error || prodLoading) && (
+          <Card className="border-destructive">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-destructive font-medium">{t("Error loading data")}</p>
+                  <p className="text-sm text-muted-foreground">{error || t("Loading products or suppliers")}</p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    fetch({ search: searchTerm, lowStock: showLowStock })
+                    proFetch()
+                    supFetch()
+                  }}
+                  disabled={prodLoading}
+                >
+                  {t("Try Again")}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card>
+          <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-destructive font-medium">{t("Error loading data")}</p>
-                <p className="text-sm text-muted-foreground">{error || t("Loading products or suppliers")}</p>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  {t("Product Inventory")}
+                  {(prodLoading || cateLoading || brandLoading) && <Loader2 className="h-4 w-4 animate-spin" />}
+                </CardTitle>
+                <CardDescription>
+                  {filteredProducts.length} {t("products in your catalog")}
+                </CardDescription>
               </div>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  fetch({ search: searchTerm, lowStock: showLowStock })
-                  proFetch()
-                  supFetch()
-                }}
-                disabled={ prodLoading}
-              >
-                {t("Try Again")}
-              </Button>
+              <ViewToggle view={view} onViewChange={setView} />
             </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4 mb-6">
+              <div className="relative flex-1 max-w-sm">
+                <Search
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground"
+                />
+                <Input
+                  placeholder={t("Search products...")}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                  disabled={prodLoading || cateLoading || brandLoading}
+                />
+              </div>
+            </div>
+
+            {view === "card" ? (
+              <DataCards
+                data={filteredProducts}
+                fields={cardFields}
+                loading={prodLoading || cateLoading || brandLoading}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                idField="productId"
+                imageField="picture"
+                nameField="productName"
+                columns={4}
+              />
+            ) : (
+              <DataTable
+                data={filteredProducts}
+                columns={tableColumns}
+                loading={prodLoading || cateLoading || brandLoading}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                idField="productId"
+                imageField="picture"
+                nameField="productName"
+              />
+            )}
           </CardContent>
         </Card>
-      )}
+      </div>
+    </Layout>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Package className="h-5 w-5" />
-                {t("Product Inventory")}
-                {(prodLoading || cateLoading || brandLoading) && <Loader2 className="h-4 w-4 animate-spin" />}
-              </CardTitle>
-              <CardDescription>
-                {filteredProducts.length} {t("products in your catalog")}
-              </CardDescription>
-            </div>
-            <ViewToggle view={view} onViewChange={setView} />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4 mb-6">
-            <div className="relative flex-1 max-w-sm">
-              <Search
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground"
-              />
-              <Input
-                placeholder={t("Search products...")}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-                disabled={prodLoading || cateLoading || brandLoading}
-              />
-            </div>
-          </div>
-
-          {view === "card" ? (
-            <DataCards
-              data={filteredProducts}
-              fields={cardFields}
-              loading={prodLoading || cateLoading || brandLoading}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              idField="productId"
-              imageField="picture"
-              nameField="productName"
-              columns={4}
-            />
-          ) : (
-            <DataTable
-              data={filteredProducts}
-              columns={tableColumns}
-              loading={prodLoading || cateLoading || brandLoading}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              idField="productId"
-              imageField="picture"
-              nameField="productName"
-            />
-          )}
-        </CardContent>
-      </Card>
-    </div>
   );
 }
 
