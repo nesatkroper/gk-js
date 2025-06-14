@@ -16,7 +16,6 @@ export function DataTable({
   columns,
   loading = false,
   onEdit,
-  // onDelete,
   onView,
   idField = "id",
   imageField = "picture",

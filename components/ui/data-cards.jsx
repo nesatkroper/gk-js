@@ -15,7 +15,6 @@ export function DataCards({
   fields,
   loading = false,
   onEdit,
-  // onDelete,
   onView,
   idField = "id",
   imageField = "picture",
