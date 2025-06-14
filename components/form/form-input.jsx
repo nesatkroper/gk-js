@@ -1,70 +1,106 @@
+"use client";
+
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import PropTypes from "prop-types";
 import React from "react";
 
 const FormInput = ({
   onCallbackInput,
   name,
-  value,
+  value = "",
   type = "text",
-  mainClass,
-  inputClass,
-  labelClass,
-  placeholder = "Food, Drink, ...",
-  label = "Email*",
+  className = "",
+  placeholder = "",
+  label = "Input",
   readonly = false,
   required = false,
-  min = 0,
-  step = 0.01,
+  min,
+  step,
   error,
-  disabled,
+  disabled = false,
 }) => {
   const handleChange = (event) => {
     const { name, value } = event.target;
-    onCallbackInput(name, value);
+    onCallbackInput?.(name, value);
   };
 
   return (
-    <div className={`columns-1 ${mainClass}`}>
-      <Label className={`${labelClass}`}>
-        {label} {required ? <span className='text-red-700'>*</span> : ""}
+    <div className="space-y-2">
+      <Label htmlFor={name}>
+        {label} {required && <span className="text-red-600">*</span>}
       </Label>
       <Input
-        onChange={handleChange}
-        value={value}
+        id={name}
         name={name}
         type={type}
+        value={value}
+        onChange={handleChange}
         placeholder={placeholder}
-        className={`${inputClass}`}
+        className={className}
         readOnly={readonly}
+        required={required}
         min={min}
         step={step}
-        required={required}
         disabled={disabled}
       />
-      {error && <p className='text-red-500 text-sm mt-1'>{error}</p>}
+      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
     </div>
   );
 };
 
-FormInput.propTypes = {
-  onCallbackInput: PropTypes.func,
-  name: PropTypes.string,
-  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  type: PropTypes.string,
-  mainClass: PropTypes.string,
-  inputClass: PropTypes.string,
-  labelClass: PropTypes.string,
-  placeholder: PropTypes.string,
-  size: PropTypes.number,
-  label: PropTypes.string,
-  readonly: PropTypes.bool,
-  min: PropTypes.number,
-  step: PropTypes.number,
-  required: PropTypes.bool,
-  error: PropTypes.string,
-  disabled: PropTypes.bool,
-};
-
 export default FormInput;
+
+
+
+// "use client"
+
+// import { Label } from "@/components/ui/label";
+// import { Input } from "@/components/ui/input";
+// import React from "react";
+
+// const FormInput = ({
+//   onCallbackInput,
+//   name,
+//   value,
+//   type = "text",
+//   className,
+//   placeholder = "someone@ok.com",
+//   label = "Email",
+//   readonly = false,
+//   required = false,
+//   min = 0,
+//   step = 0.01,
+//   error,
+//   disabled,
+// }) => {
+//   const handleChange = (event) => {
+//     const { name, value } = event.target;
+//     onCallbackInput(name, value);
+//   };
+
+//   return (
+//     <div className='space-y-2'>
+//       <Label htmlFor={name} id={name}>
+//         {label} {required ? <span className='text-red-600'>*</span> : ""}
+//       </Label>
+//       <Input
+//         onChange={handleChange}
+//         id={name}
+//         value={value}
+//         name={name}
+//         type={type}
+//         placeholder={placeholder}
+//         className={className}
+//         readOnly={readonly}
+//         min={min}
+//         step={step}
+//         required={required}
+//         disabled={disabled}
+//       />
+//       {error && <p className='text-red-500 text-sm mt-1'>{error}</p>}
+//     </div>
+//   );
+// };
+
+
+// export default FormInput;

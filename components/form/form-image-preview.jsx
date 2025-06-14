@@ -1,7 +1,8 @@
+"use client"
+
 import React from "react";
 import { PropTypes } from "prop-types";
 import { Label } from "@/components/ui/label";
-import { defimg } from "@/utils/resize-crop-image";
 
 const FormImagePreview = ({
   imgSrc = "",
@@ -17,7 +18,7 @@ const FormImagePreview = ({
         {label} {required ? <span className='text-red-700'>*</span> : ""}
       </Label>
       <img
-        src={imgSrc || defimg}
+        src={imgSrc || './placeholder.svg'}
         alt='picture preview'
         crossOrigin='anonymous'
         className={`rounded-xl shadow ${imgClass}`}
@@ -26,13 +27,4 @@ const FormImagePreview = ({
   );
 };
 
-FormImagePreview.propTypes = {
-  imgSrc: PropTypes.string,
-  labelClass: PropTypes.string,
-  imgClass: PropTypes.string,
-  size: PropTypes.number,
-  label: PropTypes.string,
-  underLine: PropTypes.bool,
-  required: PropTypes.bool,
-};
 export default FormImagePreview;

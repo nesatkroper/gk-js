@@ -1,4 +1,4 @@
-// index.jsx
+
 export { default as FormCheck } from "./form-check";
 export { default as FormComboBox } from "./form-combobox";
 export { default as FormDatePicker } from "./form-date-picker";

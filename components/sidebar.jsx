@@ -42,7 +42,6 @@ export function AppSidebar({ ...props }) {
     fetch()
   }, [fetch])
 
-  console.log(items)
 
 
 
@@ -130,7 +129,7 @@ export function AppSidebar({ ...props }) {
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
                     <span className="text-emerald-600 dark:text-emerald-400">GK </span>
-                     Natural
+                    Natural
                   </span>
                   <span className="truncate text-xs text-muted-foreground">v1.1.0</span>
                 </div>

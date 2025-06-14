@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useState, useCallback } from "react";
 import Cropper from "react-easy-crop";
 import { Separator } from "@/components/ui/separator";
@@ -7,7 +9,6 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getCroppedImg } from "@/utils/crop-image";
-import { defimg } from "@/utils/resize-crop-image";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -280,19 +281,5 @@ function AspectRatioOption({
   );
 }
 
-FormImageResize.propTypes = {
-  onCallbackFormData: PropTypes.func,
-  resolution: PropTypes.number,
-};
-
-AspectRatioOption.propTypes = {
-  value: PropTypes.any,
-  label: PropTypes.string,
-  width: PropTypes.number,
-  height: PropTypes.number,
-  isSelected: PropTypes.bool,
-  onClick: PropTypes.func,
-  required: PropTypes.bool,
-};
 
 export default FormImageResize;
