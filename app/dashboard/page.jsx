@@ -12,7 +12,6 @@ import { useAuthStore } from "@/stores"
 import { useTranslation } from "react-i18next"
 import MapComponent from "@/components/map"
 
-// export const revalidate = 60;
 export const dynamic = 'force-dynamic';
 export default function DashboardPage() {
   const { me, fetch } = useAuthStore()
@@ -24,11 +23,9 @@ export default function DashboardPage() {
     }
   }, [fetch, me])
 
-  console.log(me)
 
   return (
     <div className="space-y-6">
-      {/* <MapComponent/> */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-3xl font-bold tracking-tight">{t('Dashboard')}</h1>
         <p className="text-muted-foreground">Welcome back! Here's what's happening with your fertilizer business.</p>

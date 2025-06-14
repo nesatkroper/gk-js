@@ -34,15 +34,16 @@ export async function fetchProducts() {
   }
 }
 
-export async function createProduct(data, file) {
+export async function createProduct(formData) {
   try {
-    let pictureUrl = data.picture || null;
-    const productCode = data.productCode || generateProductCode() ;
-    if (file) {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("aspectRatio", "original");
-      const uploadResult = await uploadFileServerAction(formData, { maxSizeMB: 5 });
+    const file = formData.get("file");
+    let pictureUrl = null;
+
+    if (file && file.size > 0) {
+      const uploadFormData = new FormData();
+      uploadFormData.append("file", file);
+      uploadFormData.append("aspectRatio", "original");
+      const uploadResult = await uploadFileServerAction(uploadFormData, { maxSizeMB: 5 });
       if (!uploadResult.success || !uploadResult.url) {
         throw new Error(uploadResult.error || "File upload failed");
       }
@@ -51,24 +52,25 @@ export async function createProduct(data, file) {
 
     const product = await prisma.product.create({
       data: {
-        productName: data.productName,
-        productCode,
+        productName: formData.get("productName"),
+        productCode: formData.get("productCode") || generateProductCode(),
         picture: pictureUrl,
-        unit: data.unit,
-        capacity: data.capacity ? parseFloat(data.capacity) : null,
-        sellPrice: parseFloat(data.sellPrice),
-        costPrice: parseFloat(data.costPrice),
-        discountRate: data.discountRate,
-        desc: data.desc,
-        categoryId: data.categoryId,
-        brandId: data.brandId,
+        unit: formData.get("unit"),
+        capacity: formData.get("capacity") ? parseFloat(formData.get("capacity")) : null,
+        sellPrice: parseFloat(formData.get("sellPrice")),
+        costPrice: parseFloat(formData.get("costPrice")),
+        discountRate: parseFloat(formData.get("discountRate")) || 0,
+        desc: formData.get("desc"),
+        categoryId: formData.get("categoryId") ? parseInt(formData.get("categoryId")) : null,
+        brandId: formData.get("brandId") ? parseInt(formData.get("brandId")) : null,
         updatedAt: new Date(),
       },
     });
 
     revalidatePath("/products");
     return {
-      success: true, data: {
+      success: true,
+      data: {
         ...product,
         capacity: product.capacity ? product.capacity.toNumber() : null,
         sellPrice: product.sellPrice.toNumber(),
@@ -81,14 +83,17 @@ export async function createProduct(data, file) {
   }
 }
 
-export async function updateProduct(productId, data, file) {
+export async function updateProduct(formData) {
   try {
-    let pictureUrl = data.picture || null;
-    if (file) {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("aspectRatio", "original");
-      const uploadResult = await uploadFileServerAction(formData, { maxSizeMB: 5 });
+    const productId = parseInt(formData.get("productId"));
+    const file = formData.get("file");
+    let pictureUrl = formData.get("picture");
+
+    if (file && file.size > 0) {
+      const uploadFormData = new FormData();
+      uploadFormData.append("file", file);
+      uploadFormData.append("aspectRatio", "original");
+      const uploadResult = await uploadFileServerAction(uploadFormData, { maxSizeMB: 5 });
       if (!uploadResult.success || !uploadResult.url) {
         throw new Error(uploadResult.error || "File upload failed");
       }
@@ -98,24 +103,25 @@ export async function updateProduct(productId, data, file) {
     const product = await prisma.product.update({
       where: { productId },
       data: {
-        productName: data.productName,
-        productCode: data.productCode,
+        productName: formData.get("productName"),
+        productCode: formData.get("productCode"),
         picture: pictureUrl,
-        unit: data.unit,
-        capacity: data.capacity ? parseFloat(data.capacity) : null,
-        sellPrice: parseFloat(data.sellPrice),
-        costPrice: parseFloat(data.costPrice),
-        discountRate: data.discountRate,
-        desc: data.desc,
-        categoryId: data.categoryId,
-        brandId: data.brandId,
+        unit: formData.get("unit"),
+        capacity: formData.get("capacity") ? parseFloat(formData.get("capacity")) : null,
+        sellPrice: parseFloat(formData.get("sellPrice")),
+        costPrice: parseFloat(formData.get("costPrice")),
+        discountRate: parseFloat(formData.get("discountRate")) || 0,
+        desc: formData.get("desc"),
+        categoryId: formData.get("categoryId") ? parseInt(formData.get("categoryId")) : null,
+        brandId: formData.get("brandId") ? parseInt(formData.get("brandId")) : null,
         updatedAt: new Date(),
       },
     });
 
     revalidatePath("/products");
     return {
-      success: true, data: {
+      success: true,
+      data: {
         ...product,
         capacity: product.capacity ? product.capacity.toNumber() : null,
         sellPrice: product.sellPrice.toNumber(),
@@ -127,6 +133,100 @@ export async function updateProduct(productId, data, file) {
     return { success: false, error: error.message || "Failed to update product" };
   }
 }
+
+// export async function createProduct(data, file) {
+//   try {
+//     let pictureUrl = data.picture || null;
+//     const productCode = data.productCode || generateProductCode() ;
+//     if (file) {
+//       const formData = new FormData();
+//       formData.append("file", file);
+//       formData.append("aspectRatio", "original");
+//       const uploadResult = await uploadFileServerAction(formData, { maxSizeMB: 5 });
+//       if (!uploadResult.success || !uploadResult.url) {
+//         throw new Error(uploadResult.error || "File upload failed");
+//       }
+//       pictureUrl = uploadResult.url;
+//     }
+
+//     const product = await prisma.product.create({
+//       data: {
+//         productName: data.productName,
+//         productCode,
+//         picture: pictureUrl,
+//         unit: data.unit,
+//         capacity: data.capacity ? parseFloat(data.capacity) : null,
+//         sellPrice: parseFloat(data.sellPrice),
+//         costPrice: parseFloat(data.costPrice),
+//         discountRate: data.discountRate,
+//         desc: data.desc,
+//         categoryId: data.categoryId,
+//         brandId: data.brandId,
+//         updatedAt: new Date(),
+//       },
+//     });
+
+//     revalidatePath("/products");
+//     return {
+//       success: true, data: {
+//         ...product,
+//         capacity: product.capacity ? product.capacity.toNumber() : null,
+//         sellPrice: product.sellPrice.toNumber(),
+//         costPrice: product.costPrice.toNumber(),
+//       }
+//     };
+//   } catch (error) {
+//     console.error("Product creation error:", error.message);
+//     return { success: false, error: error.message || "Failed to create product" };
+//   }
+// }
+
+// export async function updateProduct(productId, data, file) {
+//   try {
+//     let pictureUrl = data.picture || null;
+//     if (file) {
+//       const formData = new FormData();
+//       formData.append("file", file);
+//       formData.append("aspectRatio", "original");
+//       const uploadResult = await uploadFileServerAction(formData, { maxSizeMB: 5 });
+//       if (!uploadResult.success || !uploadResult.url) {
+//         throw new Error(uploadResult.error || "File upload failed");
+//       }
+//       pictureUrl = uploadResult.url;
+//     }
+
+//     const product = await prisma.product.update({
+//       where: { productId },
+//       data: {
+//         productName: data.productName,
+//         productCode: data.productCode,
+//         picture: pictureUrl,
+//         unit: data.unit,
+//         capacity: data.capacity ? parseFloat(data.capacity) : null,
+//         sellPrice: parseFloat(data.sellPrice),
+//         costPrice: parseFloat(data.costPrice),
+//         discountRate: data.discountRate,
+//         desc: data.desc,
+//         categoryId: data.categoryId,
+//         brandId: data.brandId,
+//         updatedAt: new Date(),
+//       },
+//     });
+
+//     revalidatePath("/products");
+//     return {
+//       success: true, data: {
+//         ...product,
+//         capacity: product.capacity ? product.capacity.toNumber() : null,
+//         sellPrice: product.sellPrice.toNumber(),
+//         costPrice: product.costPrice.toNumber(),
+//       }
+//     };
+//   } catch (error) {
+//     console.error("Product update error:", error.message);
+//     return { success: false, error: error.message || "Failed to update product" };
+//   }
+// }
 
 export async function deleteProduct(productId) {
   try {

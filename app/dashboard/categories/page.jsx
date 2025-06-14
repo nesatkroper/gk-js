@@ -1,4 +1,4 @@
-// app/categories/page.tsx
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -49,7 +49,7 @@ export default function CategoriesPage() {
   );
 
   const tableColumns = [
-    { key: "categoryName", label: "Category Name" },
+    { key: "categoryName", label: "Category Name", type: "image" },
     { key: "categoryCode", label: "Category Code" },
     { key: "memo", label: "Description" },
     { key: "status", label: "Status", type: "badge" },
@@ -65,7 +65,6 @@ export default function CategoriesPage() {
     { key: "createdAt", label: "Created", type: "date" },
   ];
 
-  // Handle form submission using Server Action
   async function handleSubmit(formData) {
     setIsSaving(true);
 
@@ -86,7 +85,7 @@ export default function CategoriesPage() {
 
       setIsDialogOpen(false);
       setEditingCategory(null);
-      router.refresh(); 
+      router.refresh();
     } else {
       console.log(error)
     }
@@ -254,6 +253,7 @@ export default function CategoriesPage() {
               idField="categoryId"
               nameField="categoryName"
               columns={3}
+              imageField="picture"
             />
           ) : (
             <DataTable
@@ -264,6 +264,7 @@ export default function CategoriesPage() {
               onDelete={handleDelete}
               idField="categoryId"
               nameField="categoryName"
+              imageField="picture"
             />
           )}
         </CardContent>
