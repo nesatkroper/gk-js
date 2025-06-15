@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { getBranches, createBranch, updateBranch, deleteBranch } from "@/app/actions/branchs";
+import { getBranches, createBranch, updateBranch, deleteBranch } from "@/app/actions/branches";
 
 export const useBranchStore = create((set) => ({
   items: [],

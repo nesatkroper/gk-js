@@ -6,18 +6,6 @@ import { Button } from "@/components/ui/button";
 import Layout from "@/components/layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Combobox } from "@/components/ui/combobox";
-import { FileUpload } from "@/components/ui/file-upload";
-import { ViewToggle } from "@/components/ui/view-toggle";
-import { DataTable } from "@/components/ui/data-table";
-import { DataCards } from "@/components/ui/data-cards";
-import { Plus, Search, Package, Loader2, RefreshCw } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { validateFile } from "@/lib/file-upload";
-import { useProductStore, useCategoryStore, useBrandStore } from "@/stores";
-import { usePermissions } from "@/hooks/use-permissions";
-import { unit } from "@/constant";
 import {
   Dialog,
   DialogContent,
@@ -26,7 +14,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Combobox } from "@/components/ui/combobox";
+import { ViewToggle } from "@/components/ui/view-toggle";
+import { DataTable } from "@/components/ui/data-table";
+import { DataCards } from "@/components/ui/data-cards";
+import { Plus, Search, Package, Loader2, RefreshCw } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useProductStore, useCategoryStore, useBrandStore } from "@/stores";
+import { usePermissions } from "@/hooks/use-permissions";
+import { useFormHandler } from "@/hooks/use-form";
+import { unit } from "@/constant";
 import { createProduct, updateProduct, deleteProduct } from "@/app/actions/products";
+import { FormInput, FormTextArea, FormImageResize, FormImagePreview } from "@/components/form";
+import { toast } from "sonner";
 
 export default function ProductsPage() {
   const { t } = useTranslation("common");
@@ -53,30 +54,28 @@ export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [view, setView] = useState("table");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [selectedCategoryId, setSelectedCategoryId] = useState("");
-  const [selectedBrandId, setSelectedBrandId] = useState("");
-  const [selectedUnit, setSelectedUnit] = useState("");
   const [error, setError] = useState(null);
+
+  const { formData, resetForm, setFormData, handleChange, handleImageData, getSubmissionData } = useFormHandler({
+    productName: "",
+    productCode: "",
+    unit: "",
+    capacity: "",
+    sellPrice: "",
+    costPrice: "",
+    discountRate: "",
+    desc: "",
+    categoryId: "",
+    brandId: "",
+    picture: null,
+  });
 
   useEffect(() => {
     prodFetch();
     cateFetch();
     brandFetch();
   }, [prodFetch, cateFetch, brandFetch]);
-
-  useEffect(() => {
-    if (editingProduct) {
-      setSelectedCategoryId(editingProduct.categoryId?.toString() || "");
-      setSelectedBrandId(editingProduct.brandId?.toString() || "");
-      setSelectedUnit(editingProduct.unit || "");
-    } else {
-      setSelectedCategoryId("");
-      setSelectedBrandId("");
-      setSelectedUnit("");
-    }
-  }, [editingProduct]);
 
   const activeCategories = categories.filter((cate) => cate.status === "active");
   const activeBrands = brands.filter((brand) => brand.status === "active");
@@ -131,105 +130,74 @@ export default function ProductsPage() {
     },
   ];
 
-  async function handleSubmit(formData) {
+  async function handleSubmit(e) {
+    e.preventDefault();
     setIsSaving(true);
     setError(null);
 
-    // Enhanced debugging
-    const formDataObj = {};
-    for (let [key, value] of formData.entries()) {
-      formDataObj[key] = value;
-    }
-    console.log("All FormData:", formDataObj);
-
     try {
-      const productData = {
-        productName: formData.get("productName"),
-        productCode: formData.get("productCode") || null,
-        unit: formData.get("unit") || null,
-        capacity: formData.get("capacity") ? Number(formData.get("capacity")) : null,
-        sellPrice: Number(formData.get("sellPrice")),
-        costPrice: Number(formData.get("costPrice")),
-        discountRate: formData.get("discountRate") ? Number(formData.get("discountRate")) : 0,
-        desc: formData.get("desc") || null,
-        categoryId: formData.get("categoryId") ? Number(formData.get("categoryId")) : null,
-        brandId: formData.get("brandId") ? Number(formData.get("brandId")) : null,
-        picture: editingProduct?.picture || null,
-      };
+      const { data, file } = getSubmissionData();
 
-      console.log("Processed productData:", productData);
+      console.log("Submitting:", { data, file: file?.name });
 
-      if (!productData.productName) {
-        throw new Error(t("Product name is required"));
-      }
-      if (!productData.categoryId) {
-        throw new Error(t("Category is required"));
-      }
-      if (productData.sellPrice < 0) {
-        throw new Error(t("Sell price must be non-negative"));
-      }
-      if (productData.costPrice < 0) {
-        throw new Error(t("Cost price must be non-negative"));
-      }
+      const result = editingProduct
+        ? await updateProduct(editingProduct.productId, data, file)
+        : await createProduct(data, file);
 
-      if (selectedFile) {
-        const validationError = validateFile(selectedFile, 5);
-        if (validationError) {
-          throw new Error(validationError);
-        }
-      }
-
-      let result;
-      if (editingProduct) {
-        result = await updateProduct(editingProduct.productId, productData, selectedFile);
-      } else {
-        result = await createProduct(productData, selectedFile);
-      }
-
-      if (result.success) {
-        setIsDialogOpen(false);
-        setSelectedFile(null);
-        setEditingProduct(null);
-        setSelectedCategoryId("");
-        setSelectedBrandId("");
-        setSelectedUnit("");
-        prodFetch();
-      } else {
+      if (!result.success) {
         throw new Error(result.error || t("Product operation failed"));
       }
-    } catch (error) {
-      setError(error);
-      console.error("Submission error:", error);
+
+      toast.success(editingProduct ? t("Product updated successfully") : t("Product created successfully"));
+
+      setIsDialogOpen(false);
+      setEditingProduct(null);
+      resetForm();
+      await prodFetch();
+    } catch (err) {
+      console.error("Submission error:", err);
+      setError(err);
+      toast.error(err.message || t("An error occurred"));
     } finally {
       setIsSaving(false);
     }
   }
 
   const handleEdit = (product) => {
-    if (!canUpdate) {
-      return;
-    }
+    if (!canUpdate) return;
     setEditingProduct(product);
-    setSelectedFile(null);
+    setFormData({
+      productName: product.productName || "",
+      productCode: product.productCode || "",
+      unit: product.unit || "",
+      capacity: product.capacity?.toString() || "",
+      sellPrice: product.sellPrice?.toString() || "",
+      costPrice: product.costPrice?.toString() || "",
+      discountRate: product.discountRate?.toString() || "",
+      desc: product.desc || "",
+      categoryId: product.categoryId?.toString() || "",
+      brandId: product.brandId?.toString() || "",
+      picture: product.picture || null,
+    });
     setIsDialogOpen(true);
   };
 
   const handleDelete = async (productId) => {
-    if (!canDelete) {
-      return;
-    }
+    if (!canDelete) return;
     if (!confirm(t("Are you sure you want to delete this product?"))) return;
 
     try {
       const result = await deleteProduct(productId);
       if (result.success) {
-        prodFetch();
+        toast.success(t("Product deleted successfully"));
+        await prodFetch();
       } else {
         throw new Error(result.error || t("Failed to delete product"));
       }
     } catch (error) {
-      console.error(error);
+      console.error("Deletion error:", error);
       setError(error);
+      toast.error(error.message || t("Failed to delete product"));
     }
   };
 
@@ -237,6 +205,14 @@ export default function ProductsPage() {
     prodFetch();
     cateFetch();
     brandFetch();
+  };
+
+  const handleDialogClose = (open) => {
+    setIsDialogOpen(open);
+    if (!open) {
+      setEditingProduct(null);
+      resetForm();
+    }
   };
 
   return (
@@ -258,30 +234,18 @@ export default function ProductsPage() {
           </div>
 
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleRetry} disabled={prodLoading || cateLoading || brandLoading}>
-              <RefreshCw className={`mr-2 h-4 w-4 ${prodLoading || cateLoading || brandLoading ? "animate-spin" : ""}`} />
-              {t("Refresh")}
-            </Button>
-            <Dialog
-              open={isDialogOpen}
-              onOpenChange={(open) => {
-                setIsDialogOpen(open);
-                if (!open) {
-                  setSelectedFile(null);
-                  setEditingProduct(null);
-                  setSelectedCategoryId("");
-                  setSelectedBrandId("");
-                  setSelectedUnit("");
-                }
-              }}
-            >
+            {canCreate && (
+              <Button variant="outline" onClick={handleRetry} disabled={prodLoading || cateLoading || brandLoading}>
+                <RefreshCw className={`mr-2 h-4 w-4 ${prodLoading || cateLoading || brandLoading ? "animate-spin" : ""}`} />
+                {t("Refresh")}
+              </Button>
+            )}
+            <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
               <DialogTrigger asChild>
-                {canCreate && (
-                  <Button disabled={activeCategories.length === 0}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    {t("Add Product")}
-                  </Button>
-                )}
+                <Button disabled={activeCategories.length === 0 || prodLoading || cateLoading || brandLoading}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t("Add Product")}
+                </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
@@ -290,35 +254,30 @@ export default function ProductsPage() {
                     {editingProduct ? t("Update product information") : t("Create a new product in your inventory")}
                   </DialogDescription>
                 </DialogHeader>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    const formData = new FormData(e.target);
-                    handleSubmit(formData);
-                  }}
-                  className="space-y-4"
-                >
+                <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="productName">{t("Product Name")} *</Label>
-                      <Input
-                        id="productName"
+                      <FormInput
                         name="productName"
-                        required
-                        defaultValue={editingProduct?.productName ?? ""}
                         disabled={isSaving}
+                        label={t("Product Name")}
+                        value={formData.productName}
+                        placeholder={t("Product Name")}
+                        onCallbackInput={handleChange}
+                        required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="sellPrice">{t("Sell Price")} *</Label>
-                      <Input
-                        id="sellPrice"
+                      <FormInput
                         name="sellPrice"
                         type="number"
                         step="0.01"
-                        required
-                        defaultValue={editingProduct?.sellPrice ?? ""}
                         disabled={isSaving}
+                        label={t("Sell Price")}
+                        value={formData.sellPrice}
+                        placeholder={t("Sell Price")}
+                        onCallbackInput={handleChange}
+                        required
                       />
                     </div>
                   </div>
@@ -333,8 +292,8 @@ export default function ProductsPage() {
                           label: category.categoryName,
                         }))}
                         placeholder={t("Select category...")}
-                        value={selectedCategoryId}
-                        onChange={(value) => setSelectedCategoryId(value || "")}
+                        value={formData.categoryId}
+                        onChange={(value) => handleChange("categoryId", value)}
                         disabled={isSaving}
                         required
                       />
@@ -352,48 +311,51 @@ export default function ProductsPage() {
                           })),
                         ]}
                         placeholder={t("Select brand...")}
-                        value={selectedBrandId}
-                        onChange={(value) => setSelectedBrandId(value || "")}
+                        value={formData.brandId}
+                        onChange={(value) => handleChange("brandId", value)}
                         disabled={isSaving}
                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="costPrice">{t("Cost Price")} *</Label>
-                      <Input
-                        id="costPrice"
+                      <FormInput
                         name="costPrice"
                         type="number"
                         step="0.01"
-                        required
-                        defaultValue={editingProduct?.costPrice ?? ""}
                         disabled={isSaving}
+                        label={t("Cost Price")}
+                        value={formData.costPrice}
+                        placeholder={t("Cost Price")}
+                        onCallbackInput={handleChange}
+                        required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="discountRate">{t("Discount %")}</Label>
-                      <Input
-                        id="discountRate"
+                      <FormInput
                         name="discountRate"
                         type="number"
                         min="0"
                         max="100"
-                        defaultValue={editingProduct?.discountRate ?? 0}
                         disabled={isSaving}
+                        label={t("Discount %")}
+                        value={formData.discountRate}
+                        placeholder={t("Discount %")}
+                        onCallbackInput={handleChange}
                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="capacity">{t("Capacity")}</Label>
-                      <Input
-                        id="capacity"
+                      <FormInput
                         name="capacity"
                         type="number"
                         step="0.01"
-                        defaultValue={editingProduct?.capacity ?? ""}
                         disabled={isSaving}
+                        label={t("Capacity")}
+                        value={formData.capacity}
+                        placeholder={t("Capacity")}
+                        onCallbackInput={handleChange}
                       />
                     </div>
                     <div className="space-y-2">
@@ -403,31 +365,35 @@ export default function ProductsPage() {
                         name="unit"
                         options={unit.map((u) => ({ value: u.value, label: u.label }))}
                         placeholder={t("Select unit...")}
-                        value={selectedUnit}
-                        onChange={(value) => setSelectedUnit(value || "")}
+                        value={formData.unit}
+                        onChange={(value) => handleChange("unit", value)}
                         disabled={isSaving}
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>{t("Product Image")}</Label>
-                    <FileUpload
-                      onFileSelect={(file) => setSelectedFile(file)}
-                      accept="image/*"
-                      maxSize={5}
-                      preview={true}
-                      value={selectedFile}
-                      placeholder={t("Upload product image")}
+                    <FormTextArea
+                      rows={3}
+                      name="desc"
+                      label={t("Description")}
                       disabled={isSaving}
+                      value={formData.desc}
+                      onCallbackInput={handleChange}
                     />
                   </div>
+                  <div className="space-y-2">
+                    <FormImageResize onCallbackData={handleImageData} />
+                    {formData.picture && (
+                      <FormImagePreview
+                        imgSrc={
+                          formData.picture instanceof File ? URL.createObjectURL(formData.picture) : formData.picture
+                        }
+                        height={200}
+                      />
+                    )}
+                  </div>
                   <div className="flex justify-end gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsDialogOpen(false)}
-                      disabled={isSaving}
-                    >
+                    <Button type="button" variant="outline" onClick={() => handleDialogClose(false)} disabled={isSaving}>
                       {t("Cancel")}
                     </Button>
                     {(canCreate || canUpdate) && (
@@ -451,19 +417,15 @@ export default function ProductsPage() {
           </div>
         </motion.div>
 
-        {(error || prodLoading) && (
+        {(prodError || prodLoading) && (
           <Card className="border-destructive">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-destructive font-medium">{t("Error loading data")}</p>
-                  <p className="text-sm text-muted-foreground">{error?.message || t("Loading products")}</p>
+                  <p className="text-sm text-muted-foreground">{prodError?.message || t("Loading products")}</p>
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={handleRetry}
-                  disabled={prodLoading || cateLoading || brandLoading}
-                >
+                <Button variant="outline" onClick={handleRetry} disabled={prodLoading || cateLoading || brandLoading}>
                   {t("Try Again")}
                 </Button>
               </div>
@@ -480,9 +442,7 @@ export default function ProductsPage() {
                   {t("Product Inventory")}
                   {(prodLoading || cateLoading || brandLoading) && <Loader2 className="h-4 w-4 animate-spin" />}
                 </CardTitle>
-                <CardDescription>
-                  {filteredProducts.length} {t("products in your catalog")}
-                </CardDescription>
+                <CardDescription>{filteredProducts.length} {t("products in your catalog")}</CardDescription>
               </div>
               <ViewToggle view={view} onViewChange={setView} />
             </div>
@@ -535,9 +495,8 @@ export default function ProductsPage() {
 }
 
 
-// "use client";
 
-// export const dynamic = "force-dynamic";
+// "use client";
 
 // import { useState, useEffect } from "react";
 // import { motion } from "framer-motion";
@@ -565,7 +524,7 @@ export default function ProductsPage() {
 //   DialogTitle,
 //   DialogTrigger,
 // } from "@/components/ui/dialog";
-// import { createProduct, updateProduct } from "@/app/actions/products";
+// import { createProduct, updateProduct, deleteProduct } from "@/app/actions/products";
 
 // export default function ProductsPage() {
 //   const { t } = useTranslation("common");
@@ -574,7 +533,6 @@ export default function ProductsPage() {
 //     isLoading: prodLoading,
 //     error: prodError,
 //     fetch: prodFetch,
-//     delete: prodDelete,
 //   } = useProductStore();
 //   const {
 //     items: categories,
@@ -675,6 +633,13 @@ export default function ProductsPage() {
 //     setIsSaving(true);
 //     setError(null);
 
+//     // Enhanced debugging
+//     const formDataObj = {};
+//     for (let [key, value] of formData.entries()) {
+//       formDataObj[key] = value;
+//     }
+//     console.log("All FormData:", formDataObj);
+
 //     try {
 //       const productData = {
 //         productName: formData.get("productName"),
@@ -690,7 +655,7 @@ export default function ProductsPage() {
 //         picture: editingProduct?.picture || null,
 //       };
 
-//       console.log(productData)
+//       console.log("Processed productData:", productData);
 
 //       if (!productData.productName) {
 //         throw new Error(t("Product name is required"));
@@ -712,36 +677,27 @@ export default function ProductsPage() {
 //         }
 //       }
 
-//       const actionFormData = new FormData();
-//       Object.entries(productData).forEach(([key, value]) => {
-//         if (value !== null && value !== undefined) {
-//           actionFormData.append(key, value);
-//         }
-//       });
-
-//       if (selectedFile) {
-//         actionFormData.append("file", selectedFile);
-//       }
-
 //       let result;
 //       if (editingProduct) {
-//         actionFormData.append("productId", editingProduct.productId);
-//         result = await updateProduct(actionFormData);
+//         result = await updateProduct(editingProduct.productId, productData, selectedFile);
 //       } else {
-//         result = await createProduct(actionFormData);
+//         result = await createProduct(productData, selectedFile);
 //       }
 
-//       if (!result.success) {
+//       if (result.success) {
+//         setIsDialogOpen(false);
+//         setSelectedFile(null);
+//         setEditingProduct(null);
+//         setSelectedCategoryId("");
+//         setSelectedBrandId("");
+//         setSelectedUnit("");
+//         prodFetch();
+//       } else {
 //         throw new Error(result.error || t("Product operation failed"));
 //       }
-
-//       setIsDialogOpen(false);
-//       setSelectedFile(null);
-//       setEditingProduct(null);
-//       prodFetch();
 //     } catch (error) {
 //       setError(error);
-//       console.error(error);
+//       console.error("Submission error:", error);
 //     } finally {
 //       setIsSaving(false);
 //     }
@@ -763,13 +719,15 @@ export default function ProductsPage() {
 //     if (!confirm(t("Are you sure you want to delete this product?"))) return;
 
 //     try {
-//       const success = await prodDelete(productId);
-//       if (success) {
+//       const result = await deleteProduct(productId);
+//       if (result.success) {
+//         prodFetch();
 //       } else {
-//         throw new Error(t("Failed to delete product"));
+//         throw new Error(result.error || t("Failed to delete product"));
 //       }
 //     } catch (error) {
-//       console.log(error);
+//       console.error(error);
+//       setError(error);
 //     }
 //   };
 
@@ -809,6 +767,9 @@ export default function ProductsPage() {
 //                 if (!open) {
 //                   setSelectedFile(null);
 //                   setEditingProduct(null);
+//                   setSelectedCategoryId("");
+//                   setSelectedBrandId("");
+//                   setSelectedUnit("");
 //                 }
 //               }}
 //             >
@@ -827,11 +788,14 @@ export default function ProductsPage() {
 //                     {editingProduct ? t("Update product information") : t("Create a new product in your inventory")}
 //                   </DialogDescription>
 //                 </DialogHeader>
-//                 <form onSubmit={(e) => {
-//                   e.preventDefault();
-//                   const formData = new FormData(e.target);
-//                   handleSubmit(formData);
-//                 }} className="space-y-4">
+//                 <form
+//                   onSubmit={(e) => {
+//                     e.preventDefault();
+//                     const formData = new FormData(e.target);
+//                     handleSubmit(formData);
+//                   }}
+//                   className="space-y-4"
+//                 >
 //                   <div className="grid grid-cols-2 gap-4">
 //                     <div className="space-y-2">
 //                       <Label htmlFor="productName">{t("Product Name")} *</Label>
@@ -844,32 +808,55 @@ export default function ProductsPage() {
 //                       />
 //                     </div>
 //                     <div className="space-y-2">
-//                       <Label htmlFor="categoryId">{t("Category")} *</Label>
-//                       <Combobox
-//                         id="categoryId"
-//                         name="categoryId"
-//                         options={activeCategories.map(category => ({ value: category.categoryId.toString(), label: category.categoryName }))}
-//                         placeholder={t("Select category...")}
-//                         value={selectedCategoryId}
-//                         onChange={setSelectedCategoryId}
-//                         disabled={isSaving}
+//                       <Label htmlFor="sellPrice">{t("Sell Price")} *</Label>
+//                       <Input
+//                         id="sellPrice"
+//                         name="sellPrice"
+//                         type="number"
+//                         step="0.01"
 //                         required
+//                         defaultValue={editingProduct?.sellPrice ?? ""}
+//                         disabled={isSaving}
 //                       />
 //                     </div>
 //                   </div>
 //                   <div className="grid grid-cols-2 gap-4">
 //                     <div className="space-y-2">
+//                       <Label htmlFor="categoryId">{t("Category")} *</Label>
+//                       <Combobox
+//                         id="categoryId"
+//                         name="categoryId"
+//                         options={activeCategories.map((category) => ({
+//                           value: category.categoryId.toString(),
+//                           label: category.categoryName,
+//                         }))}
+//                         placeholder={t("Select category...")}
+//                         value={selectedCategoryId}
+//                         onChange={(value) => setSelectedCategoryId(value || "")}
+//                         disabled={isSaving}
+//                         required
+//                       />
+//                     </div>
+//                     <div className="space-y-2">
 //                       <Label htmlFor="brandId">{t("Brand")}</Label>
 //                       <Combobox
 //                         id="brandId"
 //                         name="brandId"
-//                         options={[{ value: "", label: t("No brand") }, ...activeBrands.map(brand => ({ value: brand.brandId.toString(), label: brand.brandName }))]}
+//                         options={[
+//                           { value: "", label: t("No brand") },
+//                           ...activeBrands.map((brand) => ({
+//                             value: brand.brandId.toString(),
+//                             label: brand.brandName,
+//                           })),
+//                         ]}
 //                         placeholder={t("Select brand...")}
 //                         value={selectedBrandId}
-//                         onChange={setSelectedBrandId}
+//                         onChange={(value) => setSelectedBrandId(value || "")}
 //                         disabled={isSaving}
 //                       />
 //                     </div>
+//                   </div>
+//                   <div className="grid grid-cols-2 gap-4">
 //                     <div className="space-y-2">
 //                       <Label htmlFor="costPrice">{t("Cost Price")} *</Label>
 //                       <Input
@@ -879,6 +866,18 @@ export default function ProductsPage() {
 //                         step="0.01"
 //                         required
 //                         defaultValue={editingProduct?.costPrice ?? ""}
+//                         disabled={isSaving}
+//                       />
+//                     </div>
+//                     <div className="space-y-2">
+//                       <Label htmlFor="discountRate">{t("Discount %")}</Label>
+//                       <Input
+//                         id="discountRate"
+//                         name="discountRate"
+//                         type="number"
+//                         min="0"
+//                         max="100"
+//                         defaultValue={editingProduct?.discountRate ?? 0}
 //                         disabled={isSaving}
 //                       />
 //                     </div>
@@ -900,36 +899,10 @@ export default function ProductsPage() {
 //                       <Combobox
 //                         id="unit"
 //                         name="unit"
-//                         options={unit.map(u => ({ value: u.value, label: u.label }))}
+//                         options={unit.map((u) => ({ value: u.value, label: u.label }))}
 //                         placeholder={t("Select unit...")}
 //                         value={selectedUnit}
-//                         onChange={setSelectedUnit}
-//                         disabled={isSaving}
-//                       />
-//                     </div>
-//                   </div>
-//                   <div className="grid grid-cols-2 gap-4">
-//                     <div className="space-y-2">
-//                       <Label htmlFor="sellPrice">{t("Sell Price")} *</Label>
-//                       <Input
-//                         id="sellPrice"
-//                         name="sellPrice"
-//                         type="number"
-//                         step="0.01"
-//                         required
-//                         defaultValue={editingProduct?.sellPrice ?? ""}
-//                         disabled={isSaving}
-//                       />
-//                     </div>
-//                     <div className="space-y-2">
-//                       <Label htmlFor="discountRate">{t("Discount %")}</Label>
-//                       <Input
-//                         id="discountRate"
-//                         name="discountRate"
-//                         type="number"
-//                         min="0"
-//                         max="100"
-//                         defaultValue={editingProduct?.discountRate ?? 0}
+//                         onChange={(value) => setSelectedUnit(value || "")}
 //                         disabled={isSaving}
 //                       />
 //                     </div>
@@ -982,16 +955,12 @@ export default function ProductsPage() {
 //               <div className="flex items-center justify-between">
 //                 <div>
 //                   <p className="text-destructive font-medium">{t("Error loading data")}</p>
-//                   <p className="text-sm text-muted-foreground">{error || t("Loading products or suppliers")}</p>
+//                   <p className="text-sm text-muted-foreground">{error?.message || t("Loading products")}</p>
 //                 </div>
 //                 <Button
 //                   variant="outline"
-//                   onClick={() => {
-//                     fetch({ search: searchTerm, lowStock: showLowStock })
-//                     proFetch()
-//                     supFetch()
-//                   }}
-//                   disabled={prodLoading}
+//                   onClick={handleRetry}
+//                   disabled={prodLoading || cateLoading || brandLoading}
 //                 >
 //                   {t("Try Again")}
 //                 </Button>
@@ -1060,7 +1029,5 @@ export default function ProductsPage() {
 //         </Card>
 //       </div>
 //     </Layout>
-
 //   );
 // }
-

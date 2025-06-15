@@ -1,12 +1,11 @@
-"use client"
-export const dynamic = 'force-dynamic';
+"use client";
 
-
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import Layout from "@/components/layout";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -14,378 +13,336 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { ViewToggle } from "@/components/ui/view-toggle"
-import { DataTable } from "@/components/ui/data-table"
-import { DataCards } from "@/components/ui/data-cards"
-import { FileUpload } from "@/components/ui/file-upload"
-import { Plus, Search, Building2, Loader2, RefreshCw } from "lucide-react"
-import { useBranchStore } from "@/stores/branch-store"
-import { uploadFile } from "@/lib/file-upload"
-
-import { t } from "i18next"
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { ViewToggle } from "@/components/ui/view-toggle";
+import { DataTable } from "@/components/ui/data-table";
+import { DataCards } from "@/components/ui/data-cards";
+import { Plus, Search, Building2, Loader2, RefreshCw } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useBranchStore } from "@/stores/branch-store";
+import { usePermissions } from "@/hooks/use-permissions";
+import { useFormHandler } from "@/hooks/use-form";
+import { FormInput, FormTextArea, FormImageResize, FormImagePreview } from "@/components/form";
+import { toast } from "sonner";
+import { createBranch, updateBranch, deleteBranch } from "@/app/actions/branches";
 
 export default function BranchesPage() {
+  const { t } = useTranslation("common");
   const {
     items: branches,
     isLoading: branchLoading,
     error: branchError,
     fetch: fetchBranches,
-    create: createBranch,
-    update: updateBranch,
-    delete: deleteBranch,
-  } = useBranchStore()
+  } = useBranchStore();
 
+  const { canCreate, canUpdate, canDelete } = usePermissions();
+  const [isSaving, setIsSaving] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [view, setView] = useState("table");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingBranch, setEditingBranch] = useState(null);
+  const [error, setError] = useState(null);
 
-  const [isSaving, setIsSaving] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [view, setView] = useState("table")
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [selectedFile, setSelectedFile] = useState(null)
-  const [editingBranch, setEditingBranch] = useState(null)
+  const { formData, resetForm, setFormData, handleChange, handleImageData, getSubmissionData } = useFormHandler({
+    branchName: "",
+    tel: "",
+    memo: "",
+    picture: null,
+  });
 
   useEffect(() => {
-    fetchBranches()
-  }, [fetchBranches])
+    fetchBranches();
+  }, [fetchBranches]);
 
-  const activeBranches = branches.filter((branch) => branch.status === "active")
+  const activeBranches = branches.filter((branch) => branch.status === "active");
 
   const filteredBranches = activeBranches.filter(
     (branch) =>
       branch.branchName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      branch.branchCode?.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      branch.branchCode?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const tableColumns = [
-    {
-      key: "branchName",
-      label: "Branch",
-      type: "image",
-    },
-    {
-      key: "branchCode",
-      label: "Code",
-      render: (_value, row) => row.branchCode ?? "-",
-    },
-    {
-      key: "tel",
-      label: "Phone",
-      render: (_value, row) => row.tel ?? "-",
-    },
-    {
-      key: "memo",
-      label: "Memo",
-      render: (_value, row) => row.memo ?? "-",
-    },
-    {
-      key: "createdAt",
-      label: "Created",
-      type: "date",
-    },
-    {
-      key: "status",
-      label: "Status",
-      type: "badge",
-    },
-  ]
+    { key: "branchName", label: t("Branch"), type: "image" },
+    { key: "branchCode", label: t("Code"), render: (_value, row) => row.branchCode ?? "-" },
+    { key: "tel", label: t("Phone"), render: (_value, row) => row.tel ?? "-" },
+    { key: "memo", label: t("Memo"), render: (_value, row) => row.memo ?? "-" },
+    { key: "createdAt", label: t("Created"), type: "date" },
+    { key: "status", label: t("Status"), type: "badge" },
+  ];
 
   const cardFields = [
-    {
-      key: "picture",
-      type: "image",
-    },
-    {
-      key: "branchName",
-      primary: true,
-    },
-    {
-      key: "branchCode",
-      secondary: true,
-      render: (_value, row) => row.branchCode ?? "-",
-    },
-    {
-      key: "tel",
-      label: "Phone",
-      render: (_value, row) => row.tel ?? "-",
-    },
-    {
-      key: "memo",
-      label: "Memo",
-      render: (_value, row) => row.memo ?? "-",
-    },
-    {
-      key: "status",
-      label: "Status",
-      type: "badge",
-    },
-    {
-      key: "createdAt",
-      label: "Created",
-      type: "date",
-    },
-  ]
+    { key: "picture", type: "image" },
+    { key: "branchName", primary: true },
+    { key: "branchCode", secondary: true, render: (_value, row) => row.branchCode ?? "-" },
+    { key: "tel", label: t("Phone"), render: (_value, row) => row.tel ?? "-" },
+    { key: "memo", label: t("Memo"), render: (_value, row) => row.memo ?? "-" },
+    { key: "status", label: t("Status"), type: "badge" },
+    { key: "createdAt", label: t("Created"), type: "date" },
+  ];
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setIsSaving(true)
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setIsSaving(true);
+    setError(null);
+    console.log(editingBranch.branchId)
 
     try {
-      const formData = new FormData(e.currentTarget)
-      let pictureUrl = editingBranch?.picture || null
+      const { data, file } = getSubmissionData();
 
-      if (selectedFile) {
-        try {
-          pictureUrl = await uploadFile(selectedFile, { aspectRatio: "original" })
-        } catch (uploadError) {
+      console.log("Submitting:", { data, file: file?.name });
 
-          setIsSaving(false)
-          return
-        }
+      const result = editingBranch
+        ? await updateBranch(editingBranch.branchId, data, file)
+        : await createBranch(data, file);
+
+      if (!result.success) {
+        throw new Error(result.error || t("Branch operation failed"));
       }
 
-      const branchData = {
-        branchName: formData.get("branchName"),
-        branchCode: formData.get("branchCode") || null,
-        tel: formData.get("tel") || null,
-        memo: formData.get("memo") || null,
-        picture: pictureUrl,
-      }
+      toast.success(editingBranch ? t("Branch updated successfully") : t("Branch created successfully"));
 
-      if (!branchData.branchName) {
-        throw new Error("Branch name is required")
-      }
-
-      const success = editingBranch
-        ? await updateBranch(editingBranch.branchId, branchData)
-        : await createBranch(branchData)
-
-      if (success) {
-
-        setIsDialogOpen(false)
-        setSelectedFile(null)
-        setEditingBranch(null)
-          ; (e.target).reset()
-      } else {
-        throw new Error("Branch operation failed")
-      }
-    } catch (error) {
-      console.error("Branch submit error:", error)
+      setIsDialogOpen(false);
+      setEditingBranch(null);
+      resetForm();
+      await fetchBranches();
+    } catch (err) {
+      console.error("Submission error:", err);
+      setError(err);
+      toast.error(err.message || t("An error occurred"));
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
   }
 
   const handleEdit = (branch) => {
-    setEditingBranch(branch)
-    setSelectedFile(null)
-    setIsDialogOpen(true)
-  }
+    if (!canUpdate) return;
+    setEditingBranch(branch);
+    setFormData({
+      branchName: branch.branchName || "",
+      tel: branch.tel || "",
+      memo: branch.memo || "",
+      picture: branch.picture || null,
+    });
+    setIsDialogOpen(true);
+  };
 
   const handleDelete = async (branchId) => {
-    if (!confirm("Are you sure you want to delete this branch?")) return
+    if (!canDelete) return;
+    if (!confirm(t("Are you sure you want to delete this branch?"))) return;
 
     try {
-      const success = await deleteBranch(branchId)
-      if (success) {
+      const result = await deleteBranch(branchId);
+      if (result.success) {
+        toast.success(t("Branch deleted successfully"));
+        await fetchBranches();
       } else {
-        throw new Error("Failed to delete branch")
+        throw new Error(result.error || t("Failed to delete branch"));
       }
     } catch (error) {
-
+      console.error("Deletion error:", error);
+      setError(error);
+      toast.error(error.message || t("Failed to delete branch"));
     }
-  }
+  };
 
   const handleRetry = () => {
-    fetchBranches()
-  }
+    fetchBranches();
+  };
+
+  const handleDialogClose = (open) => {
+    setIsDialogOpen(open);
+    if (!open) {
+      setEditingBranch(null);
+      resetForm();
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
-      >
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t("Branches")}</h1>
-          <p className="text-muted-foreground">{t("Manage your branch network")}</p>
-        </div>
+    <Layout pageTitle="Branches">
+      <div className="space-y-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+        >
+          {error && (
+            <div className="text-destructive p-2 rounded bg-destructive/10">
+              {error.message || String(error)}
+            </div>
+          )}
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">{t("Branches")}</h1>
+            <p className="text-muted-foreground">{t("Manage your branch network")}</p>
+          </div>
 
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleRetry} disabled={branchLoading}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${branchLoading ? "animate-spin" : ""}`} />
-            {t("Refresh")}
-          </Button>
-          <Dialog
-            open={isDialogOpen}
-            onOpenChange={(open) => {
-              setIsDialogOpen(open)
-              if (!open) {
-                setSelectedFile(null)
-                setEditingBranch(null)
-              }
-            }}
-          >
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                {t("Add Branch")}
+          <div className="flex gap-2">
+            {canCreate && (
+              <Button variant="outline" onClick={handleRetry} disabled={branchLoading}>
+                <RefreshCw className={`mr-2 h-4 w-4 ${branchLoading ? "animate-spin" : ""}`} />
+                {t("Refresh")}
               </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>{editingBranch ? "Edit Branch" : "Add New Branch"}</DialogTitle>
-                <DialogDescription>
-                  {editingBranch ? "Update branch details" : "Create a new branch in your network"}
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="branchName">{t("Branch Name")} *</Label>
-                  <Input
-                    id="branchName"
-                    name="branchName"
-                    required
-                    defaultValue={editingBranch?.branchName ?? ""}
-                    disabled={isSaving}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="tel">{t("Phone Numbe")}r</Label>
-                  <Input
-                    id="tel"
-                    name="tel"
-                    type="tel"
-                    defaultValue={editingBranch?.tel ?? ""}
-                    disabled={isSaving}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="memo">{t("Memo")}</Label>
-                  <Textarea
-                    id="memo"
-                    name="memo"
-                    rows={4}
-                    defaultValue={editingBranch?.memo ?? ""}
-                    disabled={isSaving}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>{t("Branch Image")}</Label>
-                  <FileUpload
-                    onFileSelect={(file) => setSelectedFile(file)}
-                    accept="image/*"
-                    maxSize={5}
-                    preview={true}
-                    value={selectedFile}
-                    placeholder="Upload branch image"
-                    disabled={isSaving}
-                  />
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsDialogOpen(false)}
-                    disabled={isSaving}
-                  >
-                    {t("Cancel")}
+            )}
+            <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
+              <DialogTrigger asChild>
+                {canCreate && (
+                  <Button disabled={branchLoading}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    {t("Add Branch")}
                   </Button>
-                  <Button type="submit" disabled={isSaving}>
-                    {isSaving ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {editingBranch ? "Updating..." : "Creating..."}
-                      </>
-                    ) : editingBranch ? (
-                      "Update Branch"
-                    ) : (
-                      "Create Branch"
+                )}
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>{editingBranch ? t("Edit Branch") : t("Add New Branch")}</DialogTitle>
+                  <DialogDescription>
+                    {editingBranch ? t("Update branch details") : t("Create a new branch in your network")}
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <FormInput
+                      name="branchName"
+                      disabled={isSaving}
+                      label={t("Branch Name")}
+                      value={formData.branchName}
+                      placeholder={t("Branch Name")}
+                      onCallbackInput={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <FormInput
+                      name="tel"
+                      type="tel"
+                      disabled={isSaving}
+                      label={t("Phone Number")}
+                      value={formData.tel}
+                      placeholder={t("Phone Number")}
+                      onCallbackInput={handleChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <FormTextArea
+                      rows={4}
+                      name="memo"
+                      label={t("Memo")}
+                      disabled={isSaving}
+                      value={formData.memo}
+                      placeholder={t("Memo")}
+                      onCallbackInput={handleChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <FormImageResize onCallbackData={handleImageData} />
+                    {formData.picture && (
+                      <FormImagePreview
+                        imgSrc={
+                          formData.picture instanceof File ? URL.createObjectURL(formData.picture) : formData.picture
+                        }
+                        height={200}
+                      />
                     )}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </motion.div>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button type="button" variant="outline" onClick={() => handleDialogClose(false)} disabled={isSaving}>
+                      {t("Cancel")}
+                    </Button>
+                    {(canCreate || canUpdate) && (
+                      <Button type="submit" disabled={isSaving}>
+                        {isSaving ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            {editingBranch ? t("Updating...") : t("Creating...")}
+                          </>
+                        ) : editingBranch ? (
+                          t("Update Branch")
+                        ) : (
+                          t("Create Branch")
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </motion.div>
 
-      {branchError && (
-        <Card className="border-destructive">
-          <CardContent className="pt-6">
+        {(branchError || branchLoading) && (
+          <Card className="border-destructive">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-destructive font-medium">{t("Error loading data")}</p>
+                  <p className="text-sm text-muted-foreground">{branchError?.message || t("Loading branches")}</p>
+                </div>
+                <Button variant="outline" onClick={handleRetry} disabled={branchLoading}>
+                  {t("Try Again")}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card>
+          <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-destructive font-medium">{t("Error loading data")}</p>
-                <p className="text-sm text-muted-foreground">{branchError}</p>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  {t("Branch Network")}
+                  {branchLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                </CardTitle>
+                <CardDescription>{filteredBranches.length} {t("active branches")}</CardDescription>
               </div>
-              <Button
-                variant="outline"
-                onClick={handleRetry}
-                disabled={branchLoading}
-              >
-                {t("Try Again")}
-              </Button>
+              <ViewToggle view={view} onViewChange={setView} />
             </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4 mb-6">
+              <div className="relative flex-1 max-w-sm">
+                <Search
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground"
+                />
+                <Input
+                  placeholder={t("Search branches...")}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                  disabled={branchLoading}
+                />
+              </div>
+            </div>
+
+            {view === "card" ? (
+              <DataCards
+                data={filteredBranches}
+                fields={cardFields}
+                loading={branchLoading}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                idField="branchId"
+                imageField="picture"
+                nameField="branchName"
+                columns={4}
+              />
+            ) : (
+              <DataTable
+                data={filteredBranches}
+                columns={tableColumns}
+                loading={branchLoading}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                idField="branchId"
+                imageField="picture"
+                nameField="branchName"
+              />
+            )}
           </CardContent>
         </Card>
-      )}
-
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                {t("Branch Network")}
-                {branchLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-              </CardTitle>
-              <CardDescription>{filteredBranches.length} active branches</CardDescription>
-            </div>
-            <ViewToggle view={view} onViewChange={setView} />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4 mb-6">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search branches..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-                disabled={branchLoading}
-              />
-            </div>
-          </div>
-
-          {view === "card" ? (
-            <DataCards
-              data={filteredBranches}
-              fields={cardFields}
-              loading={branchLoading}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              idField="branchId"
-              imageField="picture"
-              nameField="branchName"
-              columns={4}
-            />
-          ) : (
-            <DataTable
-              data={filteredBranches}
-              columns={tableColumns}
-              loading={branchLoading}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              idField="branchId"
-              imageField="picture"
-              nameField="branchName"
-            />
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  )
+      </div>
+    </Layout>
+  );
 }

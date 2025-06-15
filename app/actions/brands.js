@@ -1,12 +1,12 @@
-// actions/brands.ts
-"use server";
-
-import prisma from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
-import { uploadFileServerAction } from "@/app/actions/files";
-import { generateBrandCode } from "@/lib/utils";
 
 
+
+"use server"
+
+import prisma from "@/lib/prisma"
+import { revalidatePath } from "next/cache"
+import { uploadFileServerAction } from "@/app/actions/files"
+import { generateBrandCode } from "@/lib/utils"
 
 export async function fetchBrands() {
   try {
@@ -18,60 +18,98 @@ export async function fetchBrands() {
         },
       },
       orderBy: { brandName: "asc" },
-    });
-    return { success: true, data: brands };
+    })
+    return { success: true, data: brands }
   } catch (error) {
-    console.error("Brands fetch error:", error.message);
-    return { success: false, error: "Failed to fetch brands" };
+    console.error("Brands fetch error:", error?.message)
+    return { success: false, error: "Failed to fetch brands" }
   }
 }
 
 export async function createBrand(data, file) {
   try {
-    let pictureUrl = data.picture || null;
-    const brandCode = generateBrandCode();
-    if (file) {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("aspectRatio", "original");
-      const uploadResult = await uploadFileServerAction(formData, { maxSizeMB: 5 });
+    console.log("Creating brand with:", {
+      data,
+      hasFile: !!file,
+      fileType: file?.type,
+      fileName: file?.name,
+    })
+
+    let pictureUrl = null
+    const brandCode = generateBrandCode()
+
+    if (file && file instanceof File) {
+      console.log("Uploading file:", file.name)
+
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("aspectRatio", "original")
+
+      const uploadResult = await uploadFileServerAction(formData, { maxSizeMB: 5 })
+
+      console.log("Upload result:", uploadResult)
+
       if (!uploadResult.success || !uploadResult.url) {
-        throw new Error(uploadResult.error || "File upload failed");
+        throw new Error(uploadResult.error || "File upload failed")
       }
-      pictureUrl = uploadResult.url;
+      pictureUrl = uploadResult.url
     }
+
+    console.log("Creating brand with picture URL:", pictureUrl)
 
     const brand = await prisma.brand.create({
       data: {
         brandName: data.brandName,
         brandCode,
         picture: pictureUrl,
-        memo: data.memo,
+        memo: data.memo || null,
         updatedAt: new Date(),
       },
-    });
+    })
 
-    revalidatePath("/brands");
-    return { success: true, data: brand };
+    revalidatePath("/brands")
+    return { success: true, data: brand }
   } catch (error) {
-    console.error("Brand creation error:", error.message);
-    return { success: false, error: error.message || "Failed to create brand" };
+    console.error("Brand creation error:", error?.message)
+    return { success: false, error: error?.message || "Failed to create brand" }
   }
 }
 
 export async function updateBrand(brandId, data, file) {
   try {
-    let pictureUrl = data.picture || null;
-    if (file) {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("aspectRatio", "original");
-      const uploadResult = await uploadFileServerAction(formData, { maxSizeMB: 5 });
+    console.log("Updating brand with:", {
+      brandId,
+      data,
+      hasFile: !!file,
+      fileType: file?.type,
+      fileName: file?.name,
+    })
+
+    const currentBrand = await prisma.brand.findUnique({
+      where: { brandId },
+      select: { picture: true },
+    })
+
+    let pictureUrl = currentBrand?.picture || data.picture || null
+
+    if (file && file instanceof File) {
+      console.log("Uploading new file:", file.name)
+
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("aspectRatio", "original")
+
+      const uploadResult = await uploadFileServerAction(formData, { maxSizeMB: 5 })
+
+      console.log("Upload result:", uploadResult)
+
       if (!uploadResult.success || !uploadResult.url) {
-        throw new Error(uploadResult.error || "File upload failed");
+        throw new Error(uploadResult.error || "File upload failed")
       }
-      pictureUrl = uploadResult.url;
+      pictureUrl = uploadResult.url
     }
+
+    console.log("Updating brand with picture URL:", pictureUrl)
 
     const brand = await prisma.brand.update({
       where: { brandId },
@@ -79,16 +117,16 @@ export async function updateBrand(brandId, data, file) {
         brandName: data.brandName,
         brandCode: data.brandCode,
         picture: pictureUrl,
-        memo: data.memo,
+        memo: data.memo || null,
         updatedAt: new Date(),
       },
-    });
+    })
 
-    revalidatePath("/brands");
-    return { success: true, data: brand };
+    revalidatePath("/brands")
+    return { success: true, data: brand }
   } catch (error) {
-    console.error("Brand update error:", error.message);
-    return { success: false, error: error.message || "Failed to update brand" };
+    console.error("Brand update error:", error?.message)
+    return { success: false, error: error?.message || "Failed to update brand" }
   }
 }
 
@@ -97,11 +135,12 @@ export async function deleteBrand(brandId) {
     await prisma.brand.update({
       where: { brandId },
       data: { status: "inactive" },
-    });
-    revalidatePath("/brands");
-    return { success: true };
+    })
+    revalidatePath("/brands")
+    return { success: true }
   } catch (error) {
-    console.error("Brand deletion error:", error.message);
-    return { success: false, error: "Failed to delete brand" };
+    console.error("Brand deletion error:", error?.message)
+    return { success: false, error: "Failed to delete brand" }
   }
 }
+
