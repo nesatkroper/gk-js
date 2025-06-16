@@ -88,6 +88,7 @@ export default function EmployeesPage() {
   const { formData: employeeInfoFormData, resetForm: resetEmployeeInfoForm, setFormData: setEmployeeInfoFormData, handleChange: handleEmployeeInfoChange, handleImageData: handleEmployeeInfoImageData, getSubmissionData: getEmployeeInfoSubmissionData } = useFormHandler({
     managerId: "",
     picture: null,
+    govPicture: null,
     region: "",
     nationality: "",
     note: "",
@@ -97,7 +98,7 @@ export default function EmployeesPage() {
     bankAccount: "",
     govId: "",
     govExpire: null,
-    contractType: "fulltime",
+    contractType: "permanent",
     status: "active",
   })
 
@@ -338,14 +339,14 @@ export default function EmployeesPage() {
       const { data, files } = getEmployeeInfoSubmissionData()
       if (!editingEmployee) throw new Error(t("Create employee first"))
 
-      console.log("Submitting employee info:", { data, pictureFile: files.picture?.name })
+      console.log("Submitting employee info:", { data, pictureFile: files.picture?.name, govPictureFile: files.govPicture?.name })
 
       const result = editingEmployee.Employeeinfo
-        ? await updateEmployeeInfo(editingEmployee.employeeId, data, files.picture)
+        ? await updateEmployeeInfo(editingEmployee.employeeId, data, files.picture, files.govPicture)
         : await createEmployeeInfo({
             ...data,
             employeeId: editingEmployee.employeeId,
-          }, files.picture)
+          }, files.picture, files.govPicture)
 
       if (!result.success) {
         throw new Error(result.error || t("Employee info operation failed"))
@@ -387,6 +388,7 @@ export default function EmployeesPage() {
     setEmployeeInfoFormData({
       managerId: employee.Employeeinfo?.managerId || "",
       picture: employee.Employeeinfo?.picture || null,
+      govPicture: employee.Employeeinfo?.govPicture || null,
       region: employee.Employeeinfo?.region || "",
       nationality: employee.Employeeinfo?.nationality || "",
       note: employee.Employeeinfo?.note || "",
@@ -396,7 +398,7 @@ export default function EmployeesPage() {
       bankAccount: employee.Employeeinfo?.bankAccount || "",
       govId: employee.Employeeinfo?.govId || "",
       govExpire: employee.Employeeinfo?.govExpire ? new Date(employee.Employeeinfo.govExpire) : null,
-      contractType: employee.Employeeinfo?.contractType || "fulltime",
+      contractType: employee.Employeeinfo?.contractType || "permanent",
       status: employee.Employeeinfo?.status || "active",
     })
     setSelectedDepartment(employee.departmentId || "")
@@ -443,6 +445,7 @@ export default function EmployeesPage() {
   const genderOptions = [
     { time: "male", less: t("Male") },
     { time: "female", less: t("Female") },
+    { time: "others", less: t("Others") },
   ]
 
   const statusOptions = [
@@ -453,12 +456,15 @@ export default function EmployeesPage() {
   const maritalStatusOptions = [
     { time: "single", less: t("Single") },
     { time: "married", less: t("Married") },
+    { time: "divorced", less: t("Divorced") },
+    { time: "widowed", less: t("Widowed") },
   ]
 
   const contractTypeOptions = [
-    { time: "fulltime", less: t("Full-time") },
-    { time: "parttime", less: t("Part-time") },
+    { time: "permanent", less: t("Permanent") },
     { time: "contract", less: t("Contract") },
+    { time: "intern", less: t("Intern") },
+    { time: "temporary", less: t("Temporary") },
   ]
 
   const departmentOptions = departments.map((dept) => ({
@@ -686,16 +692,6 @@ export default function EmployeesPage() {
                       <p className="text-red-500 text-sm">{employeeInfoFormError}</p>
                     )}
                     <div className="grid grid-cols-2 gap-4">
-                      <FormComboBox
-                        name="managerId"
-                        label={t("Manager")}
-                        item={managerOptions}
-                        optID="time"
-                        optLabel="less"
-                        onCallbackSelect={(value) => handleEmployeeInfoChange("managerId", value)}
-                        defaultValue={employeeInfoFormData.managerId}
-                        disabled={isSaving}
-                      />
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t("Picture")}</label>
                         <FormImageResize
@@ -713,6 +709,45 @@ export default function EmployeesPage() {
                           />
                         )}
                       </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">{t("Government ID Picture")}</label>
+                        <FormImageResize
+                          onCallbackData={(data) => handleEmployeeInfoImageData("govPicture", data)}
+                          disabled={isSaving}
+                        />
+                        {employeeInfoFormData.govPicture && (
+                          <FormImagePreview
+                            imgSrc={
+                              employeeInfoFormData.govPicture instanceof File
+                                ? URL.createObjectURL(employeeInfoFormData.govPicture)
+                                : employeeInfoFormData.govPicture
+                            }
+                            height={100}
+                          />
+                        )}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormComboBox
+                        name="managerId"
+                        label={t("Manager")}
+                        item={managerOptions}
+                        optID="time"
+                        optLabel="less"
+                        onCallbackSelect={(value) => handleEmployeeInfoChange("managerId", value)}
+                        defaultValue={employeeInfoFormData.managerId}
+                        disabled={isSaving}
+                      />
+                      <FormComboBox
+                        name="contractType"
+                        label={t("Contract Type")}
+                        item={contractTypeOptions}
+                        optID="time"
+                        optLabel="less"
+                        onCallbackSelect={(value) => handleEmployeeInfoChange("contractType", value)}
+                        defaultValue={employeeInfoFormData.contractType}
+                        disabled={isSaving}
+                      />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <FormInput
@@ -796,16 +831,6 @@ export default function EmployeesPage() {
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                      <FormComboBox
-                        name="contractType"
-                        label={t("Contract Type")}
-                        item={contractTypeOptions}
-                        optID="time"
-                        optLabel="less"
-                        onCallbackSelect={(value) => handleEmployeeInfoChange("contractType", value)}
-                        defaultValue={employeeInfoFormData.contractType}
-                        disabled={isSaving}
-                      />
                       <FormComboBox
                         name="status"
                         label={t("Status")}
@@ -913,6 +938,8 @@ export default function EmployeesPage() {
 }
 
 
+
+
 // "use client"
 
 // import { useState, useEffect } from "react"
@@ -939,7 +966,7 @@ export default function EmployeesPage() {
 // import { useDepartmentStore } from "@/stores/department-store"
 // import { usePositionStore } from "@/stores/position-store"
 // import { useBranchStore } from "@/stores/branch-store"
-// import { createEmployee, updateEmployee, createEmployeeInfo, updateEmployeeInfo } from "@/app/actions/employees"
+// import { createEmployee, updateEmployee, createEmployeeInfo, updateEmployeeInfo, deleteEmployee } from "@/app/actions/employees"
 // import { FormInput, FormTextArea, FormImageResize, FormImagePreview, FormDatePicker, FormComboBox } from "@/components/form"
 // import { usePermissions } from "@/hooks/use-permissions"
 // import { toast } from "sonner"
@@ -949,7 +976,7 @@ export default function EmployeesPage() {
 
 // export default function EmployeesPage() {
 //   const { t } = useTranslation("common")
-//   const { canCreate } = usePermissions()
+//   const { canCreate, canUpdate, canDelete } = usePermissions()
 //   const {
 //     items: employees,
 //     isLoading: empLoading,
@@ -1035,11 +1062,11 @@ export default function EmployeesPage() {
 //       employee.firstName?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
 //       employee.lastName?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
 //       (employee.employeeCode?.toLowerCase()?.includes(searchTerm.toLowerCase()) ?? false) ||
-//       (employee.phone?.toLowerCase()?.includes(searchTerm.toLowerCase()) ?? false),
+//       (employee.phone?.toLowerCase()?.includes(searchTerm.toLowerCase()) ?? false)
 //   )
 
 //   const filteredPositions = positions.filter((position) =>
-//     selectedDepartment ? position.departmentId === selectedDepartment : true,
+//     selectedDepartment ? position.departmentId === selectedDepartment : true
 //   )
 
 //   const tableColumns = [
@@ -1212,6 +1239,8 @@ export default function EmployeesPage() {
 //       if (!data.lastName) throw new Error(t("Last name is required"))
 //       if (!data.departmentId) throw new Error(t("Department is required"))
 //       if (!data.positionId) throw new Error(t("Position is required"))
+//       if (!data.dob) throw new Error(t("Date of birth is required"))
+//       if (!data.hiredDate) throw new Error(t("Hired date is required"))
 //       if (!data.salary || data.salary < 0) throw new Error(t("Salary must be non-negative"))
 
 //       const result = editingEmployee
@@ -1236,6 +1265,7 @@ export default function EmployeesPage() {
 //     } catch (err) {
 //       console.error("Employee operation error:", err)
 //       setEmployeeFormError(err.message || t("An error occurred"))
+//       toast.error(err.message || t("An error occurred"))
 //     } finally {
 //       setIsSaving(false)
 //     }
@@ -1247,17 +1277,17 @@ export default function EmployeesPage() {
 //     setEmployeeInfoFormError(null)
 
 //     try {
-//       const { data, file } = getEmployeeInfoSubmissionData()
+//       const { data, files } = getEmployeeInfoSubmissionData()
 //       if (!editingEmployee) throw new Error(t("Create employee first"))
 
-//       console.log("Submitting employee info:", { data, file: file?.name })
+//       console.log("Submitting employee info:", { data, pictureFile: files.picture?.name })
 
 //       const result = editingEmployee.Employeeinfo
-//         ? await updateEmployeeInfo(editingEmployee.employeeId, data, file)
+//         ? await updateEmployeeInfo(editingEmployee.employeeId, data, files.picture)
 //         : await createEmployeeInfo({
 //             ...data,
 //             employeeId: editingEmployee.employeeId,
-//           }, file)
+//           }, files.picture)
 
 //       if (!result.success) {
 //         throw new Error(result.error || t("Employee info operation failed"))
@@ -1273,12 +1303,14 @@ export default function EmployeesPage() {
 //     } catch (err) {
 //       console.error("Employee info operation error:", err)
 //       setEmployeeInfoFormError(err.message || t("An error occurred"))
+//       toast.error(err.message || t("An error occurred"))
 //     } finally {
 //       setIsSaving(false)
 //     }
 //   }
 
 //   const handleEdit = (employee) => {
+//     if (!canUpdate) return
 //     setEmployeeFormData({
 //       employeeCode: employee.employeeCode || "",
 //       firstName: employee.firstName || "",
@@ -1315,17 +1347,19 @@ export default function EmployeesPage() {
 //   }
 
 //   const handleDelete = async (employeeId) => {
+//     if (!canDelete) return
 //     if (!confirm(t("Are you sure you want to delete this employee?"))) return
 
 //     try {
 //       const result = await deleteEmployee(employeeId)
-//       if (result.success) {
-//         toast.success(t("Employee deleted successfully"))
-//       } else {
+//       if (!result.success) {
 //         throw new Error(result.error || t("Failed to delete employee"))
 //       }
-//     } catch (error) {
-//       toast.error(error.message || t("Failed to delete employee"))
+//       toast.success(t("Employee deleted successfully"))
+//       await fetchEmployees()
+//     } catch (err) {
+//       console.error("Employee deletion error:", err)
+//       toast.error(err.message || t("Failed to delete employee"))
 //     }
 //   }
 
@@ -1460,6 +1494,7 @@ export default function EmployeesPage() {
 //                         onCallbackPicker={(date) => handleEmployeeChange("dob", date)}
 //                         fromYear={1900}
 //                         toYear={2025}
+//                         required
 //                         error={employeeFormError && !employeeFormData.dob ? t("Date of birth is required") : null}
 //                       />
 //                       <FormDatePicker
@@ -1468,6 +1503,7 @@ export default function EmployeesPage() {
 //                         onCallbackPicker={(date) => handleEmployeeChange("hiredDate", date)}
 //                         fromYear={2000}
 //                         toYear={2025}
+//                         required
 //                         error={employeeFormError && !employeeFormData.hiredDate ? t("Hired date is required") : null}
 //                       />
 //                     </div>
@@ -1604,7 +1640,10 @@ export default function EmployeesPage() {
 //                       />
 //                       <div className="space-y-2">
 //                         <label className="text-sm font-medium">{t("Picture")}</label>
-//                         <FormImageResize onCallbackData={handleEmployeeInfoImageData} disabled={isSaving} />
+//                         <FormImageResize
+//                           onCallbackData={(data) => handleEmployeeInfoImageData("picture", data)}
+//                           disabled={isSaving}
+//                         />
 //                         {employeeInfoFormData.picture && (
 //                           <FormImagePreview
 //                             imgSrc={
@@ -1815,4 +1854,3 @@ export default function EmployeesPage() {
 //   )
 // }
 
-    
