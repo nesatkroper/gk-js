@@ -1,17 +1,17 @@
 "use client"
 
+import Image from "next/image"
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import { login } from "@/app/actions/auth"
+import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Leaf, Eye, EyeOff, Shield, AlertTriangle, Package, BarChart3, Users, ArrowRight } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
 import { useIsMobile } from "@/hooks/use-mobile"
-import Image from "next/image"
-import { login } from "@/app/actions/auth"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import { Leaf, Eye, EyeOff, Shield, AlertTriangle, Package, BarChart3, Users, ArrowRight } from "lucide-react"
 
 const getDeviceInfo = () => {
   return `${navigator.userAgent} | ${navigator.language} | ${window.screen.width}x${window.screen.height}`
@@ -49,8 +49,8 @@ export default function LoginPage() {
         return
       }
 
-      console.log("Login successful, redirecting to dashboard...")
-      router.push("/dashboard")
+      response?.user?.role === "admin" ? router.push("/dashboard") : router.push("/home")
+      
     } catch (error) {
       console.error("Login error:", error)
       setError("Network error. Please try again.")

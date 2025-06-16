@@ -23,6 +23,8 @@ export default function DashboardPage() {
     }
   }, [fetch, me])
 
+  console.log(me)
+
 
   return (
     <div className="space-y-6">
