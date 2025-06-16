@@ -1,5 +1,3 @@
-"use client"
-
 import { useState } from "react"
 
 export const useFormHandler = (initialValues) => {
@@ -14,34 +12,54 @@ export const useFormHandler = (initialValues) => {
     }
   }
 
-  const handleImageData = (fieldNameOrFormData, formDataMaybe) => {
-    let fieldName = "picture"
-    let fileSource = fieldNameOrFormData
+  const handleImageData = (fieldNameOrEvent, fileSource) => {
+    let fieldName = "picture" // default field name
+    let fileData = fileSource
 
-    if (typeof fieldNameOrFormData === "string") {
-      fieldName = fieldNameOrFormData
-      fileSource = formDataMaybe
+    // Handle different input formats
+    if (typeof fieldNameOrEvent === "string") {
+      fieldName = fieldNameOrEvent
+    } else if (fieldNameOrEvent?.target) {
+      // Handle file input event
+      fieldName = fieldNameOrEvent.target.name || "picture"
+      fileData = fieldNameOrEvent.target.files?.[0] || null
+    } else if (fieldNameOrEvent instanceof File || fieldNameOrEvent === null) {
+      // Direct file or null
+      fileData = fieldNameOrEvent
+    } else if (fieldNameOrEvent instanceof FormData) {
+      // Handle FormData
+      fileData = fieldNameOrEvent.get(fieldName) || fieldNameOrEvent.get("file") || null
     }
 
-    let imageFile = null
-
-    if (fileSource instanceof FormData) {
-      imageFile = fileSource.get(fieldName) || fileSource.get("file") || null
-    } else if (fileSource instanceof File) {
-      imageFile = fileSource
-    } else if (fileSource?.target?.files?.[0]) {
-      imageFile = fileSource.target.files[0]
-    } else {
-      console.warn("handleImageData: invalid input", fileSource)
+    // Validate the file data
+    if (fileData !== null && !(fileData instanceof File)) {
+      console.warn("handleImageData: invalid file data", fileData)
       return
     }
 
-    if (imageFile instanceof File || imageFile === null) {
-      setFormData((prev) => ({
-        ...prev,
-        [fieldName]: imageFile,
-      }))
+    // Update the form data
+    setFormData((prev) => ({
+      ...prev,
+      [fieldName]: fileData,
+    }))
+  }
+
+  // Helper to handle multiple images at once (e.g., from a multi-file upload)
+  const handleMultipleImages = (filesData) => {
+    const updates = {}
+
+    for (const [fieldName, fileData] of Object.entries(filesData)) {
+      if (fileData === null || fileData instanceof File) {
+        updates[fieldName] = fileData
+      } else {
+        console.warn(`Invalid file data for field ${fieldName}`, fileData)
+      }
     }
+
+    setFormData((prev) => ({
+      ...prev,
+      ...updates,
+    }))
   }
 
   const resetForm = () => {
@@ -60,35 +78,28 @@ export const useFormHandler = (initialValues) => {
       }
     }
 
-    // Handle picture URLs
-    for (const [key, value] of Object.entries(formData)) {
-      if (typeof value === "string" && (key.toLowerCase().includes("picture") || key.toLowerCase().includes("image"))) {
-        data[key] = value
-      }
-    }
-
-    return { 
-      data, 
-      file: files.picture || files.file || null,
-      files 
+    return {
+      data,
+      files,
+      file: files.picture || files.file || null
     }
   }
 
   const getFormDataForSubmission = () => {
     const submissionFormData = new FormData()
-    
+
     Object.entries(formData).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {
         if (value instanceof File) {
           submissionFormData.append(key, value)
-        } else if (typeof value === 'object') {
+        } else if (typeof value === 'object' && !(value instanceof File)) {
           submissionFormData.append(key, JSON.stringify(value))
         } else {
           submissionFormData.append(key, value)
         }
       }
     })
-    
+
     return submissionFormData
   }
 
@@ -98,175 +109,10 @@ export const useFormHandler = (initialValues) => {
     setFormData,
     resetForm,
     handleImageData,
+    handleMultipleImages, // New method
     getSubmissionData,
     getFormDataForSubmission,
   }
 }
 
-// "use client"
-
-// import { useState } from "react"
-
-// export const useFormHandler = (initialValues) => {
-//   const [formData, setFormData] = useState(initialValues)
-
-//   const handleChange = (eventOrName, value) => {
-//     if (typeof eventOrName === "string") {
-//       setFormData((prev) => ({ ...prev, [eventOrName]: value }))
-//     } else if (eventOrName?.target) {
-//       const { name, value } = eventOrName.target
-//       setFormData((prev) => ({ ...prev, [name]: value }))
-//     }
-//   }
-
-//   const handleImageData = (fieldNameOrFormData, formDataMaybe) => {
-//     let fieldName = "picture"
-//     let fileSource = fieldNameOrFormData
-
-//     // Determine if field name is passed
-//     if (typeof fieldNameOrFormData === "string") {
-//       fieldName = fieldNameOrFormData
-//       fileSource = formDataMaybe
-//     }
-
-//     let imageFile = null
-
-//     if (fileSource instanceof FormData) {
-//       imageFile = fileSource.get("picture") || fileSource.get("file")
-//     } else if (fileSource instanceof File) {
-//       imageFile = fileSource
-//     } else {
-//       console.error("handleImageData: invalid input", fileSource)
-//       return
-//     }
-
-//     if (imageFile instanceof File) {
-//       setFormData((prev) => ({
-//         ...prev,
-//         [fieldName]: imageFile,
-//       }))
-//     } else {
-//       console.warn("handleImageData: no valid file found")
-//     }
-//   }
-
-//   const resetForm = () => {
-//     setFormData(initialValues)
-//   }
-
-//   const getSubmissionData = () => {
-//     const data = {}
-//     const files = {}
-
-//     for (const [key, value] of Object.entries(formData)) {
-//       if (value instanceof File) {
-//         files[key] = value
-//       } else {
-//         data[key] = value
-//       }
-//     }
-
-//     // Backward compatibility: preserve URL string if already uploaded
-//     for (const [key, value] of Object.entries(formData)) {
-//       if (typeof value === "string" && key.toLowerCase().includes("picture")) {
-//         data[key] = value
-//       }
-//     }
-
-//     return { data, file: files.picture ?? null }
-//   }
-
-//   const getFormDataForSubmission = () => {
-//     const submissionFormData = new FormData()
-//     Object.entries(formData).forEach(([key, value]) => {
-//       if (value !== null && value !== undefined) {
-//         submissionFormData.append(key, value)
-//       }
-//     })
-//     return submissionFormData
-//   }
-
-//   return {
-//     formData,
-//     handleChange,
-//     setFormData,
-//     resetForm,
-//     handleImageData,
-//     getSubmissionData,
-//     getFormDataForSubmission,
-//   }
-// }
-
-
-
-
-
-
-
-
-// "use client"
-
-// import { useState } from "react"
-
-// export const useFormHandler = (initialValues) => {
-//   const [formData, setFormData] = useState(initialValues)
-
-//   const handleChange = (eventOrName, value) => {
-//     if (typeof eventOrName === "string") {
-//       setFormData((prev) => ({ ...prev, [eventOrName]: value }))
-//     } else if (eventOrName.target) {
-//       const { name, value } = eventOrName.target
-//       setFormData((prev) => ({ ...prev, [name]: value }))
-//     }
-//   }
-
-//   const handleImageData = (formDataFromComponent) => {
-//     const imageFile = formDataFromComponent.get("picture")
-//     if (imageFile) {
-//       setFormData((prev) => ({
-//         ...prev,
-//         picture: imageFile,
-//       }))
-//     }
-//   }
-
-//   const resetForm = () => {
-//     setFormData(initialValues)
-//   }
-
-//   const getSubmissionData = () => {
-//     const { picture, ...otherData } = formData
-
-//     const file = picture instanceof File ? picture : null
-//     const pictureUrl = typeof picture === "string" ? picture : null
-
-//     return {
-//       data: {
-//         ...otherData,
-//         picture: pictureUrl,
-//       },
-//       file: file,
-//     }
-//   }
-
-//   const getFormDataForSubmission = () => {
-//     const submissionFormData = new FormData()
-//     Object.entries(formData).forEach(([key, value]) => {
-//       if (value !== null && value !== undefined) {
-//         submissionFormData.append(key, value)
-//       }
-//     })
-//     return submissionFormData
-//   }
-
-//   return {
-//     formData,
-//     handleChange,
-//     setFormData,
-//     resetForm,
-//     handleImageData,
-//     getFormDataForSubmission,
-//     getSubmissionData,
-//   }
-// }
 
