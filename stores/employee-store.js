@@ -1,15 +1,15 @@
 import { create } from "zustand"
-import { getAllEmployees, deleteEmployee } from "@/app/actions/employees"
+import { getEmployees, deleteEmployee } from "@/app/actions/employees"
 
 export const useEmployeeStore = create((set) => ({
   items: [],
   isLoading: false,
   error: null,
 
-  fetch: async () => {
+  fetch: async (option) => {
     set({ isLoading: true, error: null })
     try {
-      const result = await getAllEmployees()
+      const result = await getEmployees(option)
       if (!result.success) {
         throw new Error(result.error)
       }

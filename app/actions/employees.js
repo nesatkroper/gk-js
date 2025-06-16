@@ -35,41 +35,103 @@ function mapContractType(formContractType) {
 }
 
 
-export async function getAllEmployees() {
+export async function getEmployees(options) {
   try {
-    const employees = await prisma.employee.findMany({
-      include: {
-        Department: { select: { departmentName: true } },
-        Position: { select: { positionName: true } },
-        Employeeinfo: true,
-        Sale: true,
-        Attendance: true,
-      },
-      orderBy: { createdAt: "desc" },
-    })
+    let employees;
 
-    // Serialize Decimal fields to plain numbers
-    const serializedEmployees = employees.map((employee) => ({
-      ...employee,
-      salary: employee.salary.toNumber(), // Convert Decimal to number
-      dob: employee.dob ? employee.dob.toISOString() : null,
-      hiredDate: employee.hiredDate ? employee.hiredDate.toISOString() : null,
-      createdAt: employee.createdAt.toISOString(),
-      updatedAt: employee.updatedAt.toISOString(),
-      Employeeinfo: employee.Employeeinfo
-        ? {
-          ...employee.Employeeinfo,
-          govExpire: employee.Employeeinfo.govExpire
-            ? employee.Employeeinfo.govExpire.toISOString()
-            : null,
-        }
-        : null,
-    }))
+    if (options === "all") {
+      employees = await prisma.employee.findMany({
+        include: {
+          Department: { select: { departmentName: true } },
+          Position: { select: { positionName: true } },
+          Employeeinfo: true,
+          Sale: true,
+          Attendance: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
 
-    return { success: true, employees: serializedEmployees }
+      const serializedEmployees = employees.map((employee) => ({
+        ...employee,
+        salary: employee.salary.toNumber(), // Convert Decimal to number
+        dob: employee.dob ? employee.dob.toISOString() : null,
+        hiredDate: employee.hiredDate ? employee.hiredDate.toISOString() : null,
+        createdAt: employee.createdAt.toISOString(),
+        updatedAt: employee.updatedAt.toISOString(),
+        Employeeinfo: employee.Employeeinfo
+          ? {
+            ...employee.Employeeinfo,
+            govExpire: employee.Employeeinfo.govExpire
+              ? employee.Employeeinfo.govExpire.toISOString()
+              : null,
+            terminationDate: employee.Employeeinfo.terminationDate
+              ? employee.Employeeinfo.terminationDate.toISOString()
+              : null,
+          }
+          : null,
+      }));
+
+      return { success: true, employees: serializedEmployees };
+    }
+    else if (options === "withImage") {
+      employees = await prisma.employee.findMany({
+        select: {
+          employeeId: true,
+          firstName: true,
+          lastName: true,
+          positionId: true,
+          departmentId: true,
+          Position: { select: { positionName: true } },
+          Department: { select: { departmentName: true } },
+          Employeeinfo: {
+            select: {
+              picture: true,
+              managerId: true
+            }
+          }
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      const simplifiedEmployees = employees.map(employee => ({
+        employeeId: employee.employeeId,
+        firstName: employee.firstName,
+        lastName: employee.lastName,
+        position: employee.Position.positionName,
+        department: employee.Department.departmentName,
+        picture: employee.Employeeinfo?.picture || null,
+        managerId: employee.Employeeinfo?.managerId || null
+      }));
+
+      return { success: true, employees: simplifiedEmployees };
+    }
+    else { // "basic" option
+      employees = await prisma.employee.findMany({
+        select: {
+          employeeId: true,
+          firstName: true,
+          lastName: true,
+          positionId: true,
+          departmentId: true,
+          Position: { select: { positionName: true } },
+          Department: { select: { departmentName: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      const basicEmployees = employees.map(employee => ({
+        employeeId: employee.employeeId,
+        firstName: employee.firstName,
+        lastName: employee.lastName,
+        position: employee.Position.positionName,
+        department: employee.Department.departmentName,
+      }));
+
+      return { success: true, employees: basicEmployees };
+    }
   } catch (error) {
-    console.error("Employees fetch error:", error?.message)
-    return { success: false, error: "Failed to fetch employees" }
+    console.error("Employees fetch error:", error?.message);
+    return { success: false, error: "Failed to fetch employees" };
   }
 }
 

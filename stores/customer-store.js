@@ -1,15 +1,15 @@
 import { create } from "zustand"
-import { getAllCustomers, deleteCustomer } from "@/app/actions/customers"
+import { getCustomers, deleteCustomer } from "@/app/actions/customers"
 
 export const useCustomerStore = create((set) => ({
   items: [],
   isLoading: false,
   error: null,
 
-  fetch: async () => {
+  fetch: async (params) => {
     set({ isLoading: true, error: null })
     try {
-      const result = await getAllCustomers()
+      const result = await getCustomers(params)
       if (!result.success) {
         throw new Error(result.error)
       }

@@ -4,36 +4,76 @@ import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { uploadFileServerAction } from "@/app/actions/files"
 
-export async function getAllCustomers() {
+export async function getCustomers(options) {
   try {
-    const customers = await prisma.customer.findMany({
-      include: {
-        Employee: { select: { firstName: true, lastName: true } },
-        Customerinfo: true,
-        Sale: true,
-      },
-      orderBy: { createdAt: "desc" },
-    })
+    let customers;
 
-    const serializedCustomers = customers.map((customer) => ({
-      ...customer,
-      createdAt: customer.createdAt.toISOString(),
-      updatedAt: customer.updatedAt.toISOString(),
-      Customerinfo: customer.Customerinfo
-        ? {
+    if (options === "all") {
+      customers = await prisma.customer.findMany({
+        include: {
+          Employee: { select: { firstName: true, lastName: true } },
+          Customerinfo: true,
+          Sale: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      const serializedCustomers = customers.map((customer) => ({
+        ...customer,
+        createdAt: customer.createdAt.toISOString(),
+        updatedAt: customer.updatedAt.toISOString(),
+        Customerinfo: customer.Customerinfo
+          ? {
             ...customer.Customerinfo,
             lastPurchaseDate: customer.Customerinfo.lastPurchaseDate.toISOString(),
             govExpire: customer.Customerinfo.govExpire
               ? customer.Customerinfo.govExpire.toISOString()
               : null,
           }
-        : null,
-    }))
+          : null,
+      }));
 
-    return { success: true, customers: serializedCustomers }
+      return { success: true, customers: serializedCustomers };
+    }
+    else if (options === "withImage") {
+      customers = await prisma.customer.findMany({
+        select: {
+          customerId: true,
+          firstName: true,
+          lastName: true,
+          Customerinfo: {
+            select: {
+              picture: true
+            }
+          }
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      const simplifiedCustomers = customers.map(customer => ({
+        customerId: customer.customerId,
+        firstName: customer.firstName,
+        lastName: customer.lastName,
+        picture: customer.Customerinfo?.picture || null
+      }));
+
+      return { success: true, customers: simplifiedCustomers };
+    }
+    else { // "basic" option
+      customers = await prisma.customer.findMany({
+        select: {
+          customerId: true,
+          firstName: true,
+          lastName: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      return { success: true, customers };
+    }
   } catch (error) {
-    console.error("Customers fetch error:", error?.message)
-    return { success: false, error: "Failed to fetch customers" }
+    console.error("Customers fetch error:", error?.message);
+    return { success: false, error: "Failed to fetch customers" };
   }
 }
 

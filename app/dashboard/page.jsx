@@ -11,11 +11,19 @@ import { useEffect, useState } from "react"
 import { useAuthStore } from "@/stores"
 import { useTranslation } from "react-i18next"
 import MapComponent from "@/components/map"
+import { SignaturePad } from "@/components/form"
+import { useFormHandler } from '@/hooks/use-form'
 
 export const dynamic = 'force-dynamic';
 export default function DashboardPage() {
   const { me, fetch } = useAuthStore()
   const { t } = useTranslation('common')
+
+  const { formData, handleChange, handleImageData, resetForm, getSubmissionData } = useFormHandler({
+    name: "",
+    email: "",
+    signature: "",
+  })
 
   useEffect(() => {
     if (!me) {
@@ -25,6 +33,8 @@ export default function DashboardPage() {
 
   console.log(me)
 
+  console.log(formData);
+
 
   return (
     <div className="space-y-6">
@@ -32,6 +42,14 @@ export default function DashboardPage() {
         <h1 className="text-3xl font-bold tracking-tight">{t('Dashboard')}</h1>
         <p className="text-muted-foreground">Welcome back! Here's what's happening with your fertilizer business.</p>
       </motion.div>
+
+      <SignaturePad
+        name="signature"
+        value={formData.signature}
+        onCallbackInput={handleImageData}
+        label="Digital Signature"
+        required
+      />
 
       <DashboardStats />
 

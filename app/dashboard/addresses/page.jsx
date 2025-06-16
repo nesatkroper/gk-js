@@ -89,8 +89,8 @@ export default function AddressPage() {
   useEffect(() => {
     const loadInitialData = async () => {
       fetchAddresses();
-      fetchCustomers();
-      fetchEmployees();
+      fetchCustomers('basic');
+      fetchEmployees('basic');
       fetchSuppliers();
       fetchEvents();
       const provincesRes = await getAllProvinces();
@@ -384,7 +384,7 @@ export default function AddressPage() {
             }}
           >
             <DialogTrigger asChild>
-              <Button>
+              <Button disabled={addrLoading}>
                 <Plus className="mr-2 h-4 w-4" />
                 {t('Add Address')}
               </Button>
@@ -446,7 +446,7 @@ export default function AddressPage() {
                       options={villages.map((v) => ({ value: v.villageId.toString(), label: v.name }))}
                       placeholder={t("Select village...")}
                       value={selectedVillageId ? selectedVillageId.toString() : ""}
-                      onChange={(value) => setSelectedVillageId(value ? Number(value) : null)} 
+                      onChange={(value) => setSelectedVillageId(value ? Number(value) : null)}
                       disabled={!selectedCommuneId}
                       required
                     />

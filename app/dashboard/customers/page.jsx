@@ -79,7 +79,7 @@ export default function CustomersPage() {
     const loadData = async () => {
       try {
         await Promise.all([
-          fetchCustomers(),
+          fetchCustomers('all'),
           fetchEmployees(),
         ])
       } catch (error) {
