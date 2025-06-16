@@ -134,7 +134,7 @@
     "stores/authentication-store.js",
     "stores/auth-store.js",
     "stores/attendance-store.js",
-    "app/actions/stock.js",
+    "app/actions/stocks.js",
     "app/actions/files.js",
     "app/actions/categories.js",
     "app/actions/products.js",

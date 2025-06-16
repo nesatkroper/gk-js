@@ -71,9 +71,15 @@ export default function InventoryPage() {
         fetchProducts(),
         fetchBranches(),
       ])
+      console.log("Loaded products:", products)
+      console.log("Loaded branches:", branches)
     }
     loadData()
   }, [fetchStocks, fetchProducts, fetchBranches, searchTerm, showLowStock])
+
+  useEffect(() => {
+    console.log("Form data updated:", formData)
+  }, [formData])
 
   const filteredStocks = stockEntries.filter(
     (stock) =>
@@ -86,6 +92,9 @@ export default function InventoryPage() {
     e.preventDefault()
     setFormError(null)
     const isEditing = !!editingStock
+
+    console.log("Form submission data:", formData)
+    console.log("Submission payload:", getSubmissionData())
 
     if (!isEditing && !canCreate) {
       toast({
@@ -141,14 +150,15 @@ export default function InventoryPage() {
   const handleEdit = (stock) => {
     if (!canUpdate) return
     setFormData({
-      productId: stock.productId || "",
-      branchId: stock.branchId || "",
+      productId: String(stock.productId) || "",
+      branchId: String(stock.branchId) || "",
       quantity: stock.quantity || 0,
       unit: stock.unit || "unit",
       memo: stock.memo || "",
     })
     setEditingStock(stock)
     setIsDialogOpen(true)
+    console.log("Editing stock:", stock)
   }
 
   const handleDelete = async (stockId) => {
@@ -253,12 +263,12 @@ export default function InventoryPage() {
   ]
 
   const productOptions = products.map((p) => ({
-    time: p.productId,
+    time: String(p.productId),
     less: `${p.productName}${p.productCode ? ` (${p.productCode})` : ""}`,
   }))
 
   const branchOptions = branches.map((b) => ({
-    time: b.branchId,
+    time: String(b.branchId),
     less: b.branchName,
   }))
 
@@ -307,8 +317,11 @@ export default function InventoryPage() {
                     item={productOptions}
                     optID="time"
                     optLabel="less"
-                    onCallbackSelect={(value) => handleChange("productId", value)}
-                    defaultValue={formData.productId}
+                    onCallbackSelect={(value) => {
+                      console.log("Selected productId:", value)
+                      handleChange("productId", String(value))
+                    }}
+                    value={formData.productId}
                     required
                     error={formError && !formData.productId ? t("Product is required") : null}
                     disabled={stockLoading || prodLoading}
@@ -319,8 +332,11 @@ export default function InventoryPage() {
                     item={branchOptions}
                     optID="time"
                     optLabel="less"
-                    onCallbackSelect={(value) => handleChange("branchId", value)}
-                    defaultValue={formData.branchId}
+                    onCallbackSelect={(value) => {
+                      console.log("Selected branchId:", value)
+                      handleChange("branchId", String(value))
+                    }}
+                    value={formData.branchId}
                     required
                     error={formError && !formData.branchId ? t("Branch is required") : null}
                     disabled={stockLoading || branchLoading}
@@ -469,13 +485,10 @@ export default function InventoryPage() {
             nameField="Product.productName"
           />
         </CardContent>
-        </Card>
-      </div>
-    )
+      </Card>
+    </div>
+  )
 }
-
-
-
 // "use client"
 // export const dynamic = "force-dynamic"
 
