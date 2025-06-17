@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import { fetchStocks, createStock, updateStock, deleteStock } from "@/app/actions/stocks"
+import { fetchStocks, createEntryAndUpdateStock, updateStock, deleteStock } from "@/app/actions/stocks"
 
 export const useStockStore = create((set) => ({
   items: [],
@@ -17,7 +17,7 @@ export const useStockStore = create((set) => ({
   },
   create: async (data) => {
     try {
-      const { success, stock, error } = await createStock(data)
+      const { success, stock, error } = await createEntryAndUpdateStock(data)
       if (!success) throw new Error(error)
       set((state) => ({ items: [...state.items, stock] }))
       return true

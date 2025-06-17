@@ -1,11 +1,21 @@
 "use client";
-export const dynamic = "force-dynamic";
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import { useFormHandler } from "@/hooks/use-form";
+import { useAuthenticationStore } from "@/stores/authentication-store";
+import { useRoleStore } from "@/stores/role-store";
+import { useEmployeeStore } from "@/stores/employee-store";
+import { DataTable } from "@/components/ui/data-table";
+import { DataCards } from "@/components/ui/data-cards";
+import { ViewToggle } from "@/components/ui/view-toggle";
+import { FormInput } from "@/components/form";
+import { Combobox } from "@/components/ui/combobox";
+import { Plus, Search, Lock, Loader2, RefreshCw, Mail } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -14,19 +24,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ViewToggle } from "@/components/ui/view-toggle";
-import { DataTable } from "@/components/ui/data-table";
-import { DataCards } from "@/components/ui/data-cards";
-import { Plus, Search, Lock, Loader2, RefreshCw, Mail } from "lucide-react";
-import { formatDate } from "@/lib/utils";
-import { useAuthenticationStore } from "@/stores/authentication-store";
-import { useRoleStore } from "@/stores/role-store";
-import { useEmployeeStore } from "@/stores/employee-store";
-import { useTranslation } from "react-i18next";
 import { usePermissions } from "@/hooks/use-permissions";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
+import { formatDate } from "@/lib/utils";
+import { createAuthRecord, updateAuthRecord } from "@/app/actions/auth";
 
 export default function AuthPage() {
   const { t } = useTranslation("common");
@@ -36,8 +37,6 @@ export default function AuthPage() {
     isLoading: authLoading,
     error: authError,
     fetch: fetchAuths,
-    create,
-    update,
     delete: deleteAuth,
   } = useAuthenticationStore();
   const {
@@ -55,14 +54,21 @@ export default function AuthPage() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [view, setView] = useState("table");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAuth, setEditingAuth] = useState(null);
+
+  const { formData, resetForm, setFormData, handleChange, getSubmissionData } = useFormHandler({
+    email: "",
+    password: "",
+    roleId: roles.length > 0 ? String(roles[0].roleId) : "",
+    employeeId: null,
+  });
 
   useEffect(() => {
     fetchAuths();
     fetchRoles();
-    fetchEmployees();
+    fetchEmployees('basic');
   }, [fetchAuths, fetchRoles, fetchEmployees]);
 
   const activeAuths = auths.filter((auth) => auth.status === "active");
@@ -161,103 +167,66 @@ export default function AuthPage() {
     return password.length >= 6;
   };
 
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-
-    const authData = {
-      email: formData.get("email"),
-      password: formData.get("password"),
-      roleId: formData.get("roleId"),
-      employeeId: formData.get("employeeId") === "none" ? null : formData.get("employeeId"),
-    };
-
-    if (!roles.find((r) => String(r.roleId) === authData.roleId)) {
-      toast({
-        title: "Error",
-        description: "Invalid role selected",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (authData.employeeId && !employees.find((e) => String(e.employeeId) === authData.employeeId)) {
-      toast({
-        title: "Error",
-        description: "Invalid employee selected",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!validateEmail(authData.email)) {
-      toast({
-        title: "Error",
-        description: "Invalid email format",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!editingAuth && !authData.password) {
-      toast({
-        title: "Error",
-        description: "Password is required for new auth",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (authData.password && !validatePassword(authData.password)) {
-      toast({
-        title: "Error",
-        description: "Password must be at least 6 characters",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!authData.roleId) {
-      toast({
-        title: "Error",
-        description: "Role is required",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (editingAuth && !authData.password) {
-      formData.delete("password");
-    }
-
     setIsSaving(true);
+
     try {
-      const success = editingAuth
-        ? await update(editingAuth.authId, formData)
-        : await create(formData);
-      setIsSaving(false);
-      if (success) {
-        toast({
-          title: "Success",
-          description: `Auth record ${editingAuth ? "updated" : "created"} successfully`,
-        });
-        setIsDialogOpen(false);
-        setEditingAuth(null);
-        e.target.reset();
-      } else {
-        throw new Error("Auth operation failed");
+      const { data } = getSubmissionData();
+      console.log(data)
+
+      if (!roles.find((r) => String(r.roleId) === data.roleId)) {
+        throw new Error("Invalid role selected");
       }
-    } catch (error) {
+
+      if (data.employeeId && data.employeeId !== "none" && !employees.find((e) => String(e.employeeId) === data.employeeId)) {
+        throw new Error("Invalid employee selected");
+      }
+
+      if (!validateEmail(data.email)) {
+        throw new Error("Invalid email format");
+      }
+
+      if (!editingAuth && !data.password) {
+        throw new Error("Password is required for new auth");
+      }
+
+      if (data.password && !validatePassword(data.password)) {
+        throw new Error("Password must be at least 6 characters");
+      }
+
+      if (!data.roleId) {
+        throw new Error("Role is required");
+      }
+
+      if (editingAuth && !data.password) {
+        delete data.password;
+      }
+
+      const result = editingAuth
+        ? await updateAuthRecord(editingAuth.authId, formData)
+        : await createAuthRecord(formData);
+
+      toast.success(editingAuth ? "Auth updated successfully" : "Auth created successfully");
+      setIsDialogOpen(false);
+      setEditingAuth(null);
+      resetForm();
+      await fetchAuths();
+    } catch (err) {
+      console.error("Auth operation error:", err);
+      toast.error(err.message || "An error occurred");
+    } finally {
       setIsSaving(false);
-      toast({
-        title: "Error",
-        description: error.message || `Failed to ${editingAuth ? "update" : "create"} auth record`,
-        variant: "destructive",
-      });
     }
-  };
+  }
 
   const handleEdit = (auth) => {
+    setFormData({
+      email: auth.email || "",
+      password: "",
+      roleId: auth.roleId ? String(auth.roleId) : (roles.length > 0 ? String(roles[0].roleId) : ""),
+      employeeId: auth.employeeId ? String(auth.employeeId) : "none",
+    });
     setEditingAuth(auth);
     setIsDialogOpen(true);
   };
@@ -267,20 +236,12 @@ export default function AuthPage() {
 
     try {
       const success = await deleteAuth(authId);
-      if (success) {
-        toast({
-          title: "Success",
-          description: "Auth record deleted successfully",
-        });
-      } else {
+      if (!success) {
         throw new Error("Failed to delete auth record");
       }
+      toast.success("Auth record deleted successfully");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete auth record",
-        variant: "destructive",
-      });
+      toast.error(error.message || "Failed to delete auth record");
     }
   };
 
@@ -288,6 +249,14 @@ export default function AuthPage() {
     fetchAuths();
     fetchRoles();
     fetchEmployees();
+  };
+
+  const handleDialogClose = (open) => {
+    setIsDialogOpen(open);
+    if (!open) {
+      setEditingAuth(null);
+      resetForm();
+    }
   };
 
   return (
@@ -302,23 +271,19 @@ export default function AuthPage() {
           <p className="text-muted-foreground">{t("Manage user authentication and roles")}</p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={handleRetry}
-            disabled={authLoading || roleLoading || empLoading}
-          >
-            <RefreshCw
-              className={`mr-2 h-4 w-4 ${authLoading || roleLoading || empLoading ? "animate-spin" : ""}`}
-            />
-            {t("Refresh")}
-          </Button>
-          <Dialog
-            open={isDialogOpen}
-            onOpenChange={(open) => {
-              setIsDialogOpen(open);
-              if (!open) setEditingAuth(null);
-            }}
-          >
+          {canCreate && (
+            <Button
+              variant="outline"
+              onClick={handleRetry}
+              disabled={authLoading || roleLoading || empLoading}
+            >
+              <RefreshCw
+                className={`mr-2 h-4 w-4 ${authLoading || roleLoading || empLoading ? "animate-spin" : ""}`}
+              />
+              {t("Refresh")}
+            </Button>
+          )}
+          <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
             <DialogTrigger asChild>
               <Button disabled={roles.length === 0 || authLoading || roleLoading || !canCreate}>
                 <Plus className="mr-2 h-4 w-4" />
@@ -333,75 +298,61 @@ export default function AuthPage() {
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">{t("Email")} *</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    defaultValue={editingAuth?.email ?? ""}
-                    disabled={isSaving}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">{editingAuth ? "New Password (optional)" : "Password *"}</Label>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    required={!editingAuth}
-                    placeholder={editingAuth ? "Leave blank to keep current password" : ""}
-                    disabled={isSaving}
-                  />
-                </div>
+                <FormInput
+                  name="email"
+                  disabled={isSaving}
+                  label={t("Email")}
+                  value={formData.email}
+                  placeholder={t("Email")}
+                  onCallbackInput={handleChange}
+                  required
+                  type="email"
+                />
+                <FormInput
+                  name="password"
+                  disabled={isSaving}
+                  label={editingAuth ? "New Password (optional)" : "Password"}
+                  value={formData.password}
+                  placeholder={editingAuth ? "Leave blank to keep current password" : "Password"}
+                  onCallbackInput={handleChange}
+                  required={!editingAuth}
+                  type="password"
+                />
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="roleId">{t("Role")} *</Label>
-                    <Select
-                      name="roleId"
-                      required
-                      defaultValue={editingAuth?.roleId ? String(editingAuth.roleId) : (roles.length > 0 ? String(roles[0].roleId) : "")}
-                      disabled={isSaving || roles.length === 0}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={roles.length === 0 ? "No roles available" : "Select role"} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {roles.map((r) => (
-                          <SelectItem key={r.roleId} value={String(r.roleId)}>
-                            {r.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="employeeId">{t("Employee")}</Label>
-                    <Select
-                      name="employeeId"
-                      defaultValue={editingAuth?.employeeId ? String(editingAuth.employeeId) : "none"}
-                      disabled={isSaving || employees.length === 0}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={employees.length === 0 ? "No employees available" : "Select employee"} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">{t("No Employee")}</SelectItem>
-                        {employees.map((e) => (
-                          <SelectItem key={e.employeeId} value={String(e.employeeId)}>
-                            {e.employeeCode}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <Combobox
+                    name="roleId"
+                    label={t("Role")}
+                    options={roles.map((r) => ({
+                      value: String(r.roleId),
+                      label: r.name,
+                    }))}
+                    value={formData.roleId}
+                    onChange={(value) => handleChange({ target: { name: "roleId", value } })}
+                    disabled={isSaving || roles.length === 0}
+                    placeholder={roles.length === 0 ? "No roles available" : "Select role"}
+                    required
+                  />
+                  <Combobox
+                    name="employeeId"
+                    label={t("Employee")}
+                    options={[
+                      { value: "none", label: t("No Employee") },
+                      ...employees.map((e) => ({
+                        value: String(e.employeeId),
+                        label: e.employeeCode,
+                      })),
+                    ]}
+                    value={formData.employeeId}
+                    onChange={(value) => handleChange({ target: { name: "employeeId", value } })}
+                    disabled={isSaving || employees.length === 0}
+                    placeholder={employees.length === 0 ? "No employees available" : "Select employee"}
+                  />
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setIsDialogOpen(false)}
+                    onClick={() => handleDialogClose(false)}
                     disabled={isSaving}
                   >
                     {t("Cancel")}
@@ -449,7 +400,7 @@ export default function AuthPage() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Lock className="h-5 w-5" />
-                Auth Directory
+                {t("Auth Directory")}
                 {(authLoading || roleLoading || empLoading) && (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 )}

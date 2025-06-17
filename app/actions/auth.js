@@ -47,12 +47,13 @@ export async function getAuthRecords() {
   }
 }
 
-export async function createAuthRecord(formData) {
+export async function createAuthRecord(data) {
+  console.log("Creating auth record...", data);
   try {
-    const email = formData.get("email");
-    const password = formData.get("password");
-    const roleId = formData.get("roleId");
-    const employeeId = formData.get("employeeId");
+    const email = data.email;
+    const password = data.password;
+    const roleId = data.roleId;
+    const employeeId = data.employeeId;
 
     if (!email || !password || !roleId) {
       return { error: "Email, password, and role are required" };
@@ -70,7 +71,7 @@ export async function createAuthRecord(formData) {
       return { error: "Invalid role ID" };
     }
 
-    if (employeeId && employeeId !== "none") {
+    if (employeeId && employeeId !== null) {
       const employeeExists = await prisma.employee.findUnique({
         where: { employeeId: employeeId },
       });
@@ -80,16 +81,21 @@ export async function createAuthRecord(formData) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
-    const auth = await prisma.auth.create({
+
+      const auth = await prisma.auth.create({
       data: {
         email,
         password: hashedPassword,
         roleId: roleId,
         employeeId: employeeId && employeeId !== "none" ? employeeId : null,
         status: "active",
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       include: { Role: true, Employee: true },
     });
+
+    
 
     const convertedAuth = convertDecimalsToNumbers(auth);
     revalidatePath("/");
