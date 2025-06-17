@@ -1,10 +1,10 @@
 "use client"
 
 import React, { useEffect, useState } from "react";
-import Details from "@/components/home/detail";
-import OverView from "@/components/home/overview";
-import Attendance from "@/components/home/attendance";
-import CustomerTabs from "@/components/home/agent";
+import Details from "@/app/home/detail";
+import OverView from "@/app/home/overview";
+import Attendance from "@/app/home/attendance";
+import CustomerTabs from "@/app/home/agent";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
