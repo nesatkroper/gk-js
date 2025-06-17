@@ -22,74 +22,107 @@ function serializeEntry(entry) {
 }
 
 export async function createEntryAndUpdateStock(data) {
+  console.log(data)
   try {
     const result = await prisma.$transaction(async (tx) => {
-      // Validate required relations
-      const product = await tx.product.findUnique({ 
-        where: { productId: data.productId } 
+      const product = await tx.product.findUnique({
+        where: { productId: data.productId }
       });
       if (!product) throw new Error("Product not found");
+      if (!data.branchId && !data.customerId) {
+        throw new Error("Either branch or customer must be specified");
+      }
+      if (data.branchId && data.customerId) {
+        throw new Error("Cannot specify both branch and customer");
+      }
 
-      // Validate optional relations if IDs are provided
-      const [branch, supplier, customer] = await Promise.all([
-        data.branchId ? tx.branch.findUnique({ where: { branchId: data.branchId } }) : null,
-        data.supplierId ? tx.supplier.findUnique({ where: { supplierId: data.supplierId } }) : null,
-        data.customerId ? tx.customer.findUnique({ where: { customerId: data.customerId } }) : null
-      ]);
+      if (data.branchId) {
+        const branch = await tx.branch.findUnique({
+          where: { branchId: data.branchId }
+        });
+        if (!branch) throw new Error("Branch not found");
+      } else {
+        const customer = await tx.customer.findUnique({
+          where: { customerId: data.customerId }
+        });
+        if (!customer) throw new Error("Customer not found");
+      }
 
-      if (data.branchId && !branch) throw new Error("Branch not found");
-      if (data.supplierId && !supplier) throw new Error("Supplier not found");
-      if (data.customerId && !customer) throw new Error("Customer not found");
-
-      // Prepare entry data with conditional relations
-      const entryData = {
-        quantity: parseInt(data.quantity) || 0,
-        entryPrice: parseFloat(data.entryPrice) || 0.00,
-        memo: data.memo || null,
-        invoice: data.invoice || null,
-        entryDate: data.entryDate ? new Date(data.entryDate) : new Date(),
-        status: data.status || 'active',
-        Product: { connect: { productId: data.productId } },
-        ...(data.branchId && { 
-          Branch: { connect: { branchId: data.branchId } } 
-        }),
-        ...(data.supplierId && { 
-          Supplier: { connect: { supplierId: data.supplierId } } 
-        }),
-        ...(data.customerId && { 
-          Customer: { connect: { customerId: data.customerId } } 
-        }),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      if (data.supplierId) {
+        const supplier = await tx.supplier.findUnique({
+          where: { supplierId: data.supplierId }
+        });
+        if (!supplier) throw new Error("Supplier not found");
+      }
 
       const entry = await tx.entry.create({
-        data: entryData
+        data: {
+          quantity: parseInt(data.quantity) || 0,
+          entryPrice: parseFloat(data.entryPrice) || 0.0,
+          memo: data.memo || null,
+          invoice: data.invoice || null,
+          entryDate: data.entryDate ? new Date(data.entryDate) : new Date(),
+          status: data.status || "active",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          Product: { connect: { productId: data.productId } },
+          ...(data.supplierId && {
+            Supplier: { connect: { supplierId: data.supplierId } }
+          }),
+          ...(data.branchId
+            ? { Branch: { connect: { branchId: data.branchId } } }
+            : { Customer: { connect: { customerId: data.customerId } } })
+        }
       });
 
-      // Only update stock if branchId is provided
       let stock = null;
+      const quantity = parseInt(data.quantity) || 0;
+      const unit = data.unit || product.unit || "unit";
+      const now = new Date();
+
       if (data.branchId) {
         stock = await tx.stock.upsert({
           where: {
             productId_branchId: {
               productId: data.productId,
-              branchId: data.branchId,
-            },
+              branchId: data.branchId
+            }
           },
           update: {
-            quantity: { increment: parseInt(data.quantity) || 0 },
-            updatedAt: new Date(),
+            quantity: { increment: quantity },
+            updatedAt: now
           },
           create: {
-            quantity: parseInt(data.quantity) || 0,
-            unit: data.unit || product.unit || "unit",
+            quantity,
+            unit,
             memo: data.memo || null,
-            Branch: { connect: { branchId: data.branchId } },
             Product: { connect: { productId: data.productId } },
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            Branch: { connect: { branchId: data.branchId } },
+            createdAt: now,
+            updatedAt: now
+          }
+        });
+      } else if (data.customerId) {
+        stock = await tx.stock.upsert({
+          where: {
+            productId_customerId: {
+              productId: data.productId,
+              customerId: data.customerId
+            }
           },
+          update: {
+            quantity: { increment: quantity },
+            updatedAt: now
+          },
+          create: {
+            quantity,
+            unit,
+            memo: data.memo || null,
+            Product: { connect: { productId: data.productId } },
+            Customer: { connect: { customerId: data.customerId } },
+            createdAt: now,
+            updatedAt: now
+          }
         });
       }
 
@@ -97,19 +130,21 @@ export async function createEntryAndUpdateStock(data) {
     });
 
     revalidatePath("/dashboard/inventory");
-    return { 
-      success: true, 
+
+    return {
+      success: true,
       entry: serializeEntry(result.entry),
       stock: result.stock ? serializeStock(result.stock) : null
     };
   } catch (error) {
-    console.error("Create entry and update stock error:", error);
-    return { 
-      success: false, 
-      error: error.message || "Failed to create entry and update stock"
+    console.error("Create entry error:", error);
+    return {
+      success: false,
+      error: error.message || "Failed to create entry"
     };
   }
 }
+
 
 export async function updateStock(stockId, data) {
   try {

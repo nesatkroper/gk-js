@@ -196,6 +196,8 @@ export default function InventoryPage() {
     e.preventDefault()
     setIsSaving(true)
 
+    console.log(formData)
+
     try {
       const { data } = getSubmissionData()
       if (!data.productId) throw new Error(t("Product is required"))

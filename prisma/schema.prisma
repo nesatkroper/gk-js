@@ -541,6 +541,9 @@ model Stock {
   Customer    Customer? @relation(fields: [customerId], references: [customerId])
 
   @@index([productId, branchId, customerId])
+  @@unique([productId, branchId])
+  @@unique([productId, customerId])
+
 }
 
 model Supplier {
