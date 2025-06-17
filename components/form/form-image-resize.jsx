@@ -24,6 +24,7 @@ import {
 const FormImageResize = ({
   onCallbackData,
   resolution = 600,
+  label = 'Choose Image',
   required,
 }) => {
   const [imageSrc, setImageSrc] = useState("/placeholder.svg"); // ✅ fallback
@@ -118,7 +119,7 @@ const FormImageResize = ({
   return (
     <div className="space-y-2">
       <Label>
-        Choose Image {required && <span className="text-red-700">*</span>}
+        {label} {required && <span className="text-red-700">*</span>}
       </Label>
       <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <AlertDialogTrigger asChild>

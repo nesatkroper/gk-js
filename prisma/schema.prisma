@@ -186,7 +186,6 @@ model Customer {
   Employee     Employee?     @relation(fields: [employeeId], references: [employeeId])
   Customerinfo Customerinfo?
   Sale         Sale[]
-  Entry        Entry[]
   Stock        Stock[]
 
   @@index([employeeId])
@@ -304,7 +303,6 @@ model Entry {
   productId  String    @db.Uuid
   supplierId String?    @db.Uuid
   branchId   String?    @db.Uuid
-  customerId String?    @db.Uuid
   invoice    String?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime
@@ -312,7 +310,6 @@ model Entry {
   Product    Product   @relation(fields: [productId], references: [productId])
   Branch     Branch?    @relation(fields: [branchId], references: [branchId])
   Supplier   Supplier?  @relation(fields: [supplierId], references: [supplierId])
-  Customer   Customer?  @relation(fields: [customerId], references: [customerId])
 
   @@index([productId, supplierId, branchId, status, entryDate])
 }

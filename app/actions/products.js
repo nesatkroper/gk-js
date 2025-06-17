@@ -5,6 +5,26 @@ import { revalidatePath } from "next/cache";
 import { uploadFileServerAction } from "@/app/actions/files";
 import { generateProductCode } from "@/lib/utils";
 
+function serializeProduct(product) {
+  return {
+    productId: product.productId,
+    productName: product.productName,
+    productCode: product.productCode,
+    picture: product.picture,
+    unit: product.unit,
+    capacity: product.capacity ? product.capacity.toNumber() : null,
+    sellPrice: product.sellPrice.toNumber(),
+    costPrice: product.costPrice.toNumber(),
+    discountRate: product.discountRate ? product.discountRate.toNumber() : 0,
+    desc: product.desc,
+    categoryId: product.categoryId,
+    brandId: product.brandId,
+    createdAt: product.createdAt,
+    updatedAt: product.updatedAt,
+  };
+}
+
+
 export async function fetchProducts() {
   try {
     const products = await prisma.product.findMany({
@@ -168,13 +188,8 @@ export async function createProduct(data, file) {
     revalidatePath("/products");
     return {
       success: true,
-      data: {
-        ...product,
-        capacity: product.capacity ? product.capacity.toNumber() : null,
-        sellPrice: product.sellPrice.toNumber(),
-        costPrice: product.costPrice.toNumber(),
-      },
-    };
+      data: serializeProduct(product),
+    };    
   } catch (error) {
     console.error("Product creation error:", error?.message);
     return { success: false, error: error?.message || "Failed to create product" };
@@ -252,13 +267,8 @@ export async function updateProduct(productId, data, file) {
     revalidatePath("/products");
     return {
       success: true,
-      data: {
-        ...product,
-        capacity: product.capacity ? product.capacity.toNumber() : null,
-        sellPrice: product.sellPrice.toNumber(),
-        costPrice: product.costPrice.toNumber(),
-      },
-    };
+      data: serializeProduct(product),
+    };    
   } catch (error) {
     console.error("Product update error:", error?.message);
     return { success: false, error: error?.message || "Failed to update product" };

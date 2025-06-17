@@ -1,58 +1,84 @@
+
+
+
 "use server"
 
 import  prisma  from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { uploadFileServerAction } from "@/app/actions/files" 
+import { Decimal } from "@prisma/client"
+
+function convertDecimals(obj) {
+  if (obj instanceof Decimal) {
+    return obj.toString()
+  } else if (Array.isArray(obj)) {
+    return obj.map(convertDecimals)
+  } else if (obj !== null && typeof obj === "object") {
+    const newObj = {}
+    for (const key in obj) {
+      if (Object.hasOwnProperty.call(obj, key)) {
+        newObj[key] = convertDecimals(obj[key])
+      }
+    }
+    return newObj
+  }
+  return obj
+}
 
 function serializeStock(stock) {
-  return {
+  return convertDecimals({
     ...stock,
     createdAt: stock.createdAt.toISOString(),
     updatedAt: stock.updatedAt.toISOString(),
-  }
+  })
 }
 
 function serializeEntry(entry) {
-  return {
+  return convertDecimals({
     ...entry,
     createdAt: entry.createdAt.toISOString(),
     updatedAt: entry.updatedAt.toISOString(),
-    entryDate: entry.entryDate ? entry.entryDate.toISOString() : null,
+    entryDate: entry.entryDate?.toISOString() || null,
     entryPrice: entry.entryPrice.toString(),
-  }
+  })
 }
 
-export async function createEntryAndUpdateStock(data) {
-  console.log(data)
+
+export async function createEntryAndUpdateStock(data, file) {
   try {
+    // Upload invoice image
+    let invoiceUrl = null
+    if (file && file instanceof File) {
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("aspectRatio", "original")
+
+      const uploadResult = await uploadFileServerAction(formData, { maxSizeMB: 5 })
+
+      if (!uploadResult.success || !uploadResult.url) {
+        throw new Error(uploadResult.error || "Invoice upload failed")
+      }
+
+      invoiceUrl = uploadResult.url
+    }
+
     const result = await prisma.$transaction(async (tx) => {
       const product = await tx.product.findUnique({
         where: { productId: data.productId }
-      });
-      if (!product) throw new Error("Product not found");
-      if (!data.branchId && !data.customerId) {
-        throw new Error("Either branch or customer must be specified");
-      }
-      if (data.branchId && data.customerId) {
-        throw new Error("Cannot specify both branch and customer");
-      }
+      })
+      if (!product) throw new Error("Product not found")
+      if (!data.branchId) throw new Error("Branch must be specified")
 
-      if (data.branchId) {
-        const branch = await tx.branch.findUnique({
-          where: { branchId: data.branchId }
-        });
-        if (!branch) throw new Error("Branch not found");
-      } else {
-        const customer = await tx.customer.findUnique({
-          where: { customerId: data.customerId }
-        });
-        if (!customer) throw new Error("Customer not found");
-      }
+      const branch = await tx.branch.findUnique({
+        where: { branchId: data.branchId }
+      })
+      if (!branch) throw new Error("Branch not found")
 
       if (data.supplierId) {
         const supplier = await tx.supplier.findUnique({
           where: { supplierId: data.supplierId }
-        });
-        if (!supplier) throw new Error("Supplier not found");
+        })
+        if (!supplier) throw new Error("Supplier not found")
       }
 
       const entry = await tx.entry.create({
@@ -60,7 +86,7 @@ export async function createEntryAndUpdateStock(data) {
           quantity: parseInt(data.quantity) || 0,
           entryPrice: parseFloat(data.entryPrice) || 0.0,
           memo: data.memo || 'N/A',
-          invoice: data.invoice || null,
+          invoice: invoiceUrl, // Use image URL
           entryDate: data.entryDate ? new Date(data.entryDate) : new Date(),
           status: data.status || "active",
           createdAt: new Date(),
@@ -69,81 +95,55 @@ export async function createEntryAndUpdateStock(data) {
           ...(data.supplierId && {
             Supplier: { connect: { supplierId: data.supplierId } }
           }),
-          ...(data.branchId
-            ? { Branch: { connect: { branchId: data.branchId } } }
-            : { Customer: { connect: { customerId: data.customerId } } })
+          Branch: { connect: { branchId: data.branchId } }
         }
-      });
+      })
 
-      let stock = null;
-      const quantity = parseInt(data.quantity) || 0;
-      const unit = data.unit || product.unit || "unit";
-      const now = new Date();
+      const quantity = parseInt(data.quantity) || 0
+      const unit = data.unit || product.unit || "unit"
+      const now = new Date()
 
-      if (data.branchId) {
-        stock = await tx.stock.upsert({
-          where: {
-            productId_branchId: {
-              productId: data.productId,
-              branchId: data.branchId
-            }
-          },
-          update: {
-            quantity: { increment: quantity },
-            updatedAt: now
-          },
-          create: {
-            quantity,
-            unit,
-            memo: data.memo || "N/A",
-            Product: { connect: { productId: data.productId } },
-            Branch: { connect: { branchId: data.branchId } },
-            createdAt: now,
-            updatedAt: now
+      const stock = await tx.stock.upsert({
+        where: {
+          productId_branchId: {
+            productId: data.productId,
+            branchId: data.branchId
           }
-        });
-      } else if (data.customerId) {
-        stock = await tx.stock.upsert({
-          where: {
-            productId_customerId: {
-              productId: data.productId,
-              customerId: data.customerId
-            }
-          },
-          update: {
-            quantity: { increment: quantity },
-            updatedAt: now
-          },
-          create: {
-            quantity,
-            unit,
-            memo: data.memo || null,
-            Product: { connect: { productId: data.productId } },
-            Customer: { connect: { customerId: data.customerId } },
-            createdAt: now,
-            updatedAt: now
-          }
-        });
-      }
+        },
+        update: {
+          quantity: { increment: quantity },
+          updatedAt: now
+        },
+        create: {
+          quantity,
+          unit,
+          memo: data.memo || "N/A",
+          Product: { connect: { productId: data.productId } },
+          Branch: { connect: { branchId: data.branchId } },
+          createdAt: now,
+          updatedAt: now
+        }
+      })
 
-      return { entry, stock };
-    });
+      return { entry, stock }
+    })
 
-    revalidatePath("/dashboard/inventory");
+    revalidatePath("/dashboard/inventory")
 
     return {
       success: true,
       entry: serializeEntry(result.entry),
       stock: result.stock ? serializeStock(result.stock) : null
-    };
+    }
   } catch (error) {
-    console.error("Create entry error:", error);
+    console.error("Create entry error:", error)
     return {
       success: false,
       error: error.message || "Failed to create entry"
-    };
+    }
   }
 }
+
 
 
 export async function updateStock(stockId, data) {
