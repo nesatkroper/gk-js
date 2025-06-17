@@ -31,6 +31,78 @@ export async function fetchProducts() {
   }
 }
 
+export async function fetchProduct(options = {}) {
+  const {
+    getAllData = false,
+    getById = null,
+    getBasicInfo = false,
+  } = options;
+
+  try {
+    let query = {
+      where: { status: "active" },
+      include: {
+        Category: { select: { categoryName: true } },
+        Brand: { select: { brandName: true } },
+      },
+      orderBy: { productName: "asc" },
+    };
+
+    if (getById) {
+      query.where.productId = getById;
+      query.include.Stock = { select: { quantity: true } };
+    }
+
+    if (getBasicInfo) {
+      query.select = {
+        productId: true,
+        productName: true,
+        sellPrice: true,
+        Category: { select: { categoryName: true } },
+        Brand: { select: { brandName: true } },
+      };
+      delete query.include; 
+    } 
+    else if (getAllData) {
+      query.include.Stock = { select: { quantity: true } };
+    }
+
+    const products = await prisma.product.findMany(query);
+    const serializedProducts = products.map((product) => {
+      const baseProduct = {
+        ...product,
+        sellPrice: product.sellPrice?.toNumber() || 0,
+      };
+
+      if (!getBasicInfo) {
+        return {
+          ...baseProduct,
+          capacity: product.capacity?.toNumber() || null,
+          costPrice: product.costPrice?.toNumber() || 0,
+          ...(product.Stock ? { stock: product.Stock.quantity } : {}),
+        };
+      }
+
+      return baseProduct;
+    });
+
+    if (getById) {
+      return { 
+        success: true, 
+        data: serializedProducts[0] || null 
+      };
+    }
+
+    return { success: true, data: serializedProducts };
+  } catch (error) {
+    console.error("Products fetch error:", error?.message);
+    return { 
+      success: false, 
+      error: error?.message || "Failed to fetch products" 
+    };
+  }
+}
+
 export async function createProduct(data, file) {
   try {
     console.log("Creating product with:", {

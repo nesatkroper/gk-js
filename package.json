@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "mig": "npx prisma migrate dev --name init",
+    "mig": "npx prisma migrate dev --name mod-stock",
     "gen": "npx prisma generate",
     "db": "npm run mig && npm run gen && npm run dev"
   },

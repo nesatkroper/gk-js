@@ -186,6 +186,8 @@ model Customer {
   Employee     Employee?     @relation(fields: [employeeId], references: [employeeId])
   Customerinfo Customerinfo?
   Sale         Sale[]
+  Entry        Entry[]
+  Stock        Stock[]
 
   @@index([employeeId])
 }
@@ -193,15 +195,19 @@ model Customer {
 model Customerinfo {
   customerId            String    @unique @db.Uuid
   picture               String?
+  album                 String?
   region                String?
   email                 String?   @unique
-  note                  String?
+  refPhone              String?
   loyaltyPoints         Int?      @default(0)
   lastPurchaseDate      DateTime  @default(now())
   govId                 String?
-  govPicture            String?
+  govFPicture           String?
+  govBPicture           String?
   govExpire             DateTime?
-  status                Status    @default(active)
+  contractPicture       String?
+  contractPDF           String?              
+  note                  String?
   Customer              Customer  @relation(fields: [customerId], references: [customerId])
 
   @@index([customerId])
@@ -270,6 +276,7 @@ model Employeeinfo {
   employeeId       String        @unique @db.Uuid
   managerId        String?       @db.Uuid
   picture          String?
+  album            String?
   region           String?
   nationality      String?
   note             String?
@@ -279,10 +286,10 @@ model Employeeinfo {
   bankAccount      String?
   govExpire        DateTime?
   govId            String?
-  govPicture       String?
+  govFPicture       String?
+  govBPicture       String?
   terminationDate  DateTime?
   contractType     ContractType
-  status           Status        @default(active)
   Employee         Employee      @relation(fields: [employeeId], references: [employeeId])
 
   @@index([employeeId])
@@ -295,15 +302,17 @@ model Entry {
   entryPrice Decimal   @default(0.00) @db.Decimal(12, 2)
   entryDate  DateTime?
   productId  String    @db.Uuid
-  supplierId String    @db.Uuid
-  branchId   String    @db.Uuid
+  supplierId String?    @db.Uuid
+  branchId   String?    @db.Uuid
+  customerId String?    @db.Uuid
   invoice    String?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime
   status     Status    @default(active)
-  Branch     Branch    @relation(fields: [branchId], references: [branchId])
   Product    Product   @relation(fields: [productId], references: [productId])
-  Supplier   Supplier  @relation(fields: [supplierId], references: [supplierId])
+  Branch     Branch?    @relation(fields: [branchId], references: [branchId])
+  Supplier   Supplier?  @relation(fields: [supplierId], references: [supplierId])
+  Customer   Customer?  @relation(fields: [customerId], references: [customerId])
 
   @@index([productId, supplierId, branchId, status, entryDate])
 }
@@ -518,16 +527,20 @@ model Saledetail {
 }
 
 model Stock {
-  stockId   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  productId String   @db.Uuid
-  branchId  String   @db.Uuid
-  quantity  Int      @default(0)
-  unit      String
-  memo      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime
-  Branch    Branch   @relation(fields: [branchId], references: [branchId])
-  Product   Product  @relation(fields: [productId], references: [productId])
+  stockId     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productId   String    @db.Uuid
+  branchId    String?   @db.Uuid
+  customerId  String?   @db.Uuid
+  quantity    Int       @default(0)
+  unit        String
+  memo        String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+  Product     Product   @relation(fields: [productId], references: [productId])
+  Branch      Branch?   @relation(fields: [branchId], references: [branchId])
+  Customer    Customer? @relation(fields: [customerId], references: [customerId])
+
+  @@index([productId, branchId, customerId])
 }
 
 model Supplier {

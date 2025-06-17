@@ -1,7 +1,7 @@
 // // stores/product-store.ts
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { fetchProducts, createProduct, updateProduct, deleteProduct } from "@/app/actions/products";
+import { fetchProduct, createProduct, updateProduct, deleteProduct } from "@/app/actions/products";
 
 
 
@@ -11,9 +11,9 @@ export const useProductStore = create()(
       items: [],
       isLoading: false,
       error: null,
-      fetch: async () => {
+      fetch: async (options = {}) => {
         set({ isLoading: true, error: null });
-        const result = await fetchProducts();
+        const result = await fetchProduct(options);
         if (result.success) {
           set({ items: result.data, isLoading: false });
         } else {
