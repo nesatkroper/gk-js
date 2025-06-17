@@ -194,7 +194,7 @@ model Customer {
 model Customerinfo {
   customerId            String    @unique @db.Uuid
   picture               String?
-  album                 String?
+  album                 String[]
   region                String?
   email                 String?   @unique
   refPhone              String?
@@ -275,7 +275,7 @@ model Employeeinfo {
   employeeId       String        @unique @db.Uuid
   managerId        String?       @db.Uuid
   picture          String?
-  album            String?
+  album            String[]
   region           String?
   nationality      String?
   note             String?
