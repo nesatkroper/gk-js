@@ -30,6 +30,8 @@ import { usePermissions } from "@/hooks/use-permissions"
 import { toast } from "sonner"
 import { formatCurrency } from "@/lib/utils"
 
+export const dynamic = 'force-dynamic'
+
 export default function EmployeesPage() {
   const { t } = useTranslation("common")
   const { canCreate, canUpdate, canDelete } = usePermissions()
@@ -67,7 +69,13 @@ export default function EmployeesPage() {
   const [employeeFormError, setEmployeeFormError] = useState(null)
   const [employeeInfoFormError, setEmployeeInfoFormError] = useState(null)
 
-  const { formData: employeeFormData, resetForm: resetEmployeeForm, setFormData: setEmployeeFormData, handleChange: handleEmployeeChange, getSubmissionData: getEmployeeSubmissionData } = useFormHandler({
+  const { 
+    formData: employeeFormData, 
+    resetForm: resetEmployeeForm, 
+    setFormData: setEmployeeFormData, 
+    handleChange: handleEmployeeChange, 
+    getSubmissionData: getEmployeeSubmissionData 
+  } = useFormHandler({
     employeeCode: "",
     firstName: "",
     lastName: "",
@@ -83,7 +91,16 @@ export default function EmployeesPage() {
     status: "active",
   })
 
-  const { formData: employeeInfoFormData, resetForm: resetEmployeeInfoForm, setFormData: setEmployeeInfoFormData, handleChange: handleEmployeeInfoChange, handleImageData, handleImageArray, removeImageFromArray, getSubmissionData: getEmployeeInfoSubmissionData } = useFormHandler({
+  const { 
+    formData: employeeInfoFormData, 
+    resetForm: resetEmployeeInfoForm, 
+    setFormData: setEmployeeInfoFormData, 
+    handleChange: handleEmployeeInfoChange, 
+    handleImageData, 
+    handleImageArray, 
+    removeImageFromArray, 
+    getSubmissionData: getEmployeeInfoSubmissionData 
+  } = useFormHandler({
     managerId: "",
     region: "",
     nationality: "",
@@ -105,12 +122,16 @@ export default function EmployeesPage() {
 
   useEffect(() => {
     const loadData = async () => {
-      await Promise.all([
-        fetchEmployees('all'),
-        fetchDepartments(),
-        fetchPositions(),
-        fetchBranches(),
-      ])
+      try {
+        await Promise.all([
+          fetchEmployees('all'),
+          fetchDepartments(),
+          fetchPositions(),
+          fetchBranches(),
+        ])
+      } catch (err) {
+        console.error("Data load error:", err)
+      }
     }
     loadData()
   }, [fetchEmployees, fetchDepartments, fetchPositions, fetchBranches])
@@ -345,7 +366,7 @@ export default function EmployeesPage() {
         pictureFile: files.picture?.name,
         govFPictureFile: files.govFPicture?.name,
         govBPictureFile: files.govBPicture?.name,
-        albumFiles: files.album?.map(f => f.name)
+        albumFiles: files.album?.map(f => f.name || f)
       })
 
       const result = editingEmployee.Employeeinfo
@@ -410,9 +431,8 @@ export default function EmployeesPage() {
       govBPicture: employee.Employeeinfo?.govBPicture || null,
       album: employee.Employeeinfo?.album || [],
       status: employee.Employeeinfo?.status || "active",
-    }),
-    Asphalt
-    selectedDepartment(employee.departmentId || "")
+    })
+    setSelectedDepartment(employee.departmentId || "")
     setEditingEmployee(employee)
     setIsDialogOpen(true)
   }
@@ -454,22 +474,47 @@ export default function EmployeesPage() {
   }
 
   const handleSingleImageCrop = (fieldName) => (formData) => {
-    const file = formData.get("picture") || formData.get(`picture_${fieldName}`)
-    handleImageData(fieldName, file)
+    try {
+      const file = formData.get("picture") || formData.get(`picture_${fieldName}`)
+      if (file instanceof File) {
+        console.log(`Processing single image for ${fieldName}:`, file.name)
+        handleImageData(fieldName, file)
+      } else {
+        console.warn(`No valid file found for ${fieldName}`)
+      }
+    } catch (err) {
+      console.error(`Error processing single image for ${fieldName}:`, err)
+    }
   }
 
   const handleMultipleImageCrop = (formDataArray) => {
-    const files = formDataArray
-      .map((fd, index) => fd.get(`picture_${index}`) || fd.get("picture"))
-      .filter(Boolean)
-    handleImageArray("album", files)
+    try {
+      if (!Array.isArray(formDataArray)) {
+        console.warn("Expected formDataArray to be an array, received:", formDataArray)
+        return
+      }
+      const files = formDataArray
+        .map((fd, index) => {
+          const file = fd.get(`picture_${index}`) || fd.get("picture")
+          if (file instanceof File) return file
+          console.warn(`Invalid file at index ${index}`)
+          return null
+        })
+        .filter(Boolean)
+      console.log("Processing multiple images for album:", files.map(f => f.name))
+      handleImageArray("album", files)
+    } catch (err) {
+      console.error("Error processing multiple images:", err)
+    }
   }
 
   const handleRemoveSingleImage = (fieldName) => () => {
+    console.log(`Removing image for ${fieldName}`)
     handleImageData(fieldName, null)
   }
 
   const handleRemoveMultipleImage = (index) => {
+    console.log(`Removing image from album at index ${index}`)
     removeImageFromArray("album", index)
   }
 
