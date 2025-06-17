@@ -533,7 +533,7 @@ model Stock {
   customerId  String?   @db.Uuid
   quantity    Int       @default(0)
   unit        String
-  memo        String
+  memo        String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime
   Product     Product   @relation(fields: [productId], references: [productId])

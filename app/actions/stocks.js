@@ -59,7 +59,7 @@ export async function createEntryAndUpdateStock(data) {
         data: {
           quantity: parseInt(data.quantity) || 0,
           entryPrice: parseFloat(data.entryPrice) || 0.0,
-          memo: data.memo || null,
+          memo: data.memo || 'N/A',
           invoice: data.invoice || null,
           entryDate: data.entryDate ? new Date(data.entryDate) : new Date(),
           status: data.status || "active",
@@ -95,7 +95,7 @@ export async function createEntryAndUpdateStock(data) {
           create: {
             quantity,
             unit,
-            memo: data.memo || null,
+            memo: data.memo || "N/A",
             Product: { connect: { productId: data.productId } },
             Branch: { connect: { branchId: data.branchId } },
             createdAt: now,

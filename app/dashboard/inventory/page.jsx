@@ -418,7 +418,8 @@ export default function InventoryPage() {
                   />
                 </div>
                 {!editingStock && (
-                  <FormInput
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormInput
                     name="entryPrice"
                     label={t("Entry Price")}
                     value={formData.entryPrice}
@@ -428,6 +429,16 @@ export default function InventoryPage() {
                     step="0.01"
                     disabled={isSaving}
                   />
+                   <FormInput
+                    name="invoice"
+                    label={t("Invoice")}
+                    value={formData.invoice}
+                    placeholder={t("Invoice")}
+                    onCallbackInput={handleChange}
+                    required
+                    disabled={isSaving}
+                  />
+                  </div>
                 )}
                 <FormTextArea
                   name="memo"
