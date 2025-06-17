@@ -7,7 +7,7 @@ export const getCroppedImg = (
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.src = imageSrc;
-    image.crossOrigin = "anonymous"; // Prevent CORS issues
+    image.crossOrigin = "anonymous";
     image.onload = () => {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");

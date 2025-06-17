@@ -3,7 +3,6 @@
 import React from "react"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import Image from "next/image"
 import { X, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -41,7 +40,14 @@ const FormImagePreview = ({
           {label} {required && <span className="text-red-700">*</span>}
         </Label>
         <div className="relative group">
-          <Image
+          {/* <Image
+            src={images[0] || "/placeholder.svg"}
+            alt="picture preview"
+            width={width}
+            height={height}
+            className="rounded-xl shadow object-cover"
+          /> */}
+          <img
             src={images[0] || "/placeholder.svg"}
             alt="picture preview"
             width={width}
@@ -78,13 +84,21 @@ const FormImagePreview = ({
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
         {images.map((src, index) => (
           <div key={index} className="relative group">
-            <Image
+            {/* <Image
+              src={src || "/placeholder.svg"}
+              alt={`picture preview ${index + 1}`}
+              width={width}
+              height={height}
+              className="rounded-xl shadow object-cover w-full aspect-square"
+            /> */}
+            <img
               src={src || "/placeholder.svg"}
               alt={`picture preview ${index + 1}`}
               width={width}
               height={height}
               className="rounded-xl shadow object-cover w-full aspect-square"
             />
+
             {showRemoveButton && !isPlaceholder(src) && (
               <Button
                 type="button"
@@ -123,7 +137,7 @@ export const getCroppedImg = (
   outputHeight,
 ) => {
   return new Promise((resolve, reject) => {
-    const image = new Image()
+    const image = document.createElement('img') // new Image()
     image.src = imageSrc
     image.crossOrigin = "anonymous"
     image.onload = () => {
@@ -169,41 +183,4 @@ export const getCroppedImg = (
   })
 }
 
-
-
-// "use client";
-
-// import React from "react";
-// import { Label } from "@/components/ui/label";
-// import Image from "next/image";
-
-// const FormImagePreview = ({
-//   imgSrc = "",
-//   width = 200,
-//   height = 200,
-//   label = "Picture Preview",
-//   underLine = false,
-//   required,
-// }) => {
-//   const src = imgSrc || "/placeholder.svg"; 
-
-//   return (
-//     <div className="space-y-2">
-//       <Label className={`${underLine ? "underline" : ""}`}>
-//         {label} {required && <span className="text-red-700">*</span>}
-//       </Label>
-//       <div className='relative '>
-//         <Image
-//           src={src}
-//           alt="picture preview"
-//           width={width}
-//           height={height}
-//           className="rounded-xl shadow object-cover"
-//         />
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default FormImagePreview;
 
