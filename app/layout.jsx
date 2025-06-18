@@ -1,19 +1,18 @@
 
-
-import I18nProvider from '@/app/i18n/client';
 import { Inter, Noto_Serif_Khmer } from "next/font/google";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/sonner";
-import { languages } from '@/app/i18n/settings';
 import NextTopLoader from 'nextjs-toploader';
+import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/theme-provider"; 
+import I18nProvider from '@/app/i18n/client';
+import { SUPPORTED_LOCALES, FALLBACK_LOCALE } from '@/app/i18n/settings'; 
+
 import "./globals.css";
 
 export async function generateStaticParams() {
-  return languages.map((lng) => ({ lng }));
+  return SUPPORTED_LOCALES.map(locale => ({ lng: locale.code }));
 }
 
 const inter = Inter({ subsets: ["latin"] });
-
 const notoKhmer = Noto_Serif_Khmer({
   weight: ['400', '700'],
   subsets: ['khmer'],
@@ -21,7 +20,7 @@ const notoKhmer = Noto_Serif_Khmer({
 });
 
 export const metadata = {
-  title: "Fertilizer MS  | Fertilizer Management System by Suon Phanun",
+  title: "Fertilizer MS | Fertilizer Management System by Suon Phanun",
   description: "A comprehensive fertilizer management system",
   authors: { name: "Suon Phanun", url: "https://me.konkmeng.site" },
   icons: {
@@ -62,13 +61,17 @@ export const metadata = {
   },
 };
 
+
 export default function RootLayout({
   children,
-  params: { lng },
+  params: { lng }, 
 }) {
+  const isKhmer = lng === 'kh';
+  const htmlLangClass = isKhmer ? notoKhmer.className : inter.className;
+
   return (
-    <html lang={lng} className={notoKhmer.className} suppressHydrationWarning>
-      <body className={inter.className}>
+    <html lang={lng} className={htmlLangClass} suppressHydrationWarning>
+      <body className={inter.className}> 
         <NextTopLoader
           color="#22c55e"
           initialPosition={0.08}
@@ -79,18 +82,15 @@ export default function RootLayout({
           easing="ease"
           speed={200}
           shadow="0 0 10px #22c55e, 0 0 5px #22c55e"
-          template='<div class="bar" role="bar"><div class="peg"></div></div> 
-<div class="spinner" role="spinner"><div class="spinner-icon" style="border-top-color: #22c55e; border-left-color: #22c55e;"></div></div>'
+          template='<div class="bar" role="bar"><div class="peg"></div></div><div class="spinner" role="spinner"><div class="spinner-icon" style="border-top-color: #22c55e; border-left-color: #22c55e;"></div></div>'
           zIndex={1600}
           showAtBottom={false}
         />
 
-
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <I18nProvider>
             <div className="flex h-screen bg-background">
-              <div className="flex flex-1 flex-col overflow-hidden">{children}
-              </div>
+              <div className="flex flex-1 flex-col overflow-hidden">{children}</div>
             </div>
             <Toaster />
           </I18nProvider>
@@ -102,28 +102,33 @@ export default function RootLayout({
 
 
 
-// import type React from "react"
-// import type { Metadata } from "next"
-// import I18nProvider from '@/app/i18n/client';
-// import { Inter, Noto_Serif_Khmer } from "next/font/google"
-// import { ThemeProvider } from "@/components/theme-provider"
-// import { Toaster } from "@/components/ui/toaster"
-// import { languages } from '@/app/i18n/settings';
-// import "./globals.css"
 
+// import I18nProvider from '@/app/i18n/client';
+// import { Inter, Noto_Serif_Khmer } from "next/font/google";
+// import { ThemeProvider } from "@/components/theme-provider";
+// import { Toaster } from "@/components/ui/sonner";
+// import { languages } from '@/app/i18n/settings';
+// import NextTopLoader from 'nextjs-toploader';
+// import "./globals.css";
 
 // export async function generateStaticParams() {
 //   return languages.map((lng) => ({ lng }));
 // }
 
-// const inter = Inter({ subsets: ["latin"] })
+// const inter = Inter({ subsets: ["latin"] });
 
-// export const metadata: Metadata = {
+// const notoKhmer = Noto_Serif_Khmer({
+//   weight: ['400', '700'],
+//   subsets: ['khmer'],
+//   display: 'swap',
+// });
+
+// export const metadata = {
 //   title: "Fertilizer MS  | Fertilizer Management System by Suon Phanun",
 //   description: "A comprehensive fertilizer management system",
 //   authors: { name: "Suon Phanun", url: "https://me.konkmeng.site" },
 //   icons: {
-//     icon: '/images/icon.ico'
+//     icon: '/images/logo.ico',
 //   },
 //   keywords: [
 //     "Fertilizer Management System",
@@ -132,7 +137,7 @@ export default function RootLayout({
 //     "Farm Management",
 //     "Agricultural Tools",
 //     "Suon Phanun",
-//     "Khmer Agriculture"
+//     "Khmer Agriculture",
 //   ],
 //   openGraph: {
 //     title: "Fertilizer MS",
@@ -158,24 +163,32 @@ export default function RootLayout({
 //     creator: "@suonphanun",
 //     images: ["/images/og-image.jpg"],
 //   },
-// }
-
-// const notoKhmer = Noto_Serif_Khmer({
-//   weight: ['400', '700'],
-//   subsets: ['khmer'],
-//   display: 'swap',
-// });
+// };
 
 // export default function RootLayout({
 //   children,
 //   params: { lng },
-// }: Readonly<{
-//   children: React.ReactNode,
-//   params: { lng: string }
-// }>) {
+// }) {
 //   return (
 //     <html lang={lng} className={notoKhmer.className} suppressHydrationWarning>
 //       <body className={inter.className}>
+//         <NextTopLoader
+//           color="#22c55e"
+//           initialPosition={0.08}
+//           crawlSpeed={200}
+//           height={4}
+//           crawl={true}
+//           showSpinner={true}
+//           easing="ease"
+//           speed={200}
+//           shadow="0 0 10px #22c55e, 0 0 5px #22c55e"
+//           template='<div class="bar" role="bar"><div class="peg"></div></div> 
+// <div class="spinner" role="spinner"><div class="spinner-icon" style="border-top-color: #22c55e; border-left-color: #22c55e;"></div></div>'
+//           zIndex={1600}
+//           showAtBottom={false}
+//         />
+
+
 //         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
 //           <I18nProvider>
 //             <div className="flex h-screen bg-background">
@@ -187,5 +200,6 @@ export default function RootLayout({
 //         </ThemeProvider>
 //       </body>
 //     </html>
-//   )
+//   );
 // }
+
