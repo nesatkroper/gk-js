@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -24,8 +25,22 @@ import { useEmployeeStore } from "@/stores/employee-store"
 import { useDepartmentStore } from "@/stores/department-store"
 import { usePositionStore } from "@/stores/position-store"
 import { useBranchStore } from "@/stores/branch-store"
-import { createEmployee, updateEmployee, createEmployeeInfo, updateEmployeeInfo, deleteEmployee } from "@/app/actions/employees"
-import { FormInput, FormTextArea, FormImageResize, FormImagePreview, FormDatePicker, FormComboBox } from "@/components/form"
+import {
+  createEmployee,
+  updateEmployee,
+  createEmployeeInfo,
+  updateEmployeeInfo,
+  deleteEmployee,
+  uploadEmployeeImages,
+} from "@/app/actions/employees"
+import {
+  FormInput,
+  FormTextArea,
+  FormImageResize,
+  FormImagePreview,
+  FormDatePicker,
+  FormComboBox,
+} from "@/components/form"
 import { usePermissions } from "@/hooks/use-permissions"
 import { toast } from "sonner"
 import { formatCurrency } from "@/lib/utils"
@@ -33,30 +48,10 @@ import { formatCurrency } from "@/lib/utils"
 export default function EmployeesPage() {
   const { t } = useTranslation("common")
   const { canCreate, canUpdate, canDelete } = usePermissions()
-  const {
-    items: employees,
-    isLoading: empLoading,
-    error: empError,
-    fetch: fetchEmployees,
-  } = useEmployeeStore()
-  const {
-    items: departments,
-    isLoading: deptLoading,
-    error: deptError,
-    fetch: fetchDepartments,
-  } = useDepartmentStore()
-  const {
-    items: positions,
-    isLoading: posLoading,
-    error: posError,
-    fetch: fetchPositions,
-  } = usePositionStore()
-  const {
-    items: branches,
-    isLoading: branchLoading,
-    error: branchError,
-    fetch: fetchBranches,
-  } = useBranchStore()
+  const { items: employees, isLoading: empLoading, error: empError, fetch: fetchEmployees } = useEmployeeStore()
+  const { items: departments, isLoading: deptLoading, error: deptError, fetch: fetchDepartments } = useDepartmentStore()
+  const { items: positions, isLoading: posLoading, error: posError, fetch: fetchPositions } = usePositionStore()
+  const { items: branches, isLoading: branchLoading, error: branchError, fetch: fetchBranches } = useBranchStore()
 
   const [isSaving, setIsSaving] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
@@ -66,13 +61,15 @@ export default function EmployeesPage() {
   const [selectedDepartment, setSelectedDepartment] = useState("")
   const [employeeFormError, setEmployeeFormError] = useState(null)
   const [employeeInfoFormError, setEmployeeInfoFormError] = useState(null)
+  const [employeeImagesFormError, setEmployeeImagesFormError] = useState(null)
 
   const {
     formData: employeeFormData,
     resetForm: resetEmployeeForm,
     setFormData: setEmployeeFormData,
     handleChange: handleEmployeeChange,
-    getSubmissionData: getEmployeeSubmissionData
+    handleImageData: handleEmployeeImageData,
+    getSubmissionData: getEmployeeSubmissionData,
   } = useFormHandler({
     employeeCode: "",
     firstName: "",
@@ -86,6 +83,7 @@ export default function EmployeesPage() {
     salary: 0,
     dob: null,
     hiredDate: null,
+    picture: null,
     status: "active",
   })
 
@@ -94,10 +92,9 @@ export default function EmployeesPage() {
     resetForm: resetEmployeeInfoForm,
     setFormData: setEmployeeInfoFormData,
     handleChange: handleEmployeeInfoChange,
-    handleImageData,
-    handleImageArray,
-    removeImageFromArray,
-    getSubmissionData: getEmployeeInfoSubmissionData
+    handleImageArray: handleEmployeeInfoImageArray,
+    removeImageFromArray: removeEmployeeInfoImageFromArray,
+    getSubmissionData: getEmployeeInfoSubmissionData,
   } = useFormHandler({
     managerId: "",
     region: "",
@@ -111,22 +108,22 @@ export default function EmployeesPage() {
     govExpire: null,
     contractType: "permanent",
     terminationDate: null,
-    picture: null,
-    govFPicture: null,
-    govBPicture: null,
     album: [],
     status: "active",
+  })
+
+  const {
+    formData: employeeImagesFormData,
+    handleImageArray: handleEmployeeImagesArray,
+    removeImageFromArray: removeEmployeeImageFromArray,
+  } = useFormHandler({
+    images: [], // Array of { file: File, imageType: string }
   })
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        await Promise.all([
-          fetchEmployees('all'),
-          fetchDepartments(),
-          fetchPositions(),
-          fetchBranches(),
-        ])
+        await Promise.all([fetchEmployees("all"), fetchDepartments(), fetchPositions(), fetchBranches()])
       } catch (err) {
         console.error("Data load error:", err)
       }
@@ -141,11 +138,11 @@ export default function EmployeesPage() {
       employee.firstName?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
       employee.lastName?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
       (employee.employeeCode?.toLowerCase()?.includes(searchTerm.toLowerCase()) ?? false) ||
-      (employee.phone?.toLowerCase()?.includes(searchTerm.toLowerCase()) ?? false)
+      (employee.phone?.toLowerCase()?.includes(searchTerm.toLowerCase()) ?? false),
   )
 
   const filteredPositions = positions.filter((position) =>
-    selectedDepartment ? position.departmentId === selectedDepartment : true
+    selectedDepartment ? position.departmentId === selectedDepartment : true,
   )
 
   const tableColumns = [
@@ -154,10 +151,8 @@ export default function EmployeesPage() {
       label: t("Employee"),
       render: (_value, row) => (
         <div>
-          <div className="font-medium">{`${row.firstName || ''} ${row.lastName || ''}`}</div>
-          {row.employeeCode && (
-            <div className="text-sm text-muted-foreground">{row.employeeCode}</div>
-          )}
+          <div className="font-medium">{`${row.firstName || ""} ${row.lastName || ""}`}</div>
+          {row.employeeCode && <div className="text-sm text-muted-foreground">{row.employeeCode}</div>}
         </div>
       ),
     },
@@ -206,8 +201,12 @@ export default function EmployeesPage() {
       label: t("Performance"),
       render: (_value, row) => (
         <div className="space-y-1">
-          <div className="text-sm">{t("Sales")}: {row.Sale?.length || 0}</div>
-          <div className="text-sm text-muted-foreground">{t("Attendance")}: {row.Attendance?.length || 0}</div>
+          <div className="text-sm">
+            {t("Sales")}: {row.Sale?.length || 0}
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {t("Attendance")}: {row.Attendance?.length || 0}
+          </div>
         </div>
       ),
     },
@@ -232,7 +231,7 @@ export default function EmployeesPage() {
     {
       key: "name",
       primary: true,
-      render: (_value, row) => `${row.firstName || ''} ${row.lastName || ''}`,
+      render: (_value, row) => `${row.firstName || ""} ${row.lastName || ""}`,
     },
     {
       key: "employeeCode",
@@ -285,8 +284,12 @@ export default function EmployeesPage() {
       label: t("Performance"),
       render: (_value, row) => (
         <div className="space-y-1">
-          <div className="text-sm">{t("Sales")}: {row.Sale?.length || 0}</div>
-          <div className="text-sm text-muted-foreground">{t("Attendance")}: {row.Attendance?.length || 0}</div>
+          <div className="text-sm">
+            {t("Sales")}: {row.Sale?.length || 0}
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {t("Attendance")}: {row.Attendance?.length || 0}
+          </div>
         </div>
       ),
     },
@@ -313,7 +316,7 @@ export default function EmployeesPage() {
     setEmployeeFormError(null)
 
     try {
-      const { data } = getEmployeeSubmissionData()
+      const { data, files } = getEmployeeSubmissionData()
       if (!data.firstName) throw new Error(t("First name is required"))
       if (!data.lastName) throw new Error(t("Last name is required"))
       if (!data.departmentId) throw new Error(t("Department is required"))
@@ -323,8 +326,8 @@ export default function EmployeesPage() {
       if (!data.salary || data.salary < 0) throw new Error(t("Salary must be non-negative"))
 
       const result = editingEmployee
-        ? await updateEmployee(editingEmployee.employeeId, data)
-        : await createEmployee(data)
+        ? await updateEmployee(editingEmployee.employeeId, data, files.picture)
+        : await createEmployee(data, files.picture)
 
       if (!result.success) {
         throw new Error(result.error || t("Employee operation failed"))
@@ -361,29 +364,24 @@ export default function EmployeesPage() {
 
       console.log("Submitting employee info:", {
         data,
-        pictureFile: files.picture?.name,
-        govFPictureFile: files.govFPicture?.name,
-        govBPictureFile: files.govBPicture?.name,
-        albumFiles: files.album?.map(f => f.name || f)
+        albumFiles: files.album?.map((f) => f.name || f),
       })
 
       const result = editingEmployee.Employeeinfo
-        ? await updateEmployeeInfo(editingEmployee.employeeId, data, files.picture, files.govFPicture, files.govBPicture, files.album)
-        : await createEmployeeInfo({
-          ...data,
-          employeeId: editingEmployee.employeeId,
-        }, files.picture, files.govFPicture, files.govBPicture, files.album)
+        ? await updateEmployeeInfo(editingEmployee.employeeId, data, files.album)
+        : await createEmployeeInfo(
+            {
+              ...data,
+              employeeId: editingEmployee.employeeId,
+            },
+            files.album,
+          )
 
       if (!result.success) {
         throw new Error(result.error || t("Employee info operation failed"))
       }
 
       toast.success(t("Employee info saved successfully"))
-      setIsDialogOpen(false)
-      setEditingEmployee(null)
-      resetEmployeeForm()
-      resetEmployeeInfoForm()
-      setSelectedDepartment("")
       await fetchEmployees()
     } catch (err) {
       console.error("Employee info operation error:", err)
@@ -392,6 +390,125 @@ export default function EmployeesPage() {
     } finally {
       setIsSaving(false)
     }
+  }
+
+  const handleEmployeeImagesSubmit = async (e) => {
+    e.preventDefault()
+    setIsSaving(true)
+    setEmployeeImagesFormError(null)
+
+    try {
+      if (!editingEmployee) throw new Error(t("Create employee first"))
+
+      if (!employeeImagesFormData.images || !Array.isArray(employeeImagesFormData.images)) {
+        throw new Error(t("No images to upload"))
+      }
+
+      const imageFiles = employeeImagesFormData.images.map((img) => {
+        if (!img || !img.file || !img.imageType) {
+          throw new Error(t("Invalid image data"))
+        }
+        return {
+          file: img.file,
+          imageType: img.imageType,
+        }
+      })
+
+      console.log(
+        "Submitting employee images:",
+        imageFiles.map((img) => ({ name: img.file.name, type: img.imageType })),
+      )
+
+      const result = await uploadEmployeeImages(editingEmployee.employeeId, imageFiles)
+
+      if (!result.success) {
+        throw new Error(result.error || t("Employee images upload failed"))
+      }
+
+      toast.success(t("Employee images uploaded successfully"))
+      handleEmployeeImagesArray("images", []) // Clear images after upload
+      await fetchEmployees()
+    } catch (err) {
+      console.error("Employee images upload error:", err)
+      setEmployeeImagesFormError(err.message || t("An error occurred"))
+      toast.error(err.message || t("An error occurred"))
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleEmployeeImageCrop = (formDataArray) => {
+    console.log("Received formDataArray:", formDataArray)
+
+    const formDataList = Array.isArray(formDataArray) ? formDataArray : [formDataArray]
+
+    const files = []
+    formDataList.forEach((fd, index) => {
+      console.log(`FormData ${index} entries:`, Array.from(fd.entries()))
+
+      const file =
+        fd.get(`picture_${index}`) || fd.get("picture") || fd.get(`employeeImages_${index}`) || fd.get("employeeImages")
+
+      if (file && file instanceof File) {
+        files.push(file)
+      }
+    })
+
+    console.log(
+      "Extracted files:",
+      files.map((f) => f.name),
+    )
+
+    const imageType = "album" // Default image type for employee additional images
+    if (files.length > 0) {
+      const newImages = files.map((file) => ({ file, imageType }))
+      console.log(
+        "New images to add:",
+        newImages.map((img) => ({ name: img.file.name, type: img.imageType })),
+      )
+
+      handleEmployeeImagesArray("images", [...employeeImagesFormData.images, ...newImages])
+    } else {
+      console.warn("No valid files found in formDataArray")
+    }
+  }
+
+  const handleRemoveEmployeeImage = (index) => {
+    console.log("Removing image at index:", index)
+    removeEmployeeImageFromArray("images", index)
+  }
+
+  const handleAlbumImageCrop = (formDataArray) => {
+    console.log("Received album formDataArray:", formDataArray)
+
+    const formDataList = Array.isArray(formDataArray) ? formDataArray : [formDataArray]
+
+    const files = []
+    formDataList.forEach((fd, index) => {
+      console.log(`Album FormData ${index} entries:`, Array.from(fd.entries()))
+
+      const file = fd.get(`picture_${index}`) || fd.get("picture") || fd.get(`album_${index}`) || fd.get("album")
+
+      if (file && file instanceof File) {
+        files.push(file)
+      }
+    })
+
+    console.log(
+      "Extracted album files:",
+      files.map((f) => f.name),
+    )
+
+    if (files.length > 0) {
+      handleEmployeeInfoImageArray("album", [...employeeInfoFormData.album, ...files])
+    } else {
+      console.warn("No valid files found in album formDataArray")
+    }
+  }
+
+  const handleRemoveAlbumImage = (index) => {
+    console.log("Removing album image at index:", index)
+    removeEmployeeInfoImageFromArray("album", index)
   }
 
   const handleEdit = (employee) => {
@@ -409,6 +526,7 @@ export default function EmployeesPage() {
       salary: employee.salary || 0,
       dob: employee.dob ? new Date(employee.dob) : null,
       hiredDate: employee.hiredDate ? new Date(employee.hiredDate) : null,
+      picture: employee.picture || null,
       status: employee.status || "active",
     })
     setEmployeeInfoFormData({
@@ -424,9 +542,6 @@ export default function EmployeesPage() {
       govExpire: employee.Employeeinfo?.govExpire ? new Date(employee.Employeeinfo.govExpire) : null,
       contractType: employee.Employeeinfo?.contractType || "permanent",
       terminationDate: employee.Employeeinfo?.terminationDate ? new Date(employee.Employeeinfo.terminationDate) : null,
-      picture: employee.Employeeinfo?.picture || null,
-      govFPicture: employee.Employeeinfo?.govFPicture || null,
-      govBPicture: employee.Employeeinfo?.govBPicture || null,
       album: employee.Employeeinfo?.album || [],
       status: employee.Employeeinfo?.status || "active",
     })
@@ -465,55 +580,12 @@ export default function EmployeesPage() {
       setEditingEmployee(null)
       resetEmployeeForm()
       resetEmployeeInfoForm()
+      handleEmployeeImagesArray("images", [])
       setSelectedDepartment("")
       setEmployeeFormError(null)
       setEmployeeInfoFormError(null)
+      setEmployeeImagesFormError(null)
     }
-  }
-
-  const handleSingleImageCrop = (fieldName) => (formData) => {
-    try {
-      const file = formData.get("picture") || formData.get(`picture_${fieldName}`)
-      if (file instanceof File) {
-        console.log(`Processing single image for ${fieldName}:`, file.name)
-        handleImageData(fieldName, file)
-      } else {
-        console.warn(`No valid file found for ${fieldName}`)
-      }
-    } catch (err) {
-      console.error(`Error processing single image for ${fieldName}:`, err)
-    }
-  }
-
-  const handleMultipleImageCrop = (formDataArray) => {
-    try {
-      if (!Array.isArray(formDataArray)) {
-        console.warn("Expected formDataArray to be an array, received:", formDataArray)
-        return
-      }
-      const files = formDataArray
-        .map((fd, index) => {
-          const file = fd.get(`picture_${index}`) || fd.get("picture")
-          if (file instanceof File) return file
-          console.warn(`Invalid file at index ${index}`)
-          return null
-        })
-        .filter(Boolean)
-      console.log("Processing multiple images for album:", files.map(f => f.name))
-      handleImageArray("album", files)
-    } catch (err) {
-      console.error("Error processing multiple images:", err)
-    }
-  }
-
-  const handleRemoveSingleImage = (fieldName) => () => {
-    console.log(`Removing image for ${fieldName}`)
-    handleImageData(fieldName, null)
-  }
-
-  const handleRemoveMultipleImage = (index) => {
-    console.log(`Removing image from album at index ${index}`)
-    removeImageFromArray("album", index)
   }
 
   const genderOptions = [
@@ -541,6 +613,16 @@ export default function EmployeesPage() {
     { time: "temporary", less: t("Temporary") },
   ]
 
+  const imageTypeOptions = [
+    { time: "address", less: t("Address") },
+    { time: "backId", less: t("Back ID") },
+    { time: "frontId", less: t("Front ID") },
+    { time: "card", less: t("Card") },
+    { time: "album", less: t("Album") },
+    { time: "product", less: t("Product") },
+    { time: "contract", less: t("Contract") },
+  ]
+
   const departmentOptions = departments.map((dept) => ({
     time: dept.departmentId,
     less: dept.departmentName,
@@ -558,7 +640,7 @@ export default function EmployeesPage() {
 
   const managerOptions = employees.map((emp) => ({
     time: emp.employeeId,
-    less: `${emp.firstName || ''} ${emp.lastName || ''}`,
+    less: `${emp.firstName || ""} ${emp.lastName || ""}`,
   }))
 
   return (
@@ -574,14 +656,31 @@ export default function EmployeesPage() {
         </div>
         <div className="flex gap-2">
           {canCreate && (
-            <Button variant="outline" onClick={handleRetry} disabled={empLoading || deptLoading || posLoading || branchLoading}>
-              <RefreshCw className={`mr-2 h-4 w-4 ${empLoading || deptLoading || posLoading || branchLoading ? "animate-spin" : ""}`} />
+            <Button
+              variant="outline"
+              onClick={handleRetry}
+              disabled={empLoading || deptLoading || posLoading || branchLoading}
+            >
+              <RefreshCw
+                className={`mr-2 h-4 w-4 ${empLoading || deptLoading || posLoading || branchLoading ? "animate-spin" : ""}`}
+              />
               {t("Refresh")}
             </Button>
           )}
           <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
             <DialogTrigger asChild>
-              <Button disabled={empLoading || deptLoading || posLoading || branchLoading || !canCreate || departments.length === 0 || positions.length === 0 || branches.length === 0}>
+              <Button
+                disabled={
+                  empLoading ||
+                  deptLoading ||
+                  posLoading ||
+                  branchLoading ||
+                  !canCreate ||
+                  departments.length === 0 ||
+                  positions.length === 0 ||
+                  branches.length === 0
+                }
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 {t("Add Employee")}
               </Button>
@@ -594,16 +693,40 @@ export default function EmployeesPage() {
                 </DialogDescription>
               </DialogHeader>
               <Tabs defaultValue="employee" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="employee">{t("Employee Details")}</TabsTrigger>
-                  <TabsTrigger value="employeeInfo" disabled={!editingEmployee}>{t("Additional Info")}</TabsTrigger>
-                  <TabsTrigger value="images" disabled={!editingEmployee}>{t("Images")}</TabsTrigger>
+                  <TabsTrigger value="employeeInfo" disabled={!editingEmployee}>
+                    {t("Additional Info")}
+                  </TabsTrigger>
+                  <TabsTrigger value="album" disabled={!editingEmployee}>
+                    {t("Album")}
+                  </TabsTrigger>
+                  <TabsTrigger value="images" disabled={!editingEmployee}>
+                    {t("Images")}
+                  </TabsTrigger>
                 </TabsList>
                 <TabsContent value="employee">
                   <form onSubmit={handleEmployeeSubmit} className="space-y-4">
-                    {employeeFormError && (
-                      <p className="text-red-500 text-sm">{employeeFormError}</p>
-                    )}
+                    {employeeFormError && <p className="text-red-500 text-sm">{employeeFormError}</p>}
+                    <div className="space-y-2">
+                      <FormImageResize
+                        onCallbackData={(formData) => handleEmployeeImageData("picture", formData.get("picture"))}
+                        disabled={isSaving}
+                        label={t("Profile Picture")}
+                        fieldName="picture"
+                      />
+                      {employeeFormData.picture && (
+                        <FormImagePreview
+                          imgSrc={
+                            employeeFormData.picture instanceof File
+                              ? URL.createObjectURL(employeeFormData.picture)
+                              : employeeFormData.picture
+                          }
+                          height={100}
+                          onRemove={() => handleEmployeeImageData("picture", null)}
+                        />
+                      )}
+                    </div>
                     <div className="grid grid-cols-2 gap-4">
                       <FormInput
                         name="employeeCode"
@@ -733,11 +856,15 @@ export default function EmployeesPage() {
                         label={t("Salary")}
                         value={employeeFormData.salary}
                         placeholder={t("Salary")}
-                        onCallbackInput={(name, value) => handleEmployeeChange(name, parseFloat(value) || 0)}
+                        onCallbackInput={(name, value) => handleEmployeeChange(name, Number.parseFloat(value) || 0)}
                         type="number"
                         step="0.01"
                         required
-                        error={employeeFormError && (employeeFormData.salary < 0 || !employeeFormData.salary) ? t("Salary must be non-negative") : null}
+                        error={
+                          employeeFormError && (employeeFormData.salary < 0 || !employeeFormData.salary)
+                            ? t("Salary must be non-negative")
+                            : null
+                        }
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -753,7 +880,12 @@ export default function EmployeesPage() {
                       />
                     </div>
                     <div className="flex justify-end gap-2">
-                      <Button type="button" variant="outline" onClick={() => handleDialogClose(false)} disabled={isSaving}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleDialogClose(false)}
+                        disabled={isSaving}
+                      >
                         {t("Cancel")}
                       </Button>
                       <Button type="submit" disabled={isSaving}>
@@ -773,9 +905,7 @@ export default function EmployeesPage() {
                 </TabsContent>
                 <TabsContent value="employeeInfo">
                   <form onSubmit={handleEmployeeInfoSubmit} className="space-y-4">
-                    {employeeInfoFormError && (
-                      <p className="text-red-500 text-sm">{employeeInfoFormError}</p>
-                    )}
+                    {employeeInfoFormError && <p className="text-red-500 text-sm">{employeeInfoFormError}</p>}
                     <div className="grid grid-cols-2 gap-4">
                       <FormComboBox
                         name="managerId"
@@ -899,7 +1029,12 @@ export default function EmployeesPage() {
                       />
                     </div>
                     <div className="flex justify-end gap-2">
-                      <Button type="button" variant="outline" onClick={() => handleDialogClose(false)} disabled={isSaving}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleDialogClose(false)}
+                        disabled={isSaving}
+                      >
                         {t("Cancel")}
                       </Button>
                       <Button type="submit" disabled={isSaving || !editingEmployee}>
@@ -915,99 +1050,41 @@ export default function EmployeesPage() {
                     </div>
                   </form>
                 </TabsContent>
-                <TabsContent value="images">
+                <TabsContent value="album">
                   <form onSubmit={handleEmployeeInfoSubmit} className="space-y-4">
-                    {employeeInfoFormError && (
-                      <p className="text-red-500 text-sm">{employeeInfoFormError}</p>
-                    )}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold">{t("Profile Picture")}</h3>
-                      <FormImageResize
-                        onCallbackData={handleSingleImageCrop("picture")}
-                        label={t("Profile Picture")}
-                        fieldName="picture"
-                        disabled={isSaving}
-                      />
-                      {employeeInfoFormData.picture && (
-                        <FormImagePreview
-                          imgSrc={
-                            employeeInfoFormData.picture instanceof File
-                              ? URL.createObjectURL(employeeInfoFormData.picture)
-                              : employeeInfoFormData.picture
-                          }
-                          label={t("Profile Picture Preview")}
-                          onRemove={handleRemoveSingleImage("picture")}
-                          height={100}
-                        />
-                      )}
-                    </div>
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold">{t("Government ID Front Picture")}</h3>
-                      <FormImageResize
-                        onCallbackData={handleSingleImageCrop("govFPicture")}
-                        label={t("Government ID Front Picture")}
-                        fieldName="govFPicture"
-                        disabled={isSaving}
-                      />
-                      {employeeInfoFormData.govFPicture && (
-                        <FormImagePreview
-                          imgSrc={
-                            employeeInfoFormData.govFPicture instanceof File
-                              ? URL.createObjectURL(employeeInfoFormData.govFPicture)
-                              : employeeInfoFormData.govFPicture
-                          }
-                          label={t("Government ID Front Picture Preview")}
-                          onRemove={handleRemoveSingleImage("govFPicture")}
-                          height={100}
-                        />
-                      )}
-                    </div>
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold">{t("Government ID Back Picture")}</h3>
-                      <FormImageResize
-                        onCallbackData={handleSingleImageCrop("govBPicture")}
-                        label={t("Government ID Back Picture")}
-                        fieldName="govBPicture"
-                        disabled={isSaving}
-                      />
-                      {employeeInfoFormData.govBPicture && (
-                        <FormImagePreview
-                          imgSrc={
-                            employeeInfoFormData.govBPicture instanceof File
-                              ? URL.createObjectURL(employeeInfoFormData.govBPicture)
-                              : employeeInfoFormData.govBPicture
-                          }
-                          label={t("Government ID Back Picture Preview")}
-                          onRemove={handleRemoveSingleImage("govBPicture")}
-                          height={100}
-                        />
-                      )}
-                    </div>
+                    {employeeInfoFormError && <p className="text-red-500 text-sm">{employeeInfoFormError}</p>}
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold">{t("Photo Album")}</h3>
                       <FormImageResize
-                        onCallbackData={handleMultipleImageCrop}
+                        onCallbackData={handleAlbumImageCrop}
                         label={t("Photo Album")}
                         multiple
-                        maxImages={5}
+                        maxImages={10}
                         fieldName="album"
                         disabled={isSaving}
                       />
-                      {employeeInfoFormData.album && Array.isArray(employeeInfoFormData.album) && employeeInfoFormData.album.length > 0 && (
-                        <FormImagePreview
-                          imgSrc={employeeInfoFormData.album.map((img) =>
-                            img instanceof File ? URL.createObjectURL(img) : img
-                          )}
-                          label={t("Photo Album Preview")}
-                          multiple
-                          maxImages={5}
-                          onRemove={handleRemoveMultipleImage}
-                          height={100}
-                        />
-                      )}
+                      {employeeInfoFormData.album &&
+                        Array.isArray(employeeInfoFormData.album) &&
+                        employeeInfoFormData.album.length > 0 && (
+                          <FormImagePreview
+                            imgSrc={employeeInfoFormData.album.map((img) =>
+                              img instanceof File ? URL.createObjectURL(img) : img,
+                            )}
+                            label={t("Photo Album Preview")}
+                            multiple
+                            maxImages={10}
+                            onRemove={handleRemoveAlbumImage}
+                            height={100}
+                          />
+                        )}
                     </div>
                     <div className="flex justify-end gap-2">
-                      <Button type="button" variant="outline" onClick={() => handleDialogClose(false)} disabled={isSaving}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleDialogClose(false)}
+                        disabled={isSaving}
+                      >
                         {t("Cancel")}
                       </Button>
                       <Button type="submit" disabled={isSaving || !editingEmployee}>
@@ -1017,7 +1094,60 @@ export default function EmployeesPage() {
                             {t("Saving...")}
                           </>
                         ) : (
-                          t("Save Images")
+                          t("Save Album")
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                </TabsContent>
+                <TabsContent value="images">
+                  <form onSubmit={handleEmployeeImagesSubmit} className="space-y-4">
+                    {employeeImagesFormError && <p className="text-red-500 text-sm">{employeeImagesFormError}</p>}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">{t("Employee Images")}</label>
+                      <FormImageResize
+                        onCallbackData={handleEmployeeImageCrop}
+                        label={t("Upload Images")}
+                        multiple
+                        maxImages={5}
+                        fieldName="employeeImages"
+                        disabled={isSaving}
+                      />
+                      {employeeImagesFormData.images.length > 0 && (
+                        <FormImagePreview
+                          imgSrc={employeeImagesFormData.images.map((img) => URL.createObjectURL(img.file))}
+                          label={t("Image Preview")}
+                          multiple
+                          maxImages={5}
+                          onRemove={handleRemoveEmployeeImage}
+                        />
+                      )}
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleDialogClose(false)}
+                        disabled={isSaving}
+                      >
+                        {t("Cancel")}
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={
+                          isSaving ||
+                          !editingEmployee ||
+                          !employeeImagesFormData.images ||
+                          employeeImagesFormData.images.length === 0
+                        }
+                      >
+                        {isSaving ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            {t("Uploading...")}
+                          </>
+                        ) : (
+                          t("Upload Images")
                         )}
                       </Button>
                     </div>
@@ -1037,7 +1167,11 @@ export default function EmployeesPage() {
                 <p className="text-destructive font-medium">{t("Error loading data")}</p>
                 <p className="text-sm text-muted-foreground">{empError || deptError || posError || branchError}</p>
               </div>
-              <Button variant="outline" onClick={handleRetry} disabled={empLoading || deptLoading || posLoading || branchLoading}>
+              <Button
+                variant="outline"
+                onClick={handleRetry}
+                disabled={empLoading || deptLoading || posLoading || branchLoading}
+              >
                 {t("Try Again")}
               </Button>
             </div>
@@ -1052,11 +1186,15 @@ export default function EmployeesPage() {
               <CardTitle className="flex items-center gap-2">
                 <UserCheck className="h-5 w-5" />
                 {t("Employee Directory")}
-                {(empLoading || deptLoading || posLoading || branchLoading) && <Loader2 className="h-4 w-4 animate-spin" />}
+                {(empLoading || deptLoading || posLoading || branchLoading) && (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                )}
               </CardTitle>
-              <CardDescription>{filteredEmployees.length} {t("employees in your organization")}</CardDescription>
+              <CardDescription>
+                {filteredEmployees.length} {t("employees in your organization")}
+              </CardDescription>
             </div>
-            <ViewToggle view={view} onViewChange={setView} />
+            <ViewToggle view={view} onChange={setView} />
           </div>
         </CardHeader>
         <CardContent>
@@ -1102,4 +1240,3 @@ export default function EmployeesPage() {
     </div>
   )
 }
-

@@ -14,7 +14,17 @@ export async function getCustomers(options) {
           Employee: { select: { firstName: true, lastName: true } },
           Customerinfo: true,
           Sale: true,
-          Image: { select: { imageId: true, imageUrl: true, imageType: true } },
+          Image: {
+            select: {
+              imageId: true,
+              imageUrl: true,
+              imageType: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+
+          // Image: { select: { imageId: true, imageUrl: true, imageType: true } },
         },
         orderBy: { createdAt: "desc" },
       })
@@ -25,15 +35,15 @@ export async function getCustomers(options) {
         updatedAt: customer.updatedAt.toISOString(),
         Customerinfo: customer.Customerinfo
           ? {
-              ...customer.Customerinfo,
-              lastPurchaseDate: customer.Customerinfo.lastPurchaseDate.toISOString(),
-              govExpire: customer.Customerinfo.govExpire ? customer.Customerinfo.govExpire.toISOString() : null,
-            }
+            ...customer.Customerinfo,
+            lastPurchaseDate: customer.Customerinfo.lastPurchaseDate.toISOString(),
+            govExpire: customer.Customerinfo.govExpire ? customer.Customerinfo.govExpire.toISOString() : null,
+          }
           : null,
         Image: customer.Image.map((image) => ({
           ...image,
-          createdAt: image.createdAt.toISOString(),
-          updatedAt: image.updatedAt.toISOString(),
+          createdAt: image.createdAt?.toISOString?.() || null,
+          updatedAt: image.updatedAt?.toISOString?.() || null,
         })),
       }))
 
@@ -78,7 +88,7 @@ export async function getCustomers(options) {
       return { success: true, customers }
     }
   } catch (error) {
-    console.error("Customers fetch error:", error?.message)
+    console.error("Customers fetch error:", error)
     return { success: false, error: "Failed to fetch customers" }
   }
 }
@@ -255,7 +265,6 @@ export async function uploadCustomerImages(customerId, imageFiles) {
       throw new Error("No images provided for upload")
     }
 
-    // Define valid image types (replace with your actual enum values)
     const validImageTypes = ["address", "backId", "frontId", "card", "album", "product", "contract"]
 
     const uploadedImages = []
