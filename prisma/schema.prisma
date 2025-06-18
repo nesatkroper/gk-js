@@ -30,7 +30,7 @@ model Address {
   Province     Province       @relation(fields: [provinceId], references: [provinceId])
   Supplier     Supplier?      @relation(fields: [supplierId], references: [supplierId])
   Village      Village        @relation(fields: [villageId], references: [villageId])
-  Imageaddress Imageaddress[]
+  Imageaddress Image[]
 
   @@index([customerId, employeeId, eventId])
 }
@@ -178,6 +178,7 @@ model Customer {
   lastName     String
   gender       Gender        @default(male)
   phone        String?
+  picture      String?
   status       Status        @default(active)
   employeeId   String?       @db.Uuid
   createdAt    DateTime      @default(now())
@@ -187,13 +188,13 @@ model Customer {
   Customerinfo Customerinfo?
   Sale         Sale[]
   Stock        Stock[]
+  Image        Image[]
 
   @@index([employeeId])
 }
 
 model Customerinfo {
   customerId            String    @unique @db.Uuid
-  picture               String?
   album                 String[]
   region                String?
   email                 String?   @unique
@@ -201,10 +202,7 @@ model Customerinfo {
   loyaltyPoints         Int?      @default(0)
   lastPurchaseDate      DateTime  @default(now())
   govId                 String?
-  govFPicture           String?
-  govBPicture           String?
   govExpire             DateTime?
-  contractPicture       String?
   contractPDF           String?              
   note                  String?
   Customer              Customer  @relation(fields: [customerId], references: [customerId])
@@ -252,6 +250,7 @@ model Employee {
   email                                            String?        @unique
   salary                                           Decimal        @db.Decimal(10, 2)
   hiredDate                                        DateTime?
+  picture                                          String?
   status                                           Status         @default(active)
   createdAt                                        DateTime       @default(now())
   updatedAt                                        DateTime
@@ -267,6 +266,7 @@ model Employee {
   LeaveRequest_LeaveRequest_employeeIdToEmployee   LeaveRequest[] @relation("LeaveRequest_employeeIdToEmployee")
   Payment                                          Payment[]
   Sale                                             Sale[]
+  Image                                            Image[]
 
   @@index([departmentId, employeeCode, positionId])
 }
@@ -274,7 +274,6 @@ model Employee {
 model Employeeinfo {
   employeeId       String        @unique @db.Uuid
   managerId        String?       @db.Uuid
-  picture          String?
   album            String[]
   region           String?
   nationality      String?
@@ -285,8 +284,6 @@ model Employeeinfo {
   bankAccount      String?
   govExpire        DateTime?
   govId            String?
-  govFPicture       String?
-  govBPicture       String?
   terminationDate  DateTime?
   contractType     ContractType
   Employee         Employee      @relation(fields: [employeeId], references: [employeeId])
@@ -329,17 +326,23 @@ model Event {
   @@index([status, startDate])
 }
 
-model Imageaddress {
-  imageId   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+model Image {
+  imageId   String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   imageUrl  String
-  imageType String?
-  addressId String   @db.Uuid
-  status    Status   @default(active)
-  createdAt DateTime @default(now())
+  imageType ImageType   @default(product)
+  addressId String?     @db.Uuid
+  productId String?     @db.Uuid
+  employeeId String?    @db.Uuid
+  customerId String?    @db.Uuid
+  status    Status      @default(active)
+  createdAt DateTime    @default(now())
   updatedAt DateTime
-  Address   Address  @relation(fields: [addressId], references: [addressId])
+  Address   Address?     @relation(fields: [addressId], references: [addressId])
+  Product   Product?     @relation(fields: [productId], references: [productId])
+  Employee  Employee?    @relation(fields: [employeeId], references: [employeeId])
+  Customer  Customer?    @relation(fields: [customerId], references: [customerId])
 
-  @@index([addressId])
+  @@index([addressId, productId, employeeId, customerId])
 }
 
 model Khqr {
@@ -457,6 +460,7 @@ model Product {
   Category     Category     @relation(fields: [categoryId], references: [categoryId])
   Saledetail   Saledetail[]
   Stock        Stock[]
+  Image        Image[]
 
   @@index([categoryId, sellPrice, costPrice, discountRate])
 }
@@ -665,4 +669,14 @@ enum MaritalStatus {
   married
   divorced
   widowed
+}
+
+enum ImageType {
+  address
+  backId
+  frontId
+  card
+  album
+  product
+  contract
 }
