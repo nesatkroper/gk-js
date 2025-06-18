@@ -7,8 +7,6 @@ import { revalidatePath } from "next/cache";
 import { generateToken, verifyPassword } from "@/lib/auth";
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 
 function convertDecimalsToNumbers(obj) {
   if (!obj) return obj;
@@ -28,7 +26,7 @@ function convertDecimalsToNumbers(obj) {
 export async function getAuthRecords(options = {}) {
   try {
     const { type = "all", authId } = options;
-    
+
     if (type === "byId" && authId) {
       // Get single auth record by ID
       const auth = await prisma.auth.findUnique({
@@ -44,14 +42,14 @@ export async function getAuthRecords(options = {}) {
           },
         },
       });
-      
+
       if (!auth) {
         return { error: "Auth record not found" };
       }
-      
+
       const convertedAuth = convertDecimalsToNumbers(auth);
       return { data: convertedAuth };
-    } 
+    }
     else if (type === "minimal") {
       // Get minimal data
       const auths = await prisma.auth.findMany({
@@ -89,7 +87,7 @@ export async function getAuthRecords(options = {}) {
       });
       const convertedAuths = auths.map((auth) => convertDecimalsToNumbers(auth));
       return { data: convertedAuths };
-    } 
+    }
     else {
       // Get all data
       const auths = await prisma.auth.findMany({
