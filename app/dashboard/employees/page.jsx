@@ -117,7 +117,7 @@ export default function EmployeesPage() {
     handleImageArray: handleEmployeeImagesArray,
     removeImageFromArray: removeEmployeeImageFromArray,
   } = useFormHandler({
-    images: [], // Array of { file: File, imageType: string }
+    images: [], 
   })
 
   useEffect(() => {
