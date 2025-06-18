@@ -7,6 +7,8 @@ import { revalidatePath } from "next/cache";
 import { generateToken, verifyPassword } from "@/lib/auth";
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 function convertDecimalsToNumbers(obj) {
   if (!obj) return obj;
@@ -23,29 +25,164 @@ function convertDecimalsToNumbers(obj) {
   return newObj;
 }
 
-export async function getAuthRecords() {
+export async function getAuthRecords(options = {}) {
   try {
-    const auths = await prisma.auth.findMany({
-      include: {
-        Role: true,
-        Employee: {
-          include: {
-            Branch: true,
+    const { type = "all", authId } = options;
+    
+    if (type === "byId" && authId) {
+      // Get single auth record by ID
+      const auth = await prisma.auth.findUnique({
+        where: { authId },
+        include: {
+          Role: true,
+          Employee: {
+            include: {
+              Branch: true,
+              Department: true,
+              Position: true,
+            },
           },
         },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-
-    const convertedAuths = auths.map((auth) => convertDecimalsToNumbers(auth));
-    return { data: convertedAuths };
+      });
+      
+      if (!auth) {
+        return { error: "Auth record not found" };
+      }
+      
+      const convertedAuth = convertDecimalsToNumbers(auth);
+      return { data: convertedAuth };
+    } 
+    else if (type === "minimal") {
+      // Get minimal data
+      const auths = await prisma.auth.findMany({
+        select: {
+          authId: true,
+          email: true,
+          status: true,
+          Role: {
+            select: {
+              roleId: true,
+              name: true,
+            },
+          },
+          Employee: {
+            select: {
+              firstName: true,
+              lastName: true,
+              picture: true,
+              Department: {
+                select: {
+                  name: true,
+                },
+              },
+              Position: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+      const convertedAuths = auths.map((auth) => convertDecimalsToNumbers(auth));
+      return { data: convertedAuths };
+    } 
+    else {
+      // Get all data
+      const auths = await prisma.auth.findMany({
+        include: {
+          Role: true,
+          Employee: {
+            include: {
+              Branch: true,
+              Department: true,
+              Position: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+      const convertedAuths = auths.map((auth) => convertDecimalsToNumbers(auth));
+      return { data: convertedAuths };
+    }
   } catch (error) {
     console.error("Error fetching auth records:", error);
     return { error: "Failed to fetch auth records" };
   }
 }
+
+export async function getCurrentAuthUser() {
+  const cookieStore = cookies();
+  const token = cookieStore.get("auth-token")?.value;
+
+  if (!token) {
+    redirect("/login");
+  }
+
+  const { valid, user } = await validateToken(token);
+
+  if (!valid) {
+    cookies().delete("auth-token");
+    redirect("/login");
+  }
+
+  // Get minimal user data
+  const { data, error } = await getAuthRecords({
+    type: "byId",
+    authId: user.authId,
+  });
+
+  if (error) {
+    cookies().delete("auth-token");
+    redirect("/login");
+  }
+
+  return data;
+}
+
+// function convertDecimalsToNumbers(obj) {
+//   if (!obj) return obj;
+//   const newObj = { ...obj };
+//   for (const key in newObj) {
+//     if (newObj[key] instanceof Prisma.Decimal) {
+//       newObj[key] = newObj[key].toNumber();
+//     } else if (newObj[key] instanceof Date) {
+//       newObj[key] = newObj[key].toISOString();
+//     } else if (typeof newObj[key] === "object") {
+//       newObj[key] = convertDecimalsToNumbers(newObj[key]);
+//     }
+//   }
+//   return newObj;
+// }
+
+// export async function getAuthRecords() {
+//   try {
+//     const auths = await prisma.auth.findMany({
+//       include: {
+//         Role: true,
+//         Employee: {
+//           include: {
+//             Branch: true,
+//           },
+//         },
+//       },
+//       orderBy: {
+//         createdAt: "desc",
+//       },
+//     });
+
+//     const convertedAuths = auths.map((auth) => convertDecimalsToNumbers(auth));
+//     return { data: convertedAuths };
+//   } catch (error) {
+//     console.error("Error fetching auth records:", error);
+//     return { error: "Failed to fetch auth records" };
+//   }
+// }
 
 export async function createAuthRecord(data) {
   console.log("Creating auth record...", data);
@@ -82,7 +219,7 @@ export async function createAuthRecord(data) {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-      const auth = await prisma.auth.create({
+    const auth = await prisma.auth.create({
       data: {
         email,
         password: hashedPassword,
@@ -95,7 +232,7 @@ export async function createAuthRecord(data) {
       include: { Role: true, Employee: true },
     });
 
-    
+
 
     const convertedAuth = convertDecimalsToNumbers(auth);
     revalidatePath("/");
@@ -178,10 +315,10 @@ export async function deleteAuthRecord(id) {
 
 export async function login(formData) {
   try {
-    const email = formData.get("email") 
-    const password = formData.get("password") 
-    const deviceInfo = (formData.get("deviceInfo") ) || ""
-    const ipAddress = (formData.get("ipAddress") ) || ""
+    const email = formData.get("email")
+    const password = formData.get("password")
+    const deviceInfo = (formData.get("deviceInfo")) || ""
+    const ipAddress = (formData.get("ipAddress")) || ""
 
     console.log("Login attempt for:", email)
 
@@ -257,7 +394,7 @@ export async function login(formData) {
     cookies().set("auth-token", jwtToken, {
       httpOnly: true,
       sameSite: "lax",
-      maxAge: 8 * 60 * 60, 
+      maxAge: 8 * 60 * 60,
       path: "/",
     })
 

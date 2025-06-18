@@ -1,44 +1,80 @@
+import { create } from "zustand";
+import { devtools } from "zustand/middleware";
 import { clearAuthData, getAuthData, storeAuthData } from "@/lib/auth-utils";
-import { create } from "zustand"
-import { devtools } from "zustand/middleware"
+import { getCurrentAuthUser, getAuthRecords } from "@/app/actions/auth";
 
 export const useAuthStore = create()(
   devtools(
     (set, get) => ({
-      me: getAuthData(),
-      isLoadingMe: false,
-      meError: null,
-      hasFetched: false,
+      items: getAuthData(),
+      loading: false,
+      error: null,
+      fetched: false,
 
-      fetch: async () => {
-        const { isLoadingMe, me, hasFetched } = get();
-        if (isLoadingMe || me || hasFetched) return;
+      fetch: async (options = {}) => {
+        const { minimal = false } = options;
+        const { loading, items, fetched } = get();
+        
+        if (loading || (items && fetched)) return;
 
-        set({ isLoadingMe: true, meError: null });
+        set({ loading: true, error: null });
 
         try {
-          const response = await fetch('/api/auth/me');
-          if (!response.ok) throw new Error('Failed to get auth.');
-
-          const data = await response.json();
-          const userData = data.user || data;
-
-          set({ me: userData, isLoadingMe: false, hasFetched: true });
-          storeAuthData(userData);
+          const userData = await getCurrentAuthUser();
+          
+          if (minimal) {
+            // If minimal data requested, we already get minimal data from getCurrentAuthUser
+            set({ items: userData, loading: false, fetched: true });
+            storeAuthData(userData);
+          } else {
+            // If full data requested, fetch it separately
+            const { data, error } = await getAuthRecords({
+              type: "byId",
+              authId: userData.authId,
+            });
+            
+            if (error) throw new Error(error);
+            
+            set({ items: data, loading: false, fetched: true });
+            storeAuthData(data);
+          }
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to fetch auth';
-          set({ meError: errorMessage, isLoadingMe: false, hasFetched: true });
+          const errorMessage = error.message || "Failed to fetch auth data";
+          set({ error: errorMessage, loading: false, fetched: true });
         }
       },
+
+      fetchById: async (authId) => {
+        set({ loading: true, error: null });
+
+        try {
+          const { data, error } = await getAuthRecords({
+            type: "byId",
+            authId,
+          });
+
+          if (error) throw new Error(error);
+
+          set({ loading: false });
+          return data;
+        } catch (error) {
+          const errorMessage = error.message || "Failed to fetch auth by ID";
+          set({ error: errorMessage, loading: false });
+          return null;
+        }
+      },
+
       clearMeError: () => {
-        set({ meError: null });
+        set({ error: null });
       },
 
       clearAuth: () => {
-        set({ me: null, meError: null });
+        set({ items: null, error: null, fetched: false });
         clearAuthData();
       },
     }),
-    { name: 'auth-store' },
-  ),
+    { name: "auth-store" }
+  )
 );
+
+
