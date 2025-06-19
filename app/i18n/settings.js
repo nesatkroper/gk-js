@@ -1,4 +1,4 @@
-export const languages = ['en', 'kh', 'cn'];
+export const languages = ['en', 'kh', 'cn', 'kr', 'jp', 'hb', 'fr'];
 export const defaultLanguage = 'en';
 export const cookieName = 'i18next';
 

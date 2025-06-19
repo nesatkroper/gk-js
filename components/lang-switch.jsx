@@ -17,6 +17,10 @@ export default function LanguageSwitcher() {
     { code: 'en', name: 'English', countryCode: 'GB' },
     { code: 'kh', name: 'ខ្មែរ', countryCode: 'KH' },
     { code: 'cn', name: '中文', countryCode: 'CN' },
+    { code: 'fr', name: 'Français', countryCode: 'FR' },
+    { code: 'hb', name: 'עברית', countryCode: 'IL' },
+    { code: 'kr', name: '한국어', countryCode: 'KR' },
+    { code: 'jp', name: '日本語', countryCode: 'JP' },
 
   ];
 
