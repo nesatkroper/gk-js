@@ -395,7 +395,7 @@ export async function login(formData) {
     })
 
     console.log("Login successful for:", sanitizedEmail)
-    (await cookies()).set("auth-token", jwtToken, {
+    cookies().set("auth-token", jwtToken, {
       httpOnly: true,
       sameSite: "lax",
       maxAge: 8 * 60 * 60,
