@@ -373,44 +373,33 @@ export async function login(formData) {
 
 export async function logout() {
   try {
-    const token = cookies().get("auth-token")?.value;
+    const cookieStore = cookies()
+    const token = (await cookieStore).get("auth-token")?.value
+    const data = (await cookieStore).get('auth-data')?.value
 
     if (token) {
-      await prisma.token.deleteMany({
-        where: { token },
-      });
-
-      cookies().delete("auth-token");
+      await prisma.token.deleteMany({ where: { token } })
     }
 
-    redirect("/login");
+    if (token) (await cookieStore).delete('auth-token')
+    if (data) (await cookieStore).delete('auth-data')
+
+
+    const headers = new Headers()
+    headers.append(
+      "Set-Cookie",
+      `auth-token=; Path=/; HttpOnly; Max-Age=0; SameSite=Lax`
+    )
+
+    return new Response(null, {
+      status: 200,
+      headers,
+    })
   } catch (error) {
-    console.error("Logout error:", error);
-    cookies().delete("auth-token");
-    redirect("/login");
+    console.error("Logout error:", error)
+    return new Response("Logout failed", { status: 500 })
   }
 }
-
-
-// export async function logout() {
-//   try {
-//     const authToken = cookies().get("auth-token")?.value
-
-//     if (authToken) {
-//       await prisma.token.deleteMany({
-//         where: { token: authToken },
-//       })
-
-//       cookies().delete("auth-token")
-//     }
-
-//     redirect("/login")
-//   } catch (error) {
-//     console.error("Logout error:", error)
-//     cookies().delete("auth-token")
-//     redirect("/login")
-//   }
-// }
 
 export async function validateToken(token) {
   try {

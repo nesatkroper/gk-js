@@ -18,7 +18,7 @@ const Map = dynamic(() => import("@/components/form/form-map").then(mod => mod.M
 const MapWithLocation = dynamic(() => import("@/components/form/form-map").then(mod => mod.MapWithLocation), { ssr: false });
 
 export default function DashboardPage() {
-  const { me, fetch } = useAuthStore()
+  const { items, fetch } = useAuthStore()
   const { t } = useTranslation('common')
 
   const { formData, handleChange, handleImageData, resetForm, getSubmissionData } = useFormHandler({
@@ -28,12 +28,12 @@ export default function DashboardPage() {
   })
 
   useEffect(() => {
-    if (!me) {
-      fetch()
+    if (!items) {
+      fetch({ min: true })
     }
-  }, [fetch, me])
+  }, [fetch, items])
 
-  console.log(me)
+  console.log(items)
 
   const handleLocation = (location) => {
     console.log("Selected location:", location);

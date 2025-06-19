@@ -155,6 +155,8 @@ export function EnhancedHeader() {
                   onClick={async () => {
                     try {
                       await fetch("/api/logout", { method: "POST" })
+                      document.cookie = "auth-token=; path=/; max-age=0"
+                      document.cookie = "auth-data=; path=/; max-age=0"
                       window.location.href = "/login"
                     } catch (err) {
                       console.error("Logout failed", err)

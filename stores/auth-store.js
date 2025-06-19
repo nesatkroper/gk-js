@@ -12,7 +12,7 @@ export const useAuthStore = create()(
       fetched: false,
 
       fetch: async (options = {}) => {
-        const { minimal = false } = options;
+        const { min = false } = options;
         const { loading, items, fetched } = get();
         
         if (loading || (items && fetched)) return;
@@ -22,12 +22,10 @@ export const useAuthStore = create()(
         try {
           const userData = await getCurrentAuthUser();
           
-          if (minimal) {
-            // If minimal data requested, we already get minimal data from getCurrentAuthUser
+          if (min) {
             set({ items: userData, loading: false, fetched: true });
             storeAuthData(userData);
           } else {
-            // If full data requested, fetch it separately
             const { data, error } = await getAuthRecords({
               type: "byId",
               authId: userData.authId,
