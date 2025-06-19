@@ -34,7 +34,7 @@ export function EnhancedHeader() {
   const { setTheme, theme } = useTheme()
   const pathname = usePathname()
   const lastSegment = pathname?.split('/').pop()?.split('?')[0]?.split('#')[0] ?? ''
-  const { me, fetch } = useAuthStore()
+  const { items, fetch } = useAuthStore()
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -42,8 +42,8 @@ export function EnhancedHeader() {
   }, []);
 
   React.useEffect(() => {
-    if (!me?.email) fetch()
-  }, [me])
+    if (!items?.email) fetch()
+  }, [items])
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -54,19 +54,12 @@ export function EnhancedHeader() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem className="hidden md:block">
-                {/* Translate "Dashboard" in Breadcrumb */}
                 <BreadcrumbLink href="/dashboard">{t('Dashboard')}</BreadcrumbLink>
               </BreadcrumbItem>
               {lastSegment && lastSegment !== "dashboard" && (
                 <>
                   <BreadcrumbSeparator className="hidden md:block" />
                   <BreadcrumbItem>
-                    {/* If lastSegment represents a specific route name that needs translation, 
-                        you might map it to a translation key here.
-                        For example, t(lastSegment) if your keys match your route segments.
-                        Otherwise, capitalize it for display as it is. 
-                        Let's assume for now your segments are translatable keys.
-                    */}
                     <BreadcrumbPage className="capitalize">{t(lastSegment)}</BreadcrumbPage>
                   </BreadcrumbItem>
                 </>
@@ -98,7 +91,6 @@ export function EnhancedHeader() {
               >
                 <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                 <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                {/* Translate "Toggle theme" for accessibility */}
                 <span className="sr-only">{t('Toggle theme')}</span>
               </Button>
             )}
@@ -106,21 +98,13 @@ export function EnhancedHeader() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src="/images/profile.webp" alt={t("User profile image")} />
+                  <Avatar className="h-8 w-8 border">
+                    <AvatarImage src={items?.Employee?.picture || "/images/profile.webp"} alt={t("User profile image")} />
                     <AvatarFallback>
-                      {mounted && me?.Employee
-                        ? `${me.Employee.firstName?.[0] ?? ""}${me.Employee.lastName?.[0] ?? ""}`
+                      {mounted && items?.Employee
+                        ? `${items.Employee.firstName?.[0] ?? ""}${items.Employee.lastName?.[0] ?? ""}`
                         : "AD"}
                     </AvatarFallback>
-
-                    {/* <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                      {!mounted
-                        ? t('AD') 
-                        : me?.Employee
-                          ? `${me.Employee.firstName[0]}${me.Employee.lastName[0]}`
-                          : t('AD')} 
-                    </AvatarFallback> */}
 
                   </Avatar>
                 </Button>
@@ -128,15 +112,15 @@ export function EnhancedHeader() {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{me?.Employee ? `${me.Employee.firstName} ${me.Employee.lastName}` : t('Admin User')}</p> {/* Translate "Admin User" */}
-                    <p className="text-xs leading-none text-muted-foreground">{me?.email || t('admin@fertilizer.com')} </p> {/* Translate default email if displayed */}
+                    <p className="text-sm font-medium leading-none">{items?.Employee ? `${items.Employee.firstName} ${items.Employee.lastName}` : t('Admin User')}</p> {/* Translate "Admin User" */}
+                    <p className="text-xs leading-none text-muted-foreground">{items?.email || t('admin@fertilizer.com')} </p> 
                     <div className="flex items-center gap-2 mt-2">
                       <Badge variant="secondary" className="text-xs px-1.5 py-0.5 capitalize">
-                        {me?.Role?.name || t('Administrator')} {/* Translate "Administrator" */}
+                        {items?.Role?.name || t('Administrator')} 
                       </Badge>
                       <div className="flex items-center gap-1">
                         <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="text-xs text-muted-foreground">{t('Online')}</span> {/* Translate "Online" */}
+                        <span className="text-xs text-muted-foreground">{t('Online')}</span> 
                       </div>
                     </div>
                   </div>
@@ -144,11 +128,11 @@ export function EnhancedHeader() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <User className="mr-2 h-4 w-4" />
-                  <span>{t('Profile')}</span> {/* Translate "Profile" */}
+                  <span>{t('Profile')}</span> 
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Settings className="mr-2 h-4 w-4" />
-                  <span>{t('Settings')}</span> {/* Translate "Settings" */}
+                  <span>{t('Settings')}</span> 
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -166,7 +150,7 @@ export function EnhancedHeader() {
                   className="text-red-600 focus:text-red-600"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>{t('Log out')}</span> {/* Translate "Log out" */}
+                  <span>{t('Log out')}</span> 
                 </DropdownMenuItem>
 
               </DropdownMenuContent>
