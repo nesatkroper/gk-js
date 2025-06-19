@@ -43,6 +43,8 @@ export default function Home() {
     return () => clearTimeout(timer)
   }, [])
 
+  console.log(items)
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -103,12 +105,12 @@ export default function Home() {
                     <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-blue-500 to-emerald-500 blur-sm"></div>
                     <Avatar className="relative h-32 w-32 border-4 border-white/20 shadow-2xl">
                       <AvatarImage
-                        src={items?.Employee?.picture || "/images/profile.webp?height=128&width=128"}
-                        alt={`${items?.Employee?.firstName} ${items?.Employee?.lastName}`}
+                        src={items?.employee?.picture || "/images/profile.webp?height=128&width=128"}
+                        alt={`${items?.employee?.firstName} ${items?.employee?.lastName}`}
                         loading="lazy"
                       />
                       <AvatarFallback className="text-2xl bg-slate-700 text-white">
-                        {getInitials(items?.Employee?.firstName, items?.Employee?.lastName) || "AD"}
+                        {getInitials(items?.employee?.firstName, items?.employee?.lastName) || "AD"}
                       </AvatarFallback>
                     </Avatar>
                     <div
@@ -119,25 +121,25 @@ export default function Home() {
                   <div className="space-y-4 text-center sm:text-left">
                     <div>
                       <h1 className="text-3xl font-bold tracking-tight">
-                        {items?.Employee?.firstName} {items?.Employee?.lastName || "Admin"}
+                        {items?.employee?.firstName} {items?.employee?.lastName || "Admin"}
                       </h1>
                       <p className="text-xl text-white/80 font-medium">
-                        {items?.Employee?.Position?.positionName || "Administrator"}
+                        {items?.employee?.Position?.positionName || "Administrator"}
                       </p>
                     </div>
 
                     <div className="flex flex-wrap justify-center sm:justify-start gap-3">
                       <Badge className="bg-white/15 hover:bg-white/25 text-white border-white/20 px-3 py-1">
                         <User className="h-4 w-4 mr-2" />
-                        {items?.Employee?.employeeCode || "Owner"}
+                        {items?.employee?.employeeCode || "Owner"}
                       </Badge>
                       <Badge className="bg-white/15 hover:bg-white/25 text-white border-white/20 px-3 py-1">
                         <Building2 className="h-4 w-4 mr-2" />
-                        {items?.Employee?.Department?.departmentName || "Super Admin"}
+                        {items?.employee?.Department?.departmentName || "Super Admin"}
                       </Badge>
                       <Badge className="bg-white/15 hover:bg-white/25 text-white border-white/20 px-3 py-1">
                         <MapPin className="h-4 w-4 mr-2" />
-                        {items?.Employee?.Branch?.branchName || "Headquarters"}
+                        {items?.employee?.Branch?.branchName || "Headquarters"}
                       </Badge>
                     </div>
                   </div>
@@ -191,7 +193,7 @@ export default function Home() {
                     </div>
                     <div>
                       <div className="text-sm text-white/70">{t("Service Duration")}</div>
-                      <div className="text-lg font-semibold">{calculateServiceDuration(items?.Employee?.hiredDate)}</div>
+                      <div className="text-lg font-semibold">{calculateServiceDuration(items?.employee?.hiredDate)}</div>
                     </div>
                   </div>
                 </div>
@@ -203,7 +205,7 @@ export default function Home() {
                     </div>
                     <div>
                       <div className="text-sm text-white/70">{t("Salary")}</div>
-                      <div className="text-lg font-semibold">{formatCurrency(items?.Employee?.salary || 0)}</div>
+                      <div className="text-lg font-semibold">{formatCurrency(items?.employee?.salary || 0)}</div>
                     </div>
                   </div>
                 </div>
@@ -215,7 +217,7 @@ export default function Home() {
                     </div>
                     <div>
                       <div className="text-sm text-white/70">{t("Hired Date")}</div>
-                      <div className="text-lg font-semibold">{formatDate(items?.Employee?.hiredDate)}</div>
+                      <div className="text-lg font-semibold">{formatDate(items?.employee?.hiredDate)}</div>
                     </div>
                   </div>
                 </div>
@@ -286,11 +288,11 @@ export default function Home() {
           </div>
 
           <TabsContent value="overview" className="space-y-6">
-            <OverView emp={items?.Employee} />
+            <OverView emp={items?.employee} />
           </TabsContent>
 
           <TabsContent value="details" className="space-y-6">
-            <Details emp={items?.Employee} />
+            <Details emp={items?.employee} />
           </TabsContent>
 
           <TabsContent value="attendance" className="space-y-6">

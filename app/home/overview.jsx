@@ -115,7 +115,7 @@ export function OverView({ emp = [] }) {
     return `${diffMonths} ${t(diffMonths > 1 ? "months" : "month")}`
   }
 
-  const formatTel = (phoneNumber) => `+855 ${phoneNumber.substring(1, 3)} ${phoneNumber.substring(3, 6)} ${phoneNumber.substring(6)}`
+  const formatTel = (phoneNumber) => `+855 ${phoneNumber?.substring(1, 3)} ${phoneNumber?.substring(3, 6)} ${phoneNumber?.substring(6)}`
 
 
 

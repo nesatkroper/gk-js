@@ -28,7 +28,6 @@ export async function getAuthRecords(options = {}) {
     const { type = "all", authId } = options;
 
     if (type === "byId" && authId) {
-      // Get single auth record by ID
       const auth = await prisma.auth.findUnique({
         where: { authId },
         include: {
@@ -42,42 +41,91 @@ export async function getAuthRecords(options = {}) {
           },
         },
       });
-
+      // const auth = await prisma.auth.findUnique({
+      //   where: { authId },
+      //   select: {
+      //     email: true,
+      //     roleId: true,
+      //     employeeId: true,
+      //     status: true,
+      //     createdAt: true,
+      //     lastLoginAt: true,
+      //     Role: {
+      //       select: {
+      //         name: true
+      //       }
+      //     },
+      //     Employee: {
+      //       include: {
+      //         Branch: {
+      //           select: {
+      //             branchId: true,
+      //             branchName: true
+      //           }
+      //         },
+      //         Department: {
+      //           select: {
+      //             departmentId: true,
+      //             departmentName: true
+      //           }
+      //         },
+      //         Position: {
+      //           select: {
+      //             positionId: true,
+      //             positionName: true
+      //           }
+      //         },
+      //         Employeeinfo: true,
+      //       },
+      //     },
+      //   },
+      // });
       if (!auth) {
         return { error: "Auth record not found" };
       }
 
+      console.log(auth)
+
       const convertedAuth = convertDecimalsToNumbers(auth);
       return { data: convertedAuth };
     }
-    else if (type === "minimal") {
-      // Get minimal data
-      const auths = await prisma.auth.findMany({
+    else if (type === "min") {
+      const auths = await prisma.auth.findUnique({
+        where: { authId },
         select: {
-          authId: true,
           email: true,
+          roleId: true,
+          employeeId: true,
           status: true,
+          createdAt: true,
+          lastLoginAt: true,
           Role: {
             select: {
-              roleId: true,
-              name: true,
-            },
+              name: true
+            }
           },
           Employee: {
-            select: {
-              firstName: true,
-              lastName: true,
-              picture: true,
+            include: {
+              Branch: {
+                select: {
+                  branchId: true,
+                  branchName: true
+                }
+              },
               Department: {
                 select: {
-                  name: true,
-                },
+                  departmentId: true,
+                  departmentName: true
+                }
               },
               Position: {
                 select: {
-                  name: true,
-                },
+                  positionId: true,
+                  positionName: true
+                }
               },
+              Customer: true,
+              Employeeinfo: true,
             },
           },
         },
@@ -89,7 +137,6 @@ export async function getAuthRecords(options = {}) {
       return { data: convertedAuths };
     }
     else {
-      // Get all data
       const auths = await prisma.auth.findMany({
         include: {
           Role: true,
@@ -115,7 +162,7 @@ export async function getAuthRecords(options = {}) {
 }
 
 export async function getCurrentAuthUser() {
-  const token = cookies().get("auth-token")?.value;
+  const token = (await cookies()).get("auth-token")?.value;
 
   if (!token) {
     redirect("/login");
@@ -124,7 +171,7 @@ export async function getCurrentAuthUser() {
   const { valid, user } = await validateToken(token);
 
   if (!valid) {
-    cookies().delete("auth-token");
+    (await cookies()).delete("auth-token");
     redirect("/login");
   }
 
@@ -134,7 +181,7 @@ export async function getCurrentAuthUser() {
   });
 
   if (error) {
-    cookies().delete("auth-token");
+    (await cookies()).delete("auth-token");
     redirect("/login");
   }
 

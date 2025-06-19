@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { storeAuthData } from '@/lib/auth-utils'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Leaf, Eye, EyeOff, Shield, AlertTriangle, Package, BarChart3, Users, ArrowRight } from "lucide-react"
 
@@ -48,6 +49,8 @@ export default function LoginPage() {
         setError(response.error || "An unknown error occurred")
         return
       }
+
+      storeAuthData(response?.user)
 
       response?.user?.role === "admin" ? router.push("/dashboard") : router.push("/home")
       
