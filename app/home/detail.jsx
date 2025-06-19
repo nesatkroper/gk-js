@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -53,19 +53,19 @@ export function Details({ emp = [] }) {
               <div>
                 <p className='text-sm text-muted-foreground'>{t('Full Name')}</p>
                 <p className='font-medium text-md'>
-                  {emp[0]?.firstName} {emp[0]?.lastName}
+                  {emp?.firstName} {emp?.lastName}
                 </p>
               </div>
               <div>
                 <p className='text-sm text-muted-foreground'>{t('Employee Code')}</p>
                 <p className='font-medium text-md uppercase'>
-                  {emp[0]?.employeeCode || "N/A"}
+                  {emp?.employeeCode || "N/A"}
                 </p>
               </div>
               <div>
                 <p className='text-sm text-muted-foreground'>{t('Gender')}</p>
                 <p className='font-medium text-md capitalize'>
-                  {emp[0]?.gender}
+                  {emp?.gender}
                 </p>
               </div>
             </div>
@@ -76,7 +76,7 @@ export function Details({ emp = [] }) {
                 <div className='flex items-center gap-2'>
                   <Cake className='h-4 w-4 text-green-500' />
                   <p className='font-medium text-md'>
-                    {formatDate(emp[0]?.dob)}
+                    {formatDate(emp?.dob)}
                   </p>
                 </div>
               </div>
@@ -85,7 +85,7 @@ export function Details({ emp = [] }) {
                 <div className='flex items-center gap-2'>
                   <Phone className='h-4 w-4 text-green-500' />
                   <p className='font-medium text-md'>
-                    {emp[0]?.phone || "N/A"}
+                    {emp?.phone || "N/A"}
                   </p>
                 </div>
               </div>
@@ -94,7 +94,7 @@ export function Details({ emp = [] }) {
                 <div className='flex items-center gap-2'>
                   <Mail className='h-4 w-4 text-green-500' />
                   <p className='font-medium text-md'>
-                    {emp[0]?.info?.email || "N/A"}
+                    {emp?.email || "N/A"}
                   </p>
                 </div>
               </div>
@@ -104,7 +104,7 @@ export function Details({ emp = [] }) {
               <div>
                 <p className='text-sm text-muted-foreground'>{t('Address')}</p>
                 <p className='font-medium text-md'>
-                  {emp[0]?.info?.address || t('Default Address')}
+                  {emp?.info?.address || t('Default Address')}
                 </p>
               </div>
               <div>
@@ -112,7 +112,7 @@ export function Details({ emp = [] }) {
                 <div className='flex items-center gap-2'>
                   <MapPin className='h-4 w-4 text-green-500' />
                   <p className='font-medium text-md'>
-                    {emp[0]?.info?.region || t('Default Region')}
+                    {emp?.info?.region || t('Default Region')}
                   </p>
                 </div>
               </div>
@@ -121,7 +121,7 @@ export function Details({ emp = [] }) {
                   {t('Emergency Contact')}
                 </p>
                 <p className='font-medium text-md'>
-                  {emp[0]?.info?.emergencyContact || t('Not provided')}
+                  {emp?.info?.emergencyContact || t('Not provided')}
                 </p>
               </div>
             </div>
@@ -138,22 +138,22 @@ export function Details({ emp = [] }) {
               <div>
                 <p className='text-sm text-muted-foreground'>{t('ID Number')}</p>
                 <p className='font-medium text-md'>
-                  {emp[0]?.info?.govId || "N/A"}
+                  {emp?.info?.govId || "N/A"}
                 </p>
               </div>
               <div>
                 <p className='text-sm text-muted-foreground'>{t('Expiration Date')}</p>
                 <p className='font-medium text-md'>
-                  {formatDate(emp[0]?.info?.govExpire)}
+                  {formatDate(emp?.info?.govExpire)}
                 </p>
               </div>
               <div>
                 <p className='text-sm text-muted-foreground'>{t('ID Image')}</p>
-                {emp[0]?.info?.govPicture ? (
+                {emp?.info?.govPicture ? (
                   <div className='mt-2 relative h-20 w-32 overflow-hidden rounded-md border'>
                     <img
                       src={
-                        emp[0]?.info.govPicture ||
+                        emp?.info.govPicture ||
                         "/placeholder.svg?height=80&width=128"
                       }
                       alt={t('ID Image')}
@@ -183,14 +183,14 @@ export function Details({ emp = [] }) {
               <div className='flex items-center gap-2 h-6'>
                 <BadgeCheck className='h-4 w-4 text-green-500' />
                 <p className='font-medium'>
-                  {emp[0]?.position?.positionName}
+                  {emp?.position?.positionName}
                 </p>
               </div>
             </div>
             <div>
               <p className='text-sm text-muted-foreground'>{t('Department')}</p>
               <p className='font-medium'>
-                {emp[0]?.department?.departmentName}
+                {emp?.department?.departmentName}
               </p>
             </div>
             <div>
@@ -198,7 +198,7 @@ export function Details({ emp = [] }) {
               <HoverCard>
                 <HoverCardTrigger asChild>
                   <p className='font-medium cursor-help'>
-                    {formatCurrency(emp[0]?.salary)}
+                    {formatCurrency(emp?.salary)}
                   </p>
                 </HoverCardTrigger>
                 <HoverCardContent className='w-80'>
@@ -207,20 +207,20 @@ export function Details({ emp = [] }) {
                     <div className='grid grid-cols-2 gap-2 text-sm'>
                       <div>{t('Base Salary')}:</div>
                       <div className='text-right'>
-                        {formatCurrency(emp[0]?.salary * 0.85)}
+                        {formatCurrency(emp?.salary * 0.85)}
                       </div>
                       <div>{t('Bonus')}:</div>
                       <div className='text-right'>
-                        {formatCurrency(emp[0]?.salary * 0.1)}
+                        {formatCurrency(emp?.salary * 0.1)}
                       </div>
                       <div>{t('Allowances')}:</div>
                       <div className='text-right'>
-                        {formatCurrency(emp[0]?.salary * 0.05)}
+                        {formatCurrency(emp?.salary * 0.05)}
                       </div>
                       <Separator className='col-span-2 my-1' />
                       <div className='font-medium'>{t('Total')}:</div>
                       <div className='text-right font-medium'>
-                        {formatCurrency(emp[0]?.salary)}
+                        {formatCurrency(emp?.salary)}
                       </div>
                     </div>
                   </div>
@@ -229,26 +229,26 @@ export function Details({ emp = [] }) {
             </div>
             <div>
               <p className='text-sm text-muted-foreground'>{t('Hired Date')}</p>
-              <p className='font-medium'>{formatDate(emp[0]?.hiredDate)}</p>
+              <p className='font-medium'>{formatDate(emp?.hiredDate)}</p>
             </div>
             <div>
               <p className='text-sm text-muted-foreground'>{t('Status')}</p>
               <Badge
                 variant={
-                  emp[0]?.status === "active" ? "success" : "destructive"
+                  emp?.status === "active" ? "success" : "destructive"
                 }
                 className='capitalize'>
-                {t(emp[0]?.status || 'inactive')} {/* Translate 'active' or 'inactive' */}
+                {t(emp?.status || 'inactive')} {/* Translate 'active' or 'inactive' */}
               </Badge>
             </div>
             <div>
               <p className='text-sm text-muted-foreground'>{t('Region')}</p>
-              <p className='font-medium'>{emp[0]?.info?.region || "N/A"}</p>
+              <p className='font-medium'>{emp?.info?.region || "N/A"}</p>
             </div>
           </CardContent>
         </Card>
 
-        {emp[0]?.info?.note && (
+        {emp?.info?.note && (
           <Card className='border-none shadow-md'>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
@@ -258,7 +258,7 @@ export function Details({ emp = [] }) {
             </CardHeader>
             <CardContent>
               <div className='bg-muted/50 p-4 rounded-lg italic'>
-                {emp[0]?.info.note}
+                {emp?.info.note}
               </div>
             </CardContent>
           </Card>

@@ -108,18 +108,21 @@ export function OverView({ emp = [] }) {
     const diffMonths = now.getMonth() - hired.getMonth()
 
     if (diffYears > 0) {
-      return `${diffYears} ${t(diffYears > 1 ? "years" : "year")}${
-        diffMonths > 0 ? `, ${diffMonths} ${t(diffMonths > 1 ? "months" : "month")}` : ""
-      }`
+      return `${diffYears} ${t(diffYears > 1 ? "years" : "year")}${diffMonths > 0 ? `, ${diffMonths} ${t(diffMonths > 1 ? "months" : "month")}` : ""
+        }`
     }
 
     return `${diffMonths} ${t(diffMonths > 1 ? "months" : "month")}`
   }
 
+  const formatTel = (phoneNumber) => `+855 ${phoneNumber.substring(1, 3)} ${phoneNumber.substring(3, 6)} ${phoneNumber.substring(6)}`
+
+
+
   const infoCards = [
     {
       title: t("Position"),
-      value: emp[0]?.position?.positionName || "N/A",
+      value: emp?.Position?.positionName || "N/A",
       subtitle: t("Career Level: Senior"),
       icon: Briefcase,
       color: "text-blue-600",
@@ -128,7 +131,7 @@ export function OverView({ emp = [] }) {
     },
     {
       title: t("Department"),
-      value: emp[0]?.department?.departmentName || "N/A",
+      value: emp?.Department?.departmentName || "N/A",
       subtitle: t("Reports to: Director"),
       icon: Building2,
       color: "text-emerald-600",
@@ -137,7 +140,7 @@ export function OverView({ emp = [] }) {
     },
     {
       title: t("Salary"),
-      value: formatCurrency(emp[0]?.salary || 0),
+      value: formatCurrency(emp?.salary || 0),
       subtitle: t("Last review: 3 months ago"),
       icon: DollarSign,
       color: "text-green-600",
@@ -146,8 +149,8 @@ export function OverView({ emp = [] }) {
     },
     {
       title: t("Hired Date"),
-      value: formatDate(emp[0]?.hiredDate),
-      subtitle: `${t("Tenure")}: ${calculateServiceDuration(emp[0]?.hiredDate)}`,
+      value: formatDate(emp?.hiredDate),
+      subtitle: `${t("Tenure")}: ${calculateServiceDuration(emp?.hiredDate)}`,
       icon: Calendar,
       color: "text-purple-600",
       bgColor: "bg-purple-50",
@@ -155,7 +158,7 @@ export function OverView({ emp = [] }) {
     },
     {
       title: t("Contact"),
-      value: emp[0]?.phone || "N/A",
+      value: formatTel(emp?.phone) || "N/A",
       subtitle: t("Extension: +855"),
       icon: Phone,
       color: "text-amber-600",
@@ -164,7 +167,7 @@ export function OverView({ emp = [] }) {
     },
     {
       title: t("Email"),
-      value: emp[0]?.info?.email || "N/A",
+      value: emp?.email || "N/A",
       subtitle: t("Corporate account"),
       icon: Mail,
       color: "text-rose-600",
@@ -175,7 +178,6 @@ export function OverView({ emp = [] }) {
 
   return (
     <div className="space-y-8">
-      {/* Employee Information Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {infoCards.map((card, index) => (
           <Card key={index} className={`border-2 rounded-lg ${card.borderColor} shadow-sm hover:shadow-md transition-shadow p-0`}>
@@ -421,7 +423,7 @@ export function OverView({ emp = [] }) {
 //   const infoCards = [
 //     {
 //       title: "Position",
-//       value: emp[0]?.position?.positionName || "N/A",
+//       value: emp?.position?.positionName || "N/A",
 //       subtitle: "Career Level: Senior",
 //       icon: Briefcase,
 //       color: "text-blue-600",
@@ -430,7 +432,7 @@ export function OverView({ emp = [] }) {
 //     },
 //     {
 //       title: "Department",
-//       value: emp[0]?.department?.departmentName || "N/A",
+//       value: emp?.department?.departmentName || "N/A",
 //       subtitle: "Reports to: Director",
 //       icon: Building2,
 //       color: "text-emerald-600",
@@ -439,7 +441,7 @@ export function OverView({ emp = [] }) {
 //     },
 //     {
 //       title: "Salary",
-//       value: formatCurrency(emp[0]?.salary || 0),
+//       value: formatCurrency(emp?.salary || 0),
 //       subtitle: "Last review: 3 months ago",
 //       icon: DollarSign,
 //       color: "text-green-600",
@@ -448,8 +450,8 @@ export function OverView({ emp = [] }) {
 //     },
 //     {
 //       title: "Hired Date",
-//       value: formatDate(emp[0]?.hiredDate),
-//       subtitle: `Tenure: ${calculateServiceDuration(emp[0]?.hiredDate)}`,
+//       value: formatDate(emp?.hiredDate),
+//       subtitle: `Tenure: ${calculateServiceDuration(emp?.hiredDate)}`,
 //       icon: Calendar,
 //       color: "text-purple-600",
 //       bgColor: "bg-purple-50",
@@ -457,7 +459,7 @@ export function OverView({ emp = [] }) {
 //     },
 //     {
 //       title: "Contact",
-//       value: emp[0]?.phone || "N/A",
+//       value: emp?.phone || "N/A",
 //       subtitle: "Extension: +855",
 //       icon: Phone,
 //       color: "text-amber-600",
@@ -466,7 +468,7 @@ export function OverView({ emp = [] }) {
 //     },
 //     {
 //       title: "Email",
-//       value: emp[0]?.info?.email || "N/A",
+//       value: emp?.info?.email || "N/A",
 //       subtitle: "Corporate account",
 //       icon: Mail,
 //       color: "text-rose-600",
