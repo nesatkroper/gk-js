@@ -23,7 +23,6 @@ export default function LanguageSwitcher() {
     { code: 'jp', name: '日本語', countryCode: 'JP' },
     { code: 'gr', name: 'Ελληνικά', countryCode: 'GR' },
     { code: 'ru', name: 'Русский', countryCode: 'RU' },
-
   ];
 
   const changeLanguage = (lng) => {
