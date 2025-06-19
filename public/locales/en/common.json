@@ -720,5 +720,28 @@
   "page_info": "Page {current} of {total}",
   "previous": "Previous",
   "next": "Next",
-  "fetch_logs_error": "Failed to fetch logs"
+  "fetch_logs_error": "Failed to fetch logs",
+
+
+  "Page not found": "Page not found",
+  "Unknown error": "Unknown error",
+  "Error Details:": "Error Details:",
+  "Copy": "Copy",
+  "Copied!": "Copied!",
+  "The requested page could not be found in the fertilizer management system.": "The requested page could not be found in the fertilizer management system.",
+  "An unexpected error occurred in the fertilizer management system.": "An unexpected error occurred in the fertilizer management system.",
+  "Technical Details": "Technical Details",
+  "The fertilizer data or page you're looking for doesn't exist in our system.": "The fertilizer data or page you're looking for doesn't exist in our system.",
+  "Our fertilizer management system encountered an issue. Please try again or contact support if the problem persists.": "Our fertilizer management system encountered an issue. Please try again or contact support if the problem persists.",
+  "Back to Dashboard": "Back to Dashboard",
+  "Fertilizer Management System • Need help? Contact support": "Fertilizer Management System • Need help? Contact support",
+  "Page Not Found": "Page Not Found",
+  "Something Went Wrong": "Something Went Wrong",
+  "Oops! Page Not Found": "Oops! Page Not Found",
+  "Looks like you're lost! We couldn't find the page you were looking for. It might have been moved, deleted, or the link might be broken.": "Looks like you're lost! We couldn't find the page you were looking for. It might have been moved, deleted, or the link might be broken.",
+  "Go to Homepage": "Go to Homepage",
+  "Search Site": "Search Site",
+  "Go Back": "Go Back",
+  "Fun fact: HTTP 404 errors were named after room 404 at CERN where the original web server was located! 🌐": "Fun fact: HTTP 404 errors were named after room 404 at CERN where the original web server was located! 🌐",
+  "home" : "Home"
 }
