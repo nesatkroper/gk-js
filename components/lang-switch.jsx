@@ -21,6 +21,8 @@ export default function LanguageSwitcher() {
     { code: 'hb', name: 'עברית', countryCode: 'IL' },
     { code: 'kr', name: '한국어', countryCode: 'KR' },
     { code: 'jp', name: '日本語', countryCode: 'JP' },
+    { code: 'gr', name: 'Ελληνικά', countryCode: 'GR' },
+    { code: 'ru', name: 'Русский', countryCode: 'RU' },
 
   ];
 
