@@ -178,14 +178,14 @@ export function OverView({ emp = [] }) {
       {/* Employee Information Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {infoCards.map((card, index) => (
-          <Card key={index} className={`border-2 ${card.borderColor} shadow-sm hover:shadow-md transition-shadow`}>
-            <CardHeader className={`pb-3 ${card.bgColor}`}>
+          <Card key={index} className={`border-2 rounded-lg ${card.borderColor} shadow-sm hover:shadow-md transition-shadow p-0`}>
+            <CardHeader className={`py-3 rounded-t-lg ${card.bgColor}`}>
               <CardTitle className={`text-sm font-medium flex items-center gap-2 ${card.color}`}>
                 <card.icon className="h-5 w-5" />
                 {card.title}
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-4">
+            <CardContent className="p-4">
               <p className="text-lg font-semibold text-slate-900 truncate">{card.value}</p>
               <p className="text-sm text-slate-600 mt-1">{card.subtitle}</p>
             </CardContent>
