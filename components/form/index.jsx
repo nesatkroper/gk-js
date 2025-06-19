@@ -11,4 +11,5 @@ export { default as FormRatio } from "./form-ratio";
 export { default as FormSelect } from "./form-select";
 export { default as FormTextArea } from "./form-textarea";
 export { default as FormPreview } from "./form-preview";
-export { default as SignaturePad } from "./form-signature"
+export {  FormSignature } from "./form-signature"
+// export { default as FormMap} from './form-map'

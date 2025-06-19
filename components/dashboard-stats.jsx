@@ -6,7 +6,7 @@ import { DollarSign, Package, ShoppingCart, Users } from "lucide-react"
 import { useTranslation } from "react-i18next" // Import useTranslation
 
 export function DashboardStats() {
-  const { t } = useTranslation('dashboard'); // Initialize useTranslation
+  const { t } = useTranslation('common'); // Initialize useTranslation
 
   const stats = [
     {

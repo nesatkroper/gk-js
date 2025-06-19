@@ -115,8 +115,7 @@ export async function getAuthRecords(options = {}) {
 }
 
 export async function getCurrentAuthUser() {
-  const cookieStore = cookies();
-  const token = cookieStore.get("auth-token")?.value;
+  const token = cookies().get("auth-token")?.value;
 
   if (!token) {
     redirect("/login");
@@ -129,7 +128,6 @@ export async function getCurrentAuthUser() {
     redirect("/login");
   }
 
-  // Get minimal user data
   const { data, error } = await getAuthRecords({
     type: "byId",
     authId: user.authId,
@@ -142,45 +140,6 @@ export async function getCurrentAuthUser() {
 
   return data;
 }
-
-// function convertDecimalsToNumbers(obj) {
-//   if (!obj) return obj;
-//   const newObj = { ...obj };
-//   for (const key in newObj) {
-//     if (newObj[key] instanceof Prisma.Decimal) {
-//       newObj[key] = newObj[key].toNumber();
-//     } else if (newObj[key] instanceof Date) {
-//       newObj[key] = newObj[key].toISOString();
-//     } else if (typeof newObj[key] === "object") {
-//       newObj[key] = convertDecimalsToNumbers(newObj[key]);
-//     }
-//   }
-//   return newObj;
-// }
-
-// export async function getAuthRecords() {
-//   try {
-//     const auths = await prisma.auth.findMany({
-//       include: {
-//         Role: true,
-//         Employee: {
-//           include: {
-//             Branch: true,
-//           },
-//         },
-//       },
-//       orderBy: {
-//         createdAt: "desc",
-//       },
-//     });
-
-//     const convertedAuths = auths.map((auth) => convertDecimalsToNumbers(auth));
-//     return { data: convertedAuths };
-//   } catch (error) {
-//     console.error("Error fetching auth records:", error);
-//     return { error: "Failed to fetch auth records" };
-//   }
-// }
 
 export async function createAuthRecord(data) {
   console.log("Creating auth record...", data);
@@ -414,23 +373,44 @@ export async function login(formData) {
 
 export async function logout() {
   try {
-    const authToken = cookies().get("auth-token")?.value
+    const token = cookies().get("auth-token")?.value;
 
-    if (authToken) {
+    if (token) {
       await prisma.token.deleteMany({
-        where: { token: authToken },
-      })
+        where: { token },
+      });
 
-      cookies().delete("auth-token")
+      cookies().delete("auth-token");
     }
 
-    redirect("/login")
+    redirect("/login");
   } catch (error) {
-    console.error("Logout error:", error)
-    cookies().delete("auth-token")
-    redirect("/login")
+    console.error("Logout error:", error);
+    cookies().delete("auth-token");
+    redirect("/login");
   }
 }
+
+
+// export async function logout() {
+//   try {
+//     const authToken = cookies().get("auth-token")?.value
+
+//     if (authToken) {
+//       await prisma.token.deleteMany({
+//         where: { token: authToken },
+//       })
+
+//       cookies().delete("auth-token")
+//     }
+
+//     redirect("/login")
+//   } catch (error) {
+//     console.error("Logout error:", error)
+//     cookies().delete("auth-token")
+//     redirect("/login")
+//   }
+// }
 
 export async function validateToken(token) {
   try {
@@ -454,8 +434,7 @@ export async function validateToken(token) {
 }
 
 export async function getAuthUser() {
-  const cookieStore = cookies()
-  const token = cookieStore.get("auth-token")?.value
+  const token = cookies().get("auth-token")?.value;
 
   if (!token) {
     redirect("/login")

@@ -29,8 +29,8 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarRail,
-  SidebarHeader // <--- THIS WAS MISSING AND CAUSED YOUR ERROR
-} from "@/components/ui/sidebar" // All these components should be imported from your sidebar UI library
+  SidebarHeader 
+} from "@/components/ui/sidebar" 
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { useCountStore } from "@/stores/count-store"

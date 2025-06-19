@@ -10,11 +10,13 @@ import { CalendarDays, Package, TrendingUp, AlertTriangle } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useAuthStore } from "@/stores"
 import { useTranslation } from "react-i18next"
-import MapComponent from "@/components/map"
-import { SignaturePad } from "@/components/form"
+import { FormSignature } from "@/components/form"
 import { useFormHandler } from '@/hooks/use-form'
+import dynamic from "next/dynamic";
 
-export const dynamic = 'force-dynamic';
+const Map = dynamic(() => import("@/components/form/form-map").then(mod => mod.Map), { ssr: false });
+const MapWithLocation = dynamic(() => import("@/components/form/form-map").then(mod => mod.MapWithLocation), { ssr: false });
+
 export default function DashboardPage() {
   const { me, fetch } = useAuthStore()
   const { t } = useTranslation('common')
@@ -33,8 +35,9 @@ export default function DashboardPage() {
 
   console.log(me)
 
-  console.log(formData);
-
+  const handleLocation = (location) => {
+    console.log("Selected location:", location);
+  };
 
   return (
     <div className="space-y-6">
@@ -43,13 +46,16 @@ export default function DashboardPage() {
         <p className="text-muted-foreground">Welcome back! Here's what's happening with your fertilizer business.</p>
       </motion.div>
 
-      <SignaturePad
+      <FormSignature
         name="signature"
         value={formData.signature}
         onCallbackInput={handleImageData}
         label="Digital Signature"
         required
       />
+
+      {/* <Map location="11.5564,104.9282" />
+      <MapWithLocation onGetLocation={handleLocation} /> */}
 
       <DashboardStats />
 
