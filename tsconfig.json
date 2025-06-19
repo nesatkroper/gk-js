@@ -68,8 +68,8 @@
     "app/dashboard/attendance/loading.jsx",
     "app/dashboard/addresses/page.jsx",
     "app/dashboard/addresses/loading.jsx",
-    "app/admin/secure/page.jsx",
-    "app/admin/secure/loading.jsx",
+    "app/admin/page.jsx",
+    "app/admin/loading.jsx",
     "app/admin/layout.jsx",
     "app/dashboard/page.jsx",
     "app/dashboard/loading.jsx",
@@ -177,8 +177,18 @@
     "app/api/stockentries/[entryId]/route.js",
     "app/api/stockentries/route.js",
     "app/api/seed/route.js",
-    "app/api/seed/data.js"
-, "app/api/auth/me/route.js", "app/api/auth/security-logs/route.js", "app/api/auth/session/route.js", "app/api/categories/route.js", "app/api/departments/route.js", "hooks/use-toast.js", "hooks/use-store-actions.js", "hooks/use-permissions.js", "hooks/use-multi-file-upload.js", "app/api/logout/route.js"  ],
+    "app/api/seed/data.js",
+    "app/api/auth/me/route.js",
+    "app/api/auth/security-logs/route.js",
+    "app/api/auth/session/route.js",
+    "app/api/categories/route.js",
+    "app/api/departments/route.js",
+    "hooks/use-toast.js",
+    "hooks/use-store-actions.js",
+    "hooks/use-permissions.js",
+    "hooks/use-multi-file-upload.js",
+    "app/api/logout/route.js"
+  ],
   "exclude": [
     "node_modules"
   ]
