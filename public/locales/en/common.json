@@ -656,17 +656,6 @@
   "Showing {filteredCount} of {totalCount} customers": "Showing {{filteredCount}} of {{totalCount}} customers",
   "Previous": "Previous",
   "Next": "Next",
-
-
-
-
-
-
-
-
-
-
-
   "Recent Attendance": "Recent Attendance",
   "Your attendance records for the past month": "Your attendance records for the past month",
   "View Calendar": "View Calendar",
@@ -684,8 +673,6 @@
   "Request Time Off": "Request Time Off",
   "Request Vacation": "Request Vacation",
   "Request Sick Leave": "Request Sick Leave",
-
-
   "security_logs": "Security Logs",
   "filters": "Filters",
   "filters_description": "Filter security logs by various criteria",
