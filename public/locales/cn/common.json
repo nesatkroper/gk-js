@@ -656,13 +656,6 @@
   "Showing {filteredCount} of {totalCount} customers": "显示 {{filteredCount}} / {{totalCount}} 位客户",
   "Previous": "上一页",
   "Next": "下一页",
-
-
-
-
-
-
-
   "Recent Attendance": "近期考勤",
   "Your attendance records for the past month": "您过去一个月的考勤记录",
   "View Calendar": "查看日历",
@@ -679,5 +672,40 @@
   "Sick Leave": "病假",
   "Request Time Off": "申请休假",
   "Request Vacation": "申请年假",
-  "Request Sick Leave": "申请病假" 
+  "Request Sick Leave": "申请病假",
+  "security_logs": "安全日志",
+  "filters": "筛选器",
+  "filters_description": "根据各种条件筛选安全日志",
+  "status_code": "状态码",
+  "all_statuses": "所有状态",
+  "status_200": "200 (成功)",
+  "status_401": "401 (未授权)",
+  "status_403": "403 (禁止访问)",
+  "status_429": "429 (请求过多)",
+  "status_500": "500 (服务器错误)",
+  "ip_address": "IP 地址",
+  "filter_by_ip": "按 IP 筛选",
+  "start_date": "开始日期",
+  "end_date": "结束日期",
+  "apply_filters": "应用筛选",
+  "clear_filters": "清除筛选",
+  "authentication_logs": "认证日志",
+  "showing_logs": "显示 {count} 条，共 {total} 条日志",
+  "export": "导出",
+  "loading": "加载中...",
+  "timestamp": "时间戳",
+  "user": "用户",
+  "method": "方法",
+  "url_event": "URL/事件",
+  "status": "状态",
+  "response_time": "响应时间",
+  "status_success": "成功",
+  "status_client_error": "客户端错误",
+  "status_server_error": "服务器错误",
+  "status_unknown": "未知",
+  "method_security_event": "安全事件",
+  "page_info": "第 {current} 页，共 {total} 页",
+  "previous": "上一页",
+  "next": "下一页",
+  "fetch_logs_error": "获取日志失败"
 }
