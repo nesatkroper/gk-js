@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -34,7 +34,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const ClientCustomer = ({ customers = [] }) => {
+// Import useTranslation
+import { useTranslation } from "react-i18next";
+
+// Assuming 'Link' is imported from a routing library like 'next/link' or 'react-router-dom'
+// import Link from 'next/link'; // or whichever you use
+
+export function ClientCustomer({ customers = [] }) {
+  // Initialize t function for common namespace
+  const { t } = useTranslation('common');
+
   const [searchTerm, setSearchTerm] = useState("");
 
   const customerInfos = customers
@@ -67,15 +76,15 @@ const ClientCustomer = ({ customers = [] }) => {
           <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4'>
             <div>
               <h1 className='text-md font-bold tracking-tight'>
-                Customer Management
+                {t('Customer Management')}
               </h1>
               <p className='text-muted-foreground text-sm'>
-                View and manage your customer data, information, and addresses.
+                {t('Customer Management Description')}
               </p>
             </div>
             <Button className='flex items-center gap-2'>
               <Plus className='h-4 w-4' />
-              Add New Customer
+              {t('Add New Customer')}
             </Button>
           </div>
 
@@ -84,7 +93,7 @@ const ClientCustomer = ({ customers = [] }) => {
               <Search className='absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground' />
               <Input
                 type='search'
-                placeholder='Search...'
+                placeholder={t('SearchPlaceholder')}
                 className='pl-8 w-full'
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -94,7 +103,7 @@ const ClientCustomer = ({ customers = [] }) => {
               variant='outline'
               className='w-full sm:w-auto flex items-center gap-2'>
               <Filter className='h-4 w-4' />
-              Filter
+              {t('Filter')}
               <ChevronDown className='h-4 w-4 ml-1' />
             </Button>
           </div>
@@ -107,19 +116,19 @@ const ClientCustomer = ({ customers = [] }) => {
                     value='customers'
                     className='flex items-center gap-2'>
                     <User className='h-4 w-4' />
-                    <span className='hidden sm:inline'>Customers</span>
+                    <span className='hidden sm:inline'>{t('Customers')}</span>
                     <Badge className='ml-1'>{customers.length}</Badge>
                   </TabsTrigger>
                   <TabsTrigger value='info' className='flex items-center gap-2'>
                     <UserCircle className='h-4 w-4' />
-                    <span className='hidden sm:inline'>Customer Info</span>
+                    <span className='hidden sm:inline'>{t('Customer Info')}</span>
                     <Badge className='ml-1'>{customerInfos.length}</Badge>
                   </TabsTrigger>
                   <TabsTrigger
                     value='addresses'
                     className='flex items-center gap-2'>
                     <MapPin className='h-4 w-4' />
-                    <span className='hidden sm:inline'>Addresses</span>
+                    <span className='hidden sm:inline'>{t('Addresses')}</span>
                     <Badge className='ml-1'>{addresses.length}</Badge>
                   </TabsTrigger>
                 </TabsList>
@@ -129,25 +138,25 @@ const ClientCustomer = ({ customers = [] }) => {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Name</TableHead>
+                          <TableHead>{t('Name')}</TableHead>
                           <TableHead className='hidden md:table-cell'>
-                            Gender
+                            {t('Gender')}
                           </TableHead>
                           <TableHead className='hidden sm:table-cell'>
-                            Phone
+                            {t('Phone')}
                           </TableHead>
                           <TableHead className='hidden lg:table-cell'>
-                            Created
+                            {t('Created')}
                           </TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className='text-right'>Actions</TableHead>
+                          <TableHead>{t('Status')}</TableHead>
+                          <TableHead className='text-right'>{t('Actions')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {filteredCustomers.length === 0 ? (
                           <TableRow>
                             <TableCell colSpan={6} className='h-24 text-center'>
-                              No customers found.
+                              {t('No customers found.')}
                             </TableCell>
                           </TableRow>
                         ) : (
@@ -172,7 +181,7 @@ const ClientCustomer = ({ customers = [] }) => {
                                       ? "default"
                                       : "secondary"
                                   }>
-                                  {customer.status}
+                                  {t(customer.status || 'inactive')}
                                 </Badge>
                               </TableCell>
                               <TableCell className='text-right'>
@@ -181,31 +190,33 @@ const ClientCustomer = ({ customers = [] }) => {
                                     <Button
                                       variant='ghost'
                                       className='h-8 w-8 p-0'>
-                                      <span className='sr-only'>Open menu</span>
+                                      <span className='sr-only'>{t('Open menu')}</span> {/* SR text */}
                                       <MoreHorizontal className='h-4 w-4' />
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align='end'>
                                     <DropdownMenuLabel>
-                                      Actions
+                                      {t('Actions')}
                                     </DropdownMenuLabel>
                                     <DropdownMenuItem asChild>
-                                      <Link
-                                        to={`/customer/${customer.customerId}`}
-                                        className='flex w-full'>
+                                      {/* Make sure your Link component is correctly imported */}
+                                      {/* Example with a generic Link: */}
+                                      {/* <Link to={`/customer/${customer.customerId}`} className='flex w-full'> */}
+                                      {/* Replace with your actual Link component and its props */}
+                                      <a href={`/customer/${customer.customerId}`} className='flex w-full'>
                                         <ListCollapse
                                           size={16}
                                           className='me-2'
                                         />
-                                        View details
-                                      </Link>
+                                        {t('View details')}
+                                      </a>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem>
-                                      Edit customer
+                                      {t('Edit customer')}
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem className='text-destructive'>
-                                      Delete customer
+                                      {t('Delete customer')}
                                     </DropdownMenuItem>
                                   </DropdownMenuContent>
                                 </DropdownMenu>
@@ -231,16 +242,18 @@ const ClientCustomer = ({ customers = [] }) => {
 
           <div className='flex justify-between items-center'>
             <div className='text-sm text-muted-foreground'>
-              Showing <strong>{filteredCustomers.length}</strong> of{" "}
-              <strong>{customers.length}</strong> customers
+              {t('Showing {filteredCount} of {totalCount} customers', {
+                filteredCount: filteredCustomers.length,
+                totalCount: customers.length,
+              })}
             </div>
             <div className='flex items-center gap-2'>
               <Button variant='outline' size='sm' disabled>
                 <ChevronDown className='h-4 w-4 mr-2' />
-                Previous
+                {t('Previous')}
               </Button>
               <Button variant='outline' size='sm'>
-                Next
+                {t('Next')}
                 <ChevronDown className='h-4 w-4 ml-2 rotate-180' />
               </Button>
             </div>
@@ -251,4 +264,7 @@ const ClientCustomer = ({ customers = [] }) => {
   );
 };
 
-export default ClientCustomer;
+
+
+
+

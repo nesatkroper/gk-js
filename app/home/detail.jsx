@@ -1,5 +1,4 @@
-"use client"
-
+"use client";
 
 import React, { useEffect } from "react";
 import { format } from "date-fns";
@@ -23,9 +22,10 @@ import {
   Cake,
   BadgeCheck,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-const Details = ({ empData = [] }) => {
-  const user = getAuthData();
+export function Details({ emp = [] }) {
+  const { t } = useTranslation('common');
   const formatDate = (date) => {
     if (!date) return "N/A";
     return format(new Date(date), "PPP");
@@ -44,57 +44,57 @@ const Details = ({ empData = [] }) => {
         <CardHeader>
           <CardTitle className='flex items-center gap-2'>
             <User className='h-5 w-5 text-green-500' />
-            Personal Information
+            {t('Personal Information')}
           </CardTitle>
         </CardHeader>
         <CardContent className='space-y-6'>
           <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
             <div className='space-y-4'>
               <div>
-                <p className='text-sm text-muted-foreground'>Full Name</p>
+                <p className='text-sm text-muted-foreground'>{t('Full Name')}</p>
                 <p className='font-medium text-md'>
-                  {empData[0]?.firstName} {empData[0]?.lastName}
+                  {emp[0]?.firstName} {emp[0]?.lastName}
                 </p>
               </div>
               <div>
-                <p className='text-sm text-muted-foreground'>Employee Code</p>
+                <p className='text-sm text-muted-foreground'>{t('Employee Code')}</p>
                 <p className='font-medium text-md uppercase'>
-                  {empData[0]?.employeeCode || "N/A"}
+                  {emp[0]?.employeeCode || "N/A"}
                 </p>
               </div>
               <div>
-                <p className='text-sm text-muted-foreground'>Gender</p>
+                <p className='text-sm text-muted-foreground'>{t('Gender')}</p>
                 <p className='font-medium text-md capitalize'>
-                  {empData[0]?.gender}
+                  {emp[0]?.gender}
                 </p>
               </div>
             </div>
 
             <div className='space-y-4'>
               <div>
-                <p className='text-sm text-muted-foreground'>Date of Birth</p>
+                <p className='text-sm text-muted-foreground'>{t('Date of Birth')}</p>
                 <div className='flex items-center gap-2'>
                   <Cake className='h-4 w-4 text-green-500' />
                   <p className='font-medium text-md'>
-                    {formatDate(empData[0]?.dob)}
+                    {formatDate(emp[0]?.dob)}
                   </p>
                 </div>
               </div>
               <div>
-                <p className='text-sm text-muted-foreground'>Phone</p>
+                <p className='text-sm text-muted-foreground'>{t('Phone')}</p>
                 <div className='flex items-center gap-2'>
                   <Phone className='h-4 w-4 text-green-500' />
                   <p className='font-medium text-md'>
-                    {empData[0]?.phone || "N/A"}
+                    {emp[0]?.phone || "N/A"}
                   </p>
                 </div>
               </div>
               <div>
-                <p className='text-sm text-muted-foreground'>Email</p>
+                <p className='text-sm text-muted-foreground'>{t('Email')}</p>
                 <div className='flex items-center gap-2'>
                   <Mail className='h-4 w-4 text-green-500' />
                   <p className='font-medium text-md'>
-                    {empData[0]?.info?.email || "N/A"}
+                    {emp[0]?.info?.email || "N/A"}
                   </p>
                 </div>
               </div>
@@ -102,26 +102,26 @@ const Details = ({ empData = [] }) => {
 
             <div className='space-y-4'>
               <div>
-                <p className='text-sm text-muted-foreground'>Address</p>
+                <p className='text-sm text-muted-foreground'>{t('Address')}</p>
                 <p className='font-medium text-md'>
-                  {empData[0]?.info?.address || "123 Corporate Ave"}
+                  {emp[0]?.info?.address || t('Default Address')}
                 </p>
               </div>
               <div>
-                <p className='text-sm text-muted-foreground'>Region</p>
+                <p className='text-sm text-muted-foreground'>{t('Region')}</p>
                 <div className='flex items-center gap-2'>
                   <MapPin className='h-4 w-4 text-green-500' />
                   <p className='font-medium text-md'>
-                    {empData[0]?.info?.region || "Headquarters"}
+                    {emp[0]?.info?.region || t('Default Region')}
                   </p>
                 </div>
               </div>
               <div>
                 <p className='text-sm text-muted-foreground'>
-                  Emergency Contact
+                  {t('Emergency Contact')}
                 </p>
                 <p className='font-medium text-md'>
-                  {empData[0]?.info?.emergencyContact || "Not provided"}
+                  {emp[0]?.info?.emergencyContact || t('Not provided')}
                 </p>
               </div>
             </div>
@@ -132,36 +132,36 @@ const Details = ({ empData = [] }) => {
           <div>
             <h3 className='text-md font-semibold mb-4 flex items-center gap-2'>
               <Shield className='h-5 w-5 text-green-500' />
-              Government ID Information
+              {t('Government ID Information')}
             </h3>
             <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
               <div>
-                <p className='text-sm text-muted-foreground'>ID Number</p>
+                <p className='text-sm text-muted-foreground'>{t('ID Number')}</p>
                 <p className='font-medium text-md'>
-                  {empData[0]?.info?.govId || "N/A"}
+                  {emp[0]?.info?.govId || "N/A"}
                 </p>
               </div>
               <div>
-                <p className='text-sm text-muted-foreground'>Expiration Date</p>
+                <p className='text-sm text-muted-foreground'>{t('Expiration Date')}</p>
                 <p className='font-medium text-md'>
-                  {formatDate(empData[0]?.info?.govExpire)}
+                  {formatDate(emp[0]?.info?.govExpire)}
                 </p>
               </div>
               <div>
-                <p className='text-sm text-muted-foreground'>ID Image</p>
-                {empData[0]?.info?.govPicture ? (
+                <p className='text-sm text-muted-foreground'>{t('ID Image')}</p>
+                {emp[0]?.info?.govPicture ? (
                   <div className='mt-2 relative h-20 w-32 overflow-hidden rounded-md border'>
                     <img
                       src={
-                        empData[0]?.info.govPicture ||
+                        emp[0]?.info.govPicture ||
                         "/placeholder.svg?height=80&width=128"
                       }
-                      alt='Government ID'
+                      alt={t('ID Image')}
                       className='object-cover h-full w-full'
                     />
                   </div>
                 ) : (
-                  <p className='font-medium'>Not available</p>
+                  <p className='font-medium'>{t('Not available')}</p>
                 )}
               </div>
             </div>
@@ -174,53 +174,53 @@ const Details = ({ empData = [] }) => {
           <CardHeader>
             <CardTitle className='flex items-center gap-2'>
               <Briefcase className='h-5 w-5 text-green-500' />
-              Employment Details
+              {t('Employment Details')}
             </CardTitle>
           </CardHeader>
           <CardContent className='space-y-4'>
             <div>
-              <p className='text-sm text-muted-foreground'>Position</p>
+              <p className='text-sm text-muted-foreground'>{t('Position')}</p>
               <div className='flex items-center gap-2 h-6'>
                 <BadgeCheck className='h-4 w-4 text-green-500' />
                 <p className='font-medium'>
-                  {empData[0]?.position?.positionName}
+                  {emp[0]?.position?.positionName}
                 </p>
               </div>
             </div>
             <div>
-              <p className='text-sm text-muted-foreground'>Department</p>
+              <p className='text-sm text-muted-foreground'>{t('Department')}</p>
               <p className='font-medium'>
-                {empData[0]?.department?.departmentName}
+                {emp[0]?.department?.departmentName}
               </p>
             </div>
             <div>
-              <p className='text-sm text-muted-foreground'>Salary</p>
+              <p className='text-sm text-muted-foreground'>{t('Salary')}</p>
               <HoverCard>
                 <HoverCardTrigger asChild>
                   <p className='font-medium cursor-help'>
-                    {formatCurrency(empData[0]?.salary)}
+                    {formatCurrency(emp[0]?.salary)}
                   </p>
                 </HoverCardTrigger>
                 <HoverCardContent className='w-80'>
                   <div className='space-y-2'>
-                    <h4 className='text-sm font-semibold'>Salary Breakdown</h4>
+                    <h4 className='text-sm font-semibold'>{t('Salary Breakdown')}</h4>
                     <div className='grid grid-cols-2 gap-2 text-sm'>
-                      <div>Base Salary:</div>
+                      <div>{t('Base Salary')}:</div>
                       <div className='text-right'>
-                        {formatCurrency(empData[0]?.salary * 0.85)}
+                        {formatCurrency(emp[0]?.salary * 0.85)}
                       </div>
-                      <div>Bonus:</div>
+                      <div>{t('Bonus')}:</div>
                       <div className='text-right'>
-                        {formatCurrency(empData[0]?.salary * 0.1)}
+                        {formatCurrency(emp[0]?.salary * 0.1)}
                       </div>
-                      <div>Allowances:</div>
+                      <div>{t('Allowances')}:</div>
                       <div className='text-right'>
-                        {formatCurrency(empData[0]?.salary * 0.05)}
+                        {formatCurrency(emp[0]?.salary * 0.05)}
                       </div>
                       <Separator className='col-span-2 my-1' />
-                      <div className='font-medium'>Total:</div>
+                      <div className='font-medium'>{t('Total')}:</div>
                       <div className='text-right font-medium'>
-                        {formatCurrency(empData[0]?.salary)}
+                        {formatCurrency(emp[0]?.salary)}
                       </div>
                     </div>
                   </div>
@@ -228,37 +228,37 @@ const Details = ({ empData = [] }) => {
               </HoverCard>
             </div>
             <div>
-              <p className='text-sm text-muted-foreground'>Hired Date</p>
-              <p className='font-medium'>{formatDate(empData[0]?.hiredDate)}</p>
+              <p className='text-sm text-muted-foreground'>{t('Hired Date')}</p>
+              <p className='font-medium'>{formatDate(emp[0]?.hiredDate)}</p>
             </div>
             <div>
-              <p className='text-sm text-muted-foreground'>Status</p>
+              <p className='text-sm text-muted-foreground'>{t('Status')}</p>
               <Badge
                 variant={
-                  empData[0]?.status === "active" ? "success" : "destructive"
+                  emp[0]?.status === "active" ? "success" : "destructive"
                 }
                 className='capitalize'>
-                {empData[0]?.status}
+                {t(emp[0]?.status || 'inactive')} {/* Translate 'active' or 'inactive' */}
               </Badge>
             </div>
             <div>
-              <p className='text-sm text-muted-foreground'>Region</p>
-              <p className='font-medium'>{empData[0]?.info?.region || "N/A"}</p>
+              <p className='text-sm text-muted-foreground'>{t('Region')}</p>
+              <p className='font-medium'>{emp[0]?.info?.region || "N/A"}</p>
             </div>
           </CardContent>
         </Card>
 
-        {empData[0]?.info?.note && (
+        {emp[0]?.info?.note && (
           <Card className='border-none shadow-md'>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
                 <FileText className='h-5 w-5 text-green-500' />
-                Notes
+                {t('Notes')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className='bg-muted/50 p-4 rounded-lg italic'>
-                {empData[0]?.info.note}
+                {emp[0]?.info.note}
               </div>
             </CardContent>
           </Card>
@@ -268,7 +268,7 @@ const Details = ({ empData = [] }) => {
           <CardHeader>
             <CardTitle className='flex items-center gap-2'>
               <Layers className='h-5 w-5 text-green-500' />
-              Skills & Expertise
+              {t('Skills & Expertise')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -285,7 +285,7 @@ const Details = ({ empData = [] }) => {
                   key={index}
                   variant='secondary'
                   className='bg-green-100 text-green-700 hover:bg-green-200'>
-                  {skill}
+                  {t(skill)} {/* Translate each skill */}
                 </Badge>
               ))}
             </div>
@@ -296,4 +296,6 @@ const Details = ({ empData = [] }) => {
   );
 };
 
-export default Details;
+
+
+

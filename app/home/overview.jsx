@@ -30,7 +30,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 
-const OverView = ({ empData = [] }) => {
+export function OverView  ({ emp = [] })  {
   const [showAllMetrics, setShowAllMetrics] = useState(false);
 
   const formatDate = (date) => {
@@ -101,7 +101,7 @@ const OverView = ({ empData = [] }) => {
             </CardHeader>
             <CardContent className='p-4'>
               <p className='text-md font-semibold'>
-                {empData[0]?.position?.positionName}
+                {emp[0]?.position?.positionName}
               </p>
               <p className='text-sm text-muted-foreground mt-1'>
                 Career Level: Senior
@@ -118,7 +118,7 @@ const OverView = ({ empData = [] }) => {
             </CardHeader>
             <CardContent className='p-4'>
               <p className='text-md font-semibold'>
-                {empData[0]?.department?.departmentName}
+                {emp[0]?.department?.departmentName}
               </p>
               <p className='text-sm text-muted-foreground mt-1'>
                 Reports to: Director
@@ -135,7 +135,7 @@ const OverView = ({ empData = [] }) => {
             </CardHeader>
             <CardContent className='p-4'>
               <p className='text-md font-semibold'>
-                {formatCurrency(empData[0]?.salary)}
+                {formatCurrency(emp[0]?.salary)}
               </p>
               <p className='text-sm text-muted-foreground mt-1'>
                 Last review: 3 months ago
@@ -152,10 +152,10 @@ const OverView = ({ empData = [] }) => {
             </CardHeader>
             <CardContent className='p-4'>
               <p className='text-md font-semibold'>
-                {formatDate(empData[0]?.hiredDate)}
+                {formatDate(emp[0]?.hiredDate)}
               </p>
               <p className='text-sm text-muted-foreground mt-1'>
-                Tenure: {calculateServiceDuration(empData[0]?.hiredDate)}
+                Tenure: {calculateServiceDuration(emp[0]?.hiredDate)}
               </p>
             </CardContent>
           </Card>
@@ -169,7 +169,7 @@ const OverView = ({ empData = [] }) => {
             </CardHeader>
             <CardContent className='p-4'>
               <a className='text-md font-semibold'>
-                {empData[0]?.phone || "N/A"}
+                {emp[0]?.phone || "N/A"}
               </a>
               <p className='text-sm text-muted-foreground mt-1'>
                 Extension: +855
@@ -186,7 +186,7 @@ const OverView = ({ empData = [] }) => {
             </CardHeader>
             <CardContent className='p-4'>
               <p className='text-md font-semibold truncate'>
-                {empData[0]?.info?.email || "N/A"}
+                {emp[0]?.info?.email || "N/A"}
               </p>
               <p className='text-sm text-muted-foreground mt-1'>
                 Corporate account
@@ -311,4 +311,4 @@ const OverView = ({ empData = [] }) => {
   );
 };
 
-export default OverView;
+

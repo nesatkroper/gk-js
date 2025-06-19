@@ -582,5 +582,34 @@
   "Auth record deleted successfully": "កំណត់ត្រាការផ្ទៀងផ្ទាត់បានលុបដោយជោគជ័យ",
   "Last Login": "ចូលប្រើចុងក្រោយ",
   "active auth records": "កំណត់ត្រាការផ្ទៀងផ្ទាត់សកម្ម",
-  "Search auth records...": "ស្វែងរកកំណត់ត្រាការផ្ទៀងផ្ទាត់..."
+  "Search auth records...": "ស្វែងរកកំណត់ត្រាការផ្ទៀងផ្ទាត់...",
+
+  "Career Level: Senior": "កម្រិតអាជីព៖ ជាន់ខ្ពស់",
+
+  "Reports to: Director": "រាយការណ៍ទៅ៖ នាយក",
+  "Last review: {months} months ago": "ការពិនិត្យចុងក្រោយ៖ {months} ខែមុន",
+  "Tenure": "អតីតភាពការងារ",
+
+  "Extension: {ext}": "ផ្នែកបន្ថែម៖ {ext}",
+
+  "Corporate account": "គណនីក្រុមហ៊ុន",
+  "Performance Metrics": "សូចនាករប្រតិបត្តិការ",
+  "Current performance indicators": "សូចនាករប្រតិបត្តិការបច្ចុប្បន្ន",
+  "Productivity": "ផលិតភាព",
+
+  "Task Completion": "ការបញ្ចប់ភារកិច្ច",
+  "Team Collaboration": "ការសហការជាក្រុម",
+  "Quality of Work": "គុណភាពការងារ",
+  "Show Less": "បង្ហាញតិច",
+  "Show All Metrics": "បង្ហាញសូចនាករទាំងអស់",
+  "Recent Achievements": "សមិទ្ធផលថ្មីៗ",
+  "Recognition and awards": "ការទទួលស្គាល់ និងរង្វាន់",
+  "Employee of the Month": "បុគ្គលិកឆ្នើមប្រចាំខែ",
+  "Perfect Attendance": "វត្តមានពេញលេញ",
+  "Project Excellence Award": "រង្វាន់គម្រោងឆ្នើម",
+  "Upcoming Events": "ព្រឹត្តិការណ៍នាពេលខាងមុខ",
+  "Your scheduled events and deadlines": "ព្រឹត្តិការណ៍ និងកាលកំណត់ដែលបានគ្រោងទុករបស់អ្នក",
+  "Team Building Event": "ព្រឹត្តិការណ៍កសាងក្រុម",
+  "Performance Review": "ការពិនិត្យដំណើរការ",
+  "Training: Leadership Skills": "វគ្គបណ្តុះបណ្តាល៖ ជំនាញភាពជាអ្នកដឹកនាំ"
 }

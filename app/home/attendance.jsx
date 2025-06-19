@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React from "react";
 import { format } from "date-fns";
@@ -27,31 +27,37 @@ import {
   CalendarDays,
 } from "lucide-react";
 
-const Attendance = ({ empData = [] }) => {
+// Import useTranslation
+import { useTranslation } from "react-i18next";
+
+export function Attendance({ emp = [] }) {
+  // Initialize t function for common namespace
+  const { t } = useTranslation('common');
+
   return (
     <div className='grid grid-cols-1 lg:grid-cols-3 gap-4'>
       <Card className='lg:col-span-2 border-none shadow-md'>
         <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
           <div>
-            <CardTitle>Recent Attendance</CardTitle>
+            <CardTitle>{t('Recent Attendance')}</CardTitle>
             <CardDescription>
-              Your attendance records for the past month
+              {t('Your attendance records for the past month')}
             </CardDescription>
           </div>
           <div className='flex items-center gap-2'>
             <Button variant='outline' size='sm'>
               <Calendar className='mr-2 h-4 w-4' />
-              View Calendar
+              {t('View Calendar')}
             </Button>
             <Button variant='outline' size='sm'>
               <FileText className='mr-2 h-4 w-4' />
-              Export
+              {t('Export')}
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           <ScrollArea className='h-[400px] pr-4'>
-            {empData[0]?.attendances && empData[0]?.attendances.length > 0 ? (
+            {emp[0]?.attendances && emp[0]?.attendances.length > 0 ? (
               <div className='space-y-4'>
                 {[...Array(10)].map((_, index) => {
                   const mockAttendance = {
@@ -88,7 +94,7 @@ const Attendance = ({ empData = [] }) => {
                               {mockAttendance.timeIn} - {mockAttendance.timeOut}
                             </span>
                             <span>•</span>
-                            <span>{mockAttendance.workHours} hours</span>
+                            <span>{mockAttendance.workHours} {t('hours')}</span>
                           </div>
                         </div>
                       </div>
@@ -114,7 +120,7 @@ const Attendance = ({ empData = [] }) => {
                               : "destructive"
                           }
                           className='capitalize'>
-                          {mockAttendance.status}
+                          {t(mockAttendance.status)}
                         </Badge>
                       </div>
                     </div>
@@ -125,10 +131,10 @@ const Attendance = ({ empData = [] }) => {
               <div className='flex flex-col items-center justify-center h-[300px] text-center'>
                 <Calendar className='h-12 w-12 text-muted-foreground mb-4' />
                 <p className='text-md font-medium'>
-                  No attendance records available
+                  {t('No attendance records available')}
                 </p>
                 <p className='text-muted-foreground'>
-                  Your attendance history will appear here once recorded
+                  {t('Your attendance history will appear here once recorded')}
                 </p>
               </div>
             )}
@@ -141,14 +147,14 @@ const Attendance = ({ empData = [] }) => {
           <CardHeader>
             <CardTitle className='flex items-center gap-2'>
               <BarChart3 className='h-5 w-5 text-green-500' />
-              Attendance Summary
+              {t('Attendance Summary')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className='space-y-4'>
               <div className='space-y-2'>
                 <div className='flex justify-between items-center'>
-                  <span className='text-sm font-medium'>Present</span>
+                  <span className='text-sm font-medium'>{t('Present')}</span>
                   <span className='text-sm font-semibold'>92%</span>
                 </div>
                 <Progress value={92} className='h-2 bg-muted' />
@@ -156,7 +162,7 @@ const Attendance = ({ empData = [] }) => {
 
               <div className='space-y-2'>
                 <div className='flex justify-between items-center'>
-                  <span className='text-sm font-medium'>Absent</span>
+                  <span className='text-sm font-medium'>{t('Absent')}</span>
                   <span className='text-sm font-semibold'>3%</span>
                 </div>
                 <Progress value={3} className='h-2 bg-muted' />
@@ -164,7 +170,7 @@ const Attendance = ({ empData = [] }) => {
 
               <div className='space-y-2'>
                 <div className='flex justify-between items-center'>
-                  <span className='text-sm font-medium'>Late</span>
+                  <span className='text-sm font-medium'>{t('Late')}</span>
                   <span className='text-sm font-semibold'>5%</span>
                 </div>
                 <Progress value={5} className='h-2 bg-muted' />
@@ -172,18 +178,18 @@ const Attendance = ({ empData = [] }) => {
             </div>
 
             <div className='mt-6 pt-6 border-t'>
-              <h4 className='text-sm font-semibold mb-4'>Time Off Balance</h4>
+              <h4 className='text-sm font-semibold mb-4'>{t('Time Off Balance')}</h4>
               <div className='grid grid-cols-2 gap-4'>
                 <div className='p-3 bg-green-50 rounded-lg'>
-                  <p className='text-xs text-green-600 mb-1'>Vacation Days</p>
+                  <p className='text-xs text-green-600 mb-1'>{t('Vacation Days')}</p>
                   <p className='text-xl font-bold text-green-700'>
-                    12 <span className='text-sm font-normal'>days</span>
+                    12 <span className='text-sm font-normal'>{t('days')}</span>
                   </p>
                 </div>
                 <div className='p-3 bg-emerald-50 rounded-lg'>
-                  <p className='text-xs text-emerald-600 mb-1'>Sick Leave</p>
+                  <p className='text-xs text-emerald-600 mb-1'>{t('Sick Leave')}</p>
                   <p className='text-xl font-bold text-emerald-700'>
-                    5 <span className='text-sm font-normal'>days</span>
+                    5 <span className='text-sm font-normal'>{t('days')}</span>
                   </p>
                 </div>
               </div>
@@ -195,18 +201,18 @@ const Attendance = ({ empData = [] }) => {
           <CardHeader>
             <CardTitle className='flex items-center gap-2'>
               <CalendarDays className='h-5 w-5 text-green-500' />
-              Request Time Off
+              {t('Request Time Off')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className='space-y-4'>
               <Button className='w-full bg-green-600 hover:bg-green-700'>
                 <Calendar className='mr-2 h-4 w-4' />
-                Request Vacation
+                {t('Request Vacation')}
               </Button>
               <Button variant='outline' className='w-full'>
                 <Clock className='mr-2 h-4 w-4' />
-                Request Sick Leave
+                {t('Request Sick Leave')}
               </Button>
             </div>
           </CardContent>
@@ -216,4 +222,5 @@ const Attendance = ({ empData = [] }) => {
   );
 };
 
-export default Attendance;
+
+
