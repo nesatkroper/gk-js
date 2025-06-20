@@ -80,6 +80,7 @@ export async function fetchProduct(options = {}) {
         sellPrice: true,
         Category: { select: { categoryName: true } },
         Brand: { select: { brandName: true } },
+        Stock: { select: { quantity: true, branchId: true } },
       };
       delete query.include; 
     } 

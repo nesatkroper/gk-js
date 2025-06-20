@@ -12,17 +12,17 @@ function convertPrismaData(obj) {
   }
 
   if (typeof obj === "object") {
-    if (obj instanceof Decimal) {
+    if (obj instanceof Decimal)
       return obj.toNumber()
-    }
 
-    if (obj instanceof Date) {
+
+    if (obj instanceof Date)
       return obj.toISOString()
-    }
 
-    if (typeof obj === "bigint") {
+
+    if (typeof obj === "bigint")
       return obj.toString()
-    }
+
 
     return Object.fromEntries(
       Object.entries(obj).map(([key, value]) => [key, convertPrismaData(value)])

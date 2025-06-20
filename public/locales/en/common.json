@@ -391,19 +391,6 @@
   "Method": "Method",
   "Reference": "Reference",
   "completed": "Completed",
-
-
-
-
-
-
-
-
-
-
-
-
-  
   "pending": "Pending",
   "failed": "Failed",
   "Reports & Analytics": "Reports & Analytics",
@@ -721,8 +708,6 @@
   "previous": "Previous",
   "next": "Next",
   "fetch_logs_error": "Failed to fetch logs",
-
-
   "Page not found": "Page not found",
   "Unknown error": "Unknown error",
   "Error Details:": "Error Details:",
@@ -743,12 +728,7 @@
   "Search Site": "Search Site",
   "Go Back": "Go Back",
   "Fun fact: HTTP 404 errors were named after room 404 at CERN where the original web server was located! 🌐": "Fun fact: HTTP 404 errors were named after room 404 at CERN where the original web server was located! 🌐",
-  "home" : "Home",
-
-
-
-
-
+  "home": "Home",
   "gkNaturalAgriculture": "GK Natural Agriculture",
   "fertilizerMS": "FertilizerMS",
   "accessManagementDashboard": "Access your management dashboard",
@@ -770,5 +750,55 @@
   "secureAccessDescription": "Role-based permissions and secure authentication for your team",
   "welcomeBack": "Welcome Back",
   "signInToDashboard": "Sign in to access your dashboard",
-  "protectedBySecurity": "Protected by enterprise-grade security"
+  "protectedBySecurity": "Protected by enterprise-grade security",
+
+
+
+
+
+
+
+
+
+
+
+  "TrackManageSales": "Track and manage your sales transactions",
+  "NewSale": "New Sale",
+  "CreateNewSale": "Create New Sale or Record Sale",
+  "RecordNewSale": "Record a new sales transaction",
+  "SelectCustomer": "Select customer...",
+  "InvoiceNumber": "Invoice Number",
+  "SelectBranch": "Select branch...",
+  "SaleDate": "Sale Date",
+  "SelectSaleDate": "Select sale date...",
+  "SaleItems": "Sale Items",
+  "AddItem": "Add Item",
+  "SelectProduct": "Select product...",
+  "Price": "Price",
+  "CreateSale": "Create Sale",
+  "Processing": "Processing...",
+  "TotalRevenue": "Total Revenue",
+  "AllTimeSales": "All time sales",
+  "TodaysSales": "Today's Sales",
+  "TotalOrders": "Total Orders",
+  "CompletedSales": "Completed sales",
+  "AvgOrderValue": "Average Order Value",
+  "PerTransaction": "Per transaction",
+  "SalesHistory": "Sales History",
+  "SalesTransactions": "{{count}} sales transaction(s)",
+  "SearchSales": "Search sales...",
+  "SalesPerson": "Sales Person",
+  "Items": "Items",
+  "UnknownProduct": "Unknown product",
+  "NoItems": "No items",
+  "MoreItems": "+{{count}} more item(s)",
+  "FailedToFetchSales": "Failed to fetch sales",
+  "SelectCustomerError": "Please select a customer",
+  "SelectBranchError": "Please select a branch",
+  "SelectProductsError": "Please select products for all items",
+  "InsufficientQuantityError": "One or more products have insufficient quantity",
+  "ProductOutOfStock": "This product is out of stock",
+  "InsufficientQuantity": "Only {{quantity}} available",
+  "SaleCreatedSuccess": "Sale created successfully",
+  "FailedToCreateSale": "Failed to create sale"
 }

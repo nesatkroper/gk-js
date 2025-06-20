@@ -66,7 +66,7 @@ const FormComboBox = ({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="justify-between w-full"
+            className="justify-between truncate w-full"
           >
             {selected
               ? options.find((d) => d.value === selected)?.label
@@ -90,6 +90,7 @@ const FormComboBox = ({
                     key={d.value}
                     value={d.value}
                     onSelect={handleSelect}
+                    className='truncate'
                   >
                     {d.label}
                     <Check
