@@ -16,5 +16,6 @@ export { usePositionStore, } from "./position-store"
 export { useCartStore, } from "./cart-store"
 export { useRoleStore, } from "./role-store"
 export { useBrandStore } from './brand-store'
+export { useBranchStore } from './branch-store'
 
 
