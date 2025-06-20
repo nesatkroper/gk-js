@@ -8,20 +8,48 @@ import { generateToken, verifyPassword } from "@/lib/auth";
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
-function convertDecimalsToNumbers(obj) {
-  if (!obj) return obj;
-  const newObj = { ...obj };
-  for (const key in newObj) {
-    if (newObj[key] instanceof Prisma.Decimal) {
-      newObj[key] = newObj[key].toNumber();
-    } else if (newObj[key] instanceof Date) {
-      newObj[key] = newObj[key].toISOString();
-    } else if (typeof newObj[key] === "object") {
-      newObj[key] = convertDecimalsToNumbers(newObj[key]);
-    }
+// function convertDecimalsToNumbers(obj) {
+//   if (!obj) return obj;
+//   const newObj = { ...obj };
+//   for (const key in newObj) {
+//     if (newObj[key] instanceof Prisma.Decimal) {
+//       newObj[key] = newObj[key].toNumber();
+//     } else if (newObj[key] instanceof Date) {
+//       newObj[key] = newObj[key].toISOString();
+//     } else if (typeof newObj[key] === "object") {
+//       newObj[key] = convertDecimalsToNumbers(newObj[key]);
+//     }
+//   }
+//   return newObj;
+// }
+
+function convertDecimalsToNumbers(data) {
+  if (data === null || data === undefined) return data;
+
+  if (Array.isArray(data)) {
+    return data.map(convertPrismaData);
   }
-  return newObj;
+
+  if (typeof data === "object") {
+    if (
+      typeof data.toNumber === "function" &&
+      data._isDecimal === true // Handles Prisma.Decimal safely
+    ) {
+      return data.toNumber();
+    }
+
+    if (data instanceof Date) {
+      return data.toISOString();
+    }
+
+    return Object.fromEntries(
+      Object.entries(data).map(([key, value]) => [key, convertPrismaData(value)])
+    );
+  }
+
+  return data;
 }
+
 
 export async function getAuthRecords(options = {}) {
   try {
@@ -395,12 +423,20 @@ export async function login(formData) {
     })
 
     console.log("Login successful for:", sanitizedEmail)
-    cookies().set("auth-token", jwtToken, {
+    const cookieStore = await cookies(); 
+    cookieStore.set("auth-token", jwtToken, {
       httpOnly: true,
       sameSite: "lax",
       maxAge: 8 * 60 * 60,
       path: "/",
-    })
+    });
+
+    // cookies().set("auth-token", jwtToken, {
+    //   httpOnly: true,
+    //   sameSite: "lax",
+    //   maxAge: 8 * 60 * 60,
+    //   path: "/",
+    // })
 
     return {
       success: true,
