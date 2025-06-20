@@ -1,6 +1,5 @@
 "use server";
 
-import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
@@ -28,7 +27,7 @@ function convertDecimalsToNumbers(data) {
     }
 
     return Object.fromEntries(
-      Object.entries(data).map(([key, value]) => [key, convertDecimalsToNumbers(value)]) // fixed name
+      Object.entries(data).map(([key, value]) => [key, convertDecimalsToNumbers(value)]) 
     );
   }
 

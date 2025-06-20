@@ -33,7 +33,7 @@ export default function DashboardPage() {
     }
   }, [fetch, items])
 
-  console.log(items)
+
 
   const handleLocation = (location) => {
     console.log("Selected location:", location);
