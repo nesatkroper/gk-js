@@ -60,7 +60,7 @@ export async function createSale(data) {
         branchId,
         employeeId,
         saleDate: new Date(saleDate),
-        amount: new Decimal(data.amount || 0).toNumber(), // Ensure amount is a number
+        amount: new Decimal(data.amount || 0).toNumber(), 
         status: data.status || "active",
         memo,
         invoice,
@@ -105,7 +105,7 @@ export async function updateSale(saleId, data) {
         invoice,
         updatedAt: new Date(),
         Saledetail: {
-          deleteMany: {}, // Delete existing sale details
+          deleteMany: {}, 
           create: items.map(item => ({
             productId: item.productId,
             quantity: item.quantity,

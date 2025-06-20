@@ -139,7 +139,7 @@ export default function SalesPage() {
       employeeId: items?.employeeId,
       amount: calculateTotal().toFixed(2),
       invoice: inv,
-      saleDate: saleDate.toISOString(),
+      saleDate: saleDate?.toISOString() || new Date().toISOString(),
       items: saleItems.map((item) => ({
         productId: item.productId,
         quantity: Number(item.quantity),
@@ -273,9 +273,16 @@ export default function SalesPage() {
                   <Label>{t("SaleDate")}</Label>
                   <DatePicker
                     date={saleDate}
-                    onDateChange={setSaleDate}
+                    onDateChange={(date) => {
+                      if (date instanceof Date && !isNaN(date.getTime())) {
+                        setSaleDate(date)
+                      } else {
+                        toast.error("Invalid date")
+                      }
+                    }}
                     placeholder={t("SelectSaleDate")}
                   />
+
                 </div>
               </div>
               <div className="space-y-4">
@@ -348,7 +355,7 @@ export default function SalesPage() {
                         }}
                         label={t("Quantity")}
                         placeholder={t("quantity")}
-                        disabled={isSubmitting || !item.productId}
+                        disabled={isSubmitting}
                         required
                       />
                     </div>
