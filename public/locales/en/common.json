@@ -743,5 +743,32 @@
   "Search Site": "Search Site",
   "Go Back": "Go Back",
   "Fun fact: HTTP 404 errors were named after room 404 at CERN where the original web server was located! 🌐": "Fun fact: HTTP 404 errors were named after room 404 at CERN where the original web server was located! 🌐",
-  "home" : "Home"
+  "home" : "Home",
+
+
+
+
+
+  "gkNaturalAgriculture": "GK Natural Agriculture",
+  "fertilizerMS": "FertilizerMS",
+  "accessManagementDashboard": "Access your management dashboard",
+  "emailAddress": "Email Address",
+  "password": "Password",
+  "signingIn": "Signing in...",
+  "signInSecurely": "Sign In Securely",
+  "unknownErrorOccurred": "An unknown error occurred",
+  "networkErrorTryAgain": "Network error. Please try again.",
+  "completeFertilizerManagementSystem": "Complete Fertilizer Management System",
+  "streamlineOperations": "Streamline your operations with our comprehensive solution",
+  "inventoryManagement": "Inventory Management",
+  "inventoryDescription": "Track fertilizer stock levels, manage suppliers, and automate reordering",
+  "salesAnalytics": "Sales Analytics",
+  "salesDescription": "Monitor sales performance, generate reports, and track revenue",
+  "customerManagement": "Customer Management",
+  "customerDescription": "Manage customer relationships, track orders, and payment history",
+  "secureAccess": "Secure Access",
+  "secureAccessDescription": "Role-based permissions and secure authentication for your team",
+  "welcomeBack": "Welcome Back",
+  "signInToDashboard": "Sign in to access your dashboard",
+  "protectedBySecurity": "Protected by enterprise-grade security"
 }
