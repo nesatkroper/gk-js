@@ -8,32 +8,17 @@ import { generateToken, verifyPassword } from "@/lib/auth";
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
-// function convertDecimalsToNumbers(obj) {
-//   if (!obj) return obj;
-//   const newObj = { ...obj };
-//   for (const key in newObj) {
-//     if (newObj[key] instanceof Prisma.Decimal) {
-//       newObj[key] = newObj[key].toNumber();
-//     } else if (newObj[key] instanceof Date) {
-//       newObj[key] = newObj[key].toISOString();
-//     } else if (typeof newObj[key] === "object") {
-//       newObj[key] = convertDecimalsToNumbers(newObj[key]);
-//     }
-//   }
-//   return newObj;
-// }
-
 function convertDecimalsToNumbers(data) {
   if (data === null || data === undefined) return data;
 
   if (Array.isArray(data)) {
-    return data.map(convertPrismaData);
+    return data.map(convertDecimalsToNumbers); // fixed name
   }
 
   if (typeof data === "object") {
     if (
       typeof data.toNumber === "function" &&
-      data._isDecimal === true // Handles Prisma.Decimal safely
+      data._isDecimal === true
     ) {
       return data.toNumber();
     }
@@ -43,12 +28,13 @@ function convertDecimalsToNumbers(data) {
     }
 
     return Object.fromEntries(
-      Object.entries(data).map(([key, value]) => [key, convertPrismaData(value)])
+      Object.entries(data).map(([key, value]) => [key, convertDecimalsToNumbers(value)]) // fixed name
     );
   }
 
   return data;
 }
+
 
 
 export async function getAuthRecords(options = {}) {
@@ -69,45 +55,6 @@ export async function getAuthRecords(options = {}) {
           },
         },
       });
-      // const auth = await prisma.auth.findUnique({
-      //   where: { authId },
-      //   select: {
-      //     email: true,
-      //     roleId: true,
-      //     employeeId: true,
-      //     status: true,
-      //     createdAt: true,
-      //     lastLoginAt: true,
-      //     Role: {
-      //       select: {
-      //         name: true
-      //       }
-      //     },
-      //     Employee: {
-      //       include: {
-      //         Branch: {
-      //           select: {
-      //             branchId: true,
-      //             branchName: true
-      //           }
-      //         },
-      //         Department: {
-      //           select: {
-      //             departmentId: true,
-      //             departmentName: true
-      //           }
-      //         },
-      //         Position: {
-      //           select: {
-      //             positionId: true,
-      //             positionName: true
-      //           }
-      //         },
-      //         Employeeinfo: true,
-      //       },
-      //     },
-      //   },
-      // });
       if (!auth) {
         return { error: "Auth record not found" };
       }
@@ -430,13 +377,6 @@ export async function login(formData) {
       maxAge: 8 * 60 * 60,
       path: "/",
     });
-
-    // cookies().set("auth-token", jwtToken, {
-    //   httpOnly: true,
-    //   sameSite: "lax",
-    //   maxAge: 8 * 60 * 60,
-    //   path: "/",
-    // })
 
     return {
       success: true,

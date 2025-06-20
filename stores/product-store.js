@@ -10,13 +10,19 @@ export const useProductStore = create(
       error: null,
       fetch: async (options = {}) => {
         set({ isLoading: true, error: null });
-        const result = await fetchProduct(options);
-        if (result?.success) {
-          set({ items: result.data, isLoading: false });
-        } else {
-          set({ error: result.error || "Unknown error occurred", isLoading: false });
+        try {
+          const result = await fetchProduct(options);
+          if (result?.success) {
+            set({ items: result.data, isLoading: false });
+          } else {
+            set({ error: result?.error || "Unknown error occurred", isLoading: false });
+          }
+        } catch (err) {
+          console.error("Fetch error:", err);
+          set({ error: "Something went wrong. Please try again.", isLoading: false });
         }
       },
+
       create: async (data, file) => {
         set({ isLoading: true, error: null });
         const result = await createProduct(data, file);

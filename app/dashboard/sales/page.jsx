@@ -51,7 +51,7 @@ export default function SalesPage() {
   const {
     items: Branch,
     fetch: brcFetch,
-  } = useBranchStore() // Corrected to useBranchStore
+  } = useBranchStore() 
 
   useEffect(() => {
     const fetchSalesData = async () => {
@@ -70,10 +70,12 @@ export default function SalesPage() {
 
     fetchSalesData()
     cusFetch()
-    proFetch()
+    proFetch({getBasicInfo:true})
     brcFetch()
     fetch()
   }, [cusFetch, proFetch, brcFetch, fetch])
+
+  console.log(Product)
 
   const filteredSales = sales.filter(
     (sale) =>
