@@ -7,22 +7,18 @@ import { Decimal } from "@prisma/client/runtime/library"
 function convertPrismaData(obj) {
   if (obj === null || obj === undefined) return obj
 
-  if (Array.isArray(obj)) {
+  if (Array.isArray(obj))
     return obj.map(convertPrismaData)
-  }
 
   if (typeof obj === "object") {
     if (obj instanceof Decimal)
       return obj.toNumber()
 
-
     if (obj instanceof Date)
       return obj.toISOString()
 
-
     if (typeof obj === "bigint")
       return obj.toString()
-
 
     return Object.fromEntries(
       Object.entries(obj).map(([key, value]) => [key, convertPrismaData(value)])
@@ -81,14 +77,6 @@ export async function createSale(data) {
           })),
         },
       },
-      include: {
-        Branch: { select: { branchName: true } },
-        Customer: { select: { firstName: true, lastName: true } },
-        Employee: { select: { firstName: true, lastName: true } },
-        Saledetail: {
-          include: { Product: { select: { productName: true, sellPrice: true } } },
-        },
-      },
     })
 
     revalidatePath("/sales")
@@ -126,14 +114,6 @@ export async function updateSale(saleId, data) {
             createdAt: new Date(),
             updatedAt: new Date(),
           })),
-        },
-      },
-      include: {
-        Branch: { select: { branchName: true } },
-        Customer: { select: { firstName: true, lastName: true } },
-        Employee: { select: { firstName: true, lastName: true } },
-        Saledetail: {
-          include: { Product: { select: { productName: true, sellPrice: true } } },
         },
       },
     })

@@ -407,7 +407,7 @@ export default function SalesPage() {
         </Dialog>
       </motion.div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <motion.div
           initial={{ opacity: 0, y: 2 }}
           animate={{ opacity: 1, y: 0 }}
