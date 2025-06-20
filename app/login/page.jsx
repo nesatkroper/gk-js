@@ -82,7 +82,7 @@ export default function LoginPage() {
         </div>
       </motion.header>
 
-      <div className="flex-1 container mx-auto px-4 py-8 flex items-start justify-center">
+      <div className="flex-1 container mx-auto pt-0 py-8 flex items-start justify-center">
         {isMobile ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
